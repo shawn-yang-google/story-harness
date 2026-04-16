@@ -4,6 +4,8 @@ A framework that bridges structured AI generation and the nuanced art of human s
 
 Inspired by [AutoHarness](https://arxiv.org/html/2603.03329v1) (LLM-synthesized code harnesses via tree-search), adapted from game environments to narrative generation.
 
+> 📊 **[View the interactive presentation →](https://shawn-yang-google.github.io/story-harness/)**
+
 ## How It Works
 
 StoryHarness uses a **four-tier critic system** and a **gated pipeline** to evaluate LLM-generated narrative drafts:
