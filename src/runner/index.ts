@@ -79,6 +79,10 @@ export class RejectionSamplingRunner {
       targetAudience: this.options.targetAudience,
     };
 
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const sessionDir = join(this.options.logDirectory ?? "logs", `generate-${timestamp}`);
+    await mkdir(sessionDir, { recursive: true });
+
     // Generate initial draft
     const initialPrompt = [
       "You are an expert story generator. Write a COMPLETE scene based on the following prompt.",
@@ -101,6 +105,19 @@ export class RejectionSamplingRunner {
     if (!currentDraft) {
       throw new Error("Generator LLM returned empty or undefined response.");
     }
+
+    attemptCounter++;
+    attemptLogs.push({
+      attempt: attemptCounter,
+      round: 0,
+      patchInRound: null,
+      draft: currentDraft,
+      valid: false,
+      feedback: ["Initial draft"],
+      diffs: [],
+      timestamp: new Date().toISOString(),
+    });
+    await this.saveLog(sessionDir, prompt, attemptLogs);
 
     // Outer loop: validation rounds
     // Rounds 1 to N-1: Tier 2 + 3 only (structural/logic/dialogue — no style noise)
@@ -135,7 +152,7 @@ export class RejectionSamplingRunner {
       if (valid) {
         console.log(c.boldGreen + "✓ Draft accepted!" + c.reset);
         this.previousBeats.push(currentDraft);
-        await this.saveLog(prompt, attemptLogs);
+        await this.saveLog(sessionDir, prompt, attemptLogs);
         return currentDraft;
       }
 
@@ -216,6 +233,7 @@ export class RejectionSamplingRunner {
               diffs: [{ original: "(structural rewrite)", revised: "(full scene)" }],
               timestamp: new Date().toISOString(),
             });
+            await this.saveLog(sessionDir, prompt, attemptLogs);
           } else {
             console.log("    " + c.yellow + "Structural rewrite returned insufficient content, skipping" + c.reset);
           }
@@ -286,6 +304,7 @@ export class RejectionSamplingRunner {
               diffs,
               timestamp: new Date().toISOString(),
             });
+            await this.saveLog(sessionDir, prompt, attemptLogs);
           }
         } catch (err: any) {
           console.log("    " + c.red + "Patch failed: " + err.message + c.reset);
@@ -295,7 +314,17 @@ export class RejectionSamplingRunner {
       }
     }
 
-    await this.saveLog(prompt, attemptLogs);
+    await this.saveLog(sessionDir, prompt, attemptLogs);
+    // Mark status as failed for external agents
+    const failStatus = {
+      state: "failed",
+      round: this.options.maxRetries,
+      patch: null,
+      totalAttempts: attemptLogs.length,
+      feedbackCount: attemptLogs[attemptLogs.length - 1]?.feedback?.length ?? 0,
+      updatedAt: new Date().toISOString(),
+    };
+    await writeFile(join(sessionDir, "status.json"), JSON.stringify(failStatus, null, 2), "utf-8");
     throw new Error(`Failed to generate a valid scene after ${this.options.maxRetries} rounds.`);
   }
 
@@ -545,11 +574,7 @@ export class RejectionSamplingRunner {
     return { valid: allValid, feedback: allFeedback, draft: currentDraft, graphs: allGraphs };
   }
 
-  private async saveLog(prompt: string, attempts: AttemptLog[]): Promise<void> {
-    const baseDir = this.options.logDirectory ?? "logs";
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const sessionDir = join(baseDir, `generate-${timestamp}`);
-    await mkdir(sessionDir, { recursive: true });
+  private async saveLog(sessionDir: string, prompt: string, attempts: AttemptLog[]): Promise<void> {
 
     // Save prompt at session root
     await writeFile(join(sessionDir, "prompt.md"), `# Prompt\n\n${prompt}`, "utf-8");
@@ -652,6 +677,18 @@ export class RejectionSamplingRunner {
     // Save full summary as JSON for programmatic access
     const logData = { prompt, attempts, generatedAt: new Date().toISOString() };
     await writeFile(join(sessionDir, "summary.json"), JSON.stringify(logData, null, 2), "utf-8");
+
+    // Write status.json — a live cursor for external agents to poll
+    const lastAttemptForStatus = attempts[attempts.length - 1];
+    const status: Record<string, unknown> = {
+      state: lastAttemptForStatus?.valid ? "accepted" : "running",
+      round: lastAttemptForStatus?.round ?? 0,
+      patch: lastAttemptForStatus?.patchInRound ?? null,
+      totalAttempts: attempts.length,
+      feedbackCount: lastAttemptForStatus?.feedback?.length ?? 0,
+      updatedAt: new Date().toISOString(),
+    };
+    await writeFile(join(sessionDir, "status.json"), JSON.stringify(status, null, 2), "utf-8");
 
     console.log(c.dim + "Log saved to " + sessionDir + "/" + c.reset);
   }

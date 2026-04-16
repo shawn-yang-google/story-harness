@@ -49,6 +49,7 @@ Usage: storyharness <command> [options]
 Commands:
   train <harness_name>        Train a specific sub-harness (e.g., LogicHarness)
   generate <prompt>           Generate a story using the trained harnesses
+  watch [session-dir]         Watch a running generation session (default: latest)
 
 Options (train/generate):
   --mode <code|prompt>    Synthesis mode (default: code)
@@ -139,6 +140,81 @@ Video generation has been moved to the 'videoharness' project.
         console.error(`\nGeneration failed: ${e.message}`);
         process.exit(1);
       }
+      break;
+    }
+    case "watch": {
+      const { readdir: readdirSync, readFile: readFileSync, stat } = await import("fs/promises");
+      const logRoot = "logs";
+      let sessionDir = positionals[3];
+
+      if (!sessionDir) {
+        // Find latest session directory
+        try {
+          const entries = await readdirSync(logRoot);
+          const sessions = entries.filter(e => e.startsWith("generate-")).sort();
+          if (sessions.length === 0) {
+            console.error("No generation sessions found in logs/");
+            process.exit(1);
+          }
+          sessionDir = join(logRoot, sessions[sessions.length - 1]);
+        } catch {
+          console.error("No logs/ directory found. Run 'generate' first.");
+          process.exit(1);
+        }
+      }
+
+      console.log(`Watching: ${sessionDir}`);
+      let lastRound = -1;
+      let lastAttempts = 0;
+
+      const poll = async () => {
+        try {
+          const raw = await readFileSync(join(sessionDir!, "status.json"), "utf-8");
+          const status = JSON.parse(raw);
+
+          if (status.totalAttempts > lastAttempts) {
+            // New activity — print what's new
+            const summaryRaw = await readFileSync(join(sessionDir!, "summary.json"), "utf-8");
+            const summary = JSON.parse(summaryRaw);
+
+            for (let i = lastAttempts; i < summary.attempts.length; i++) {
+              const a = summary.attempts[i];
+              const roundLabel = a.patchInRound !== null
+                ? `Round ${a.round} Patch ${a.patchInRound}`
+                : `Round ${a.round}`;
+              const result = a.valid ? "✓ ACCEPTED" : `✗ ${a.feedback.length} issue(s)`;
+              console.log(`[${status.updatedAt}] ${roundLabel}: ${result}`);
+
+              if (!a.valid && a.feedback.length > 0) {
+                for (const f of a.feedback.slice(0, 5)) {
+                  console.log(`  - ${f.slice(0, 100)}`);
+                }
+                if (a.feedback.length > 5) {
+                  console.log(`  ... and ${a.feedback.length - 5} more`);
+                }
+              }
+            }
+            lastAttempts = summary.attempts.length;
+            lastRound = status.round;
+          }
+
+          if (status.state === "accepted") {
+            console.log("\n🎉 Story accepted!");
+            process.exit(0);
+          } else if (status.state === "failed") {
+            console.log("\n❌ Generation failed after all rounds.");
+            process.exit(1);
+          }
+        } catch {
+          // status.json not yet written, wait
+        }
+      };
+
+      // Poll every 2 seconds
+      const interval = setInterval(poll, 2000);
+      await poll(); // Initial check
+      // Keep alive until process exits via poll callbacks
+      await new Promise(() => {}); // Block forever (poll exits via process.exit)
       break;
     }
     default: {
