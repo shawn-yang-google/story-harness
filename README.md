@@ -1,3 +1,5 @@
+[![StoryHarness](docs/social-card.png)](https://shawn-yang-google.github.io/story-harness/)
+
 # StoryHarness
 
 A framework that bridges structured AI generation and the nuanced art of human storytelling. StoryHarness automatically synthesizes code harnesses that act as a strict control loop for LLMs, evaluating and guiding narrative generation across critical dimensions — logic, structure, emotion, tension, style, character, and dialogue.
