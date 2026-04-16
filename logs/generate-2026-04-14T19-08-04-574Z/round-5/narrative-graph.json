@@ -1,0 +1,113 @@
+{
+  "turningValues": [
+    {
+      "scene": "Marcus's quiet work routine",
+      "valueBefore": "peace",
+      "valueAfter": "chaos",
+      "changed": true,
+      "location": "paragraphs 1-5"
+    },
+    {
+      "scene": "The system failure and impending data loss",
+      "valueBefore": "safety",
+      "valueAfter": "danger",
+      "changed": true,
+      "location": "paragraphs 6-12"
+    },
+    {
+      "scene": "Marcus intervenes to fix the architecture",
+      "valueBefore": "anonymity",
+      "valueAfter": "exposure",
+      "changed": true,
+      "location": "paragraphs 16-23"
+    },
+    {
+      "scene": "Evelyn recognizes Marcus and offers the promotion",
+      "valueBefore": "exposure",
+      "valueAfter": "responsibility",
+      "changed": true,
+      "location": "paragraphs 24-35"
+    }
+  ],
+  "stakes": [
+    {
+      "description": "Marcus's desire to maintain his peaceful, low-stress lifestyle",
+      "level": "personal",
+      "order": 1,
+      "escalatesFromPrevious": false
+    },
+    {
+      "description": "The loss of three million users' data and the company's collapse",
+      "level": "professional",
+      "order": 2,
+      "escalatesFromPrevious": true
+    },
+    {
+      "description": "The professional future and well-being of the junior engineering team",
+      "level": "societal",
+      "order": 3,
+      "escalatesFromPrevious": true
+    }
+  ],
+  "protagonistDesires": [
+    {
+      "character": "Marcus Vance",
+      "goal": "Maintain anonymity and avoid high-pressure work",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Richard Sterling",
+      "goal": "Maintain control and save the company from the board",
+      "hasGoal": true,
+      "obstaclePresent": true
+    }
+  ],
+  "themeDeliveries": [
+    {
+      "theme": "Competence is a burden that cannot be ignored",
+      "delivery": "shown",
+      "location": "Marcus choosing to fix the system despite his desire for peace"
+    },
+    {
+      "theme": "Bad management destroys potential",
+      "delivery": "shown",
+      "location": "The contrast between the brilliant junior engineers and the failing monolithic architecture"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "inner",
+      "description": "Marcus's desire for peace vs his professional integrity/compulsion to fix broken systems",
+      "parties": [
+        "Marcus"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "personal",
+      "description": "Marcus vs Richard Sterling regarding authority and technical competence",
+      "parties": [
+        "Marcus",
+        "Richard Sterling"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "extra_personal",
+      "description": "The engineering team vs the failing monolithic architecture",
+      "parties": [
+        "Engineering Team",
+        "Synthetix Infrastructure"
+      ],
+      "resolved": true
+    }
+  ],
+  "premiseCounterPremise": [
+    {
+      "premise": "True expertise carries an inherent responsibility to lead",
+      "counterPremise": "One has the right to opt out of the rat race for personal sanity",
+      "counterPresent": true
+    }
+  ]
+}

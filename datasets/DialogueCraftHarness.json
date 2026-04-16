@@ -1,0 +1,266 @@
+[
+  {
+    "text": "'You knew about the shipment,' [CHARACTER_NAME_KAEL] said, placing the ledger on the table. [CHARACTER_NAME_MIRA]'s hand stopped midway to her glass. 'I see you've been busy,' she replied. 'Not as busy as you. Page forty-seven.' He slid the book across. She didn't open it. 'What do you want?' 'The truth. Or I walk this to the harbor master.' The silence that followed was a concession neither of them would name.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "'The soup is getting cold,' [CHARACTER_NAME_MIRA] said. [CHARACTER_NAME_KAEL] set down the letter. 'When did you plan to tell me?' She didn't answer. She ladled soup into a bowl and placed it in front of him. He stared at the steam rising. 'I suppose it doesn't matter now,' he said, and picked up his spoon. Neither of them tasted a thing.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "'You're limping,' the commander observed. 'I'm fine,' the scout replied, though blood pooled in his boot. 'Sit down.' 'I said I'm fine.' 'That was not a request.' The scout sat. The commander knelt and began cutting the boot away. 'Report,' she said, not looking up. He spoke of troop movements while she stitched his wound, and neither acknowledged that her hands were shaking.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "'I found your daughter,' said the investigator. The old woman's cup paused at her lips. 'I don't have a daughter.' '[CHARACTER_NAME_CORA]. Born 1987. Adopted out of [INSTITUTION_NAME].' 'Get out of my house.' 'She wants to meet you.' The cup returned to the saucer with a clink so precise it betrayed the tremor in her hands. 'Tell her I'm dead.' 'She already checked. You're not.' The old woman closed her eyes. When she opened them, twenty years of practiced denial had rearranged themselves into something that looked almost like hope.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "'Three hundred souls on that ship,' the admiral said. 'And one traitor.' He looked at each officer in turn. 'I know who it is.' No one moved. 'I also know why.' He poured wine for himself and no one else. 'The question is whether the traitor will confess before I name him, or after.' Lieutenant [CHARACTER_NAME_MARSH]'s hand drifted to his sidearm. The admiral noticed. 'Interesting choice, Lieutenant.'",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "'You're asking me to choose,' said [CHARACTER_NAME_KAEL]. 'No,' [CHARACTER_NAME_MIRA] replied. 'I'm telling you the choice has already been made. You just haven't admitted it yet.' He turned the ring on his finger. 'And if I refuse?' 'Then we both pretend. And pretending has a price.' 'Everything has a price.' 'Yes. But some prices are paid in years.'",
+    "label": "good",
+    "score": 0.92,
+    "flaws": []
+  },
+  {
+    "text": "The interrogator slid a photograph across the table. 'Recognize this?' The prisoner glanced down. 'No.' 'Look again.' 'I said no.' 'Funny. Because the woman in this photograph told us you would say exactly that. She also told us where the money is.' The prisoner's jaw tightened. 'She doesn't know where the money is.' 'Ah. So there is money.' The prisoner realized his mistake too late.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "'I didn't come here to fight,' [CHARACTER_NAME_SERA] said. 'Then why did you bring a sword?' 'Protection.' 'From what?' 'From the part of me that wants to use it.' [CHARACTER_NAME_ALDRIC] set down his own weapon. 'Then we have something in common.' They faced each other across the table, neither sitting, neither leaving, each waiting for the other to make the first move toward trust or violence.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "'The operation failed,' Dr. [CHARACTER_NAME_VOSS] said quietly. The family sat in silence. Then the father spoke: 'When you say failed—' 'I mean we did everything we could.' 'That's not what I asked.' Dr. [CHARACTER_NAME_VOSS] looked at her hands. 'No. It isn't.' The mother reached for her husband's arm. He let her take it but did not look at her. The fluorescent light hummed above them, indifferent.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "'You could have warned me,' the apprentice said. The old alchemist continued grinding herbs. 'Warning teaches nothing.' 'I nearly died.' 'Nearly is the operative word.' The apprentice slammed his fist on the table. Vials rattled. The alchemist looked up for the first time. 'Careful. Some of those explode.' 'You don't care at all, do you?' The alchemist returned to his mortar. 'I care enough to let you fail. That is the most expensive form of caring there is.'",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "'Hello there!' said [CHARACTER_NAME_KAEL]. 'How are you doing today?' asked [CHARACTER_NAME_MIRA]. 'Pretty good, thanks for asking,' he replied. 'Nice weather we're having.' 'Yes, it is lovely. Well, see you later!' 'Goodbye! Take care!' They waved and parted ways.",
+    "label": "bad",
+    "score": 0.08,
+    "flaws": ["purposeless_chitchat", "filler_talk", "no_dialogue_conflict"]
+  },
+  {
+    "text": "'We need to talk,' [CHARACTER_NAME_KAEL] said gravely. 'It's not what it looks like,' [CHARACTER_NAME_MIRA] replied. 'I can explain everything.' 'You don't understand,' he said. 'I've got a bad feeling about this.' 'At the end of the day, it is what it is,' she sighed. 'Mark my words, you'll pay for this,' he warned.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["dialogue_cliche", "filler_talk"]
+  },
+  {
+    "text": "'As you know, we've been partners for fifteen years,' said Detective [DETECTIVE_NAME]. 'And as I mentioned last week, the suspect lives at 42 Elm Street, which is, as you're aware, in the district we've patrolled since 2008.' 'Yes, and as we both know, his wife left him three years ago, which is when the crimes started.'",
+    "label": "bad",
+    "score": 0.07,
+    "flaws": ["as_you_know_bob", "unweaponized_exposition", "info_dump", "redundant_recap"]
+  },
+  {
+    "text": "'I am so angry right now!' [CHARACTER_NAME_KAEL] shouted. 'I feel completely betrayed by what you did!' 'Well I am sad because you never listen to me!' [CHARACTER_NAME_MIRA] cried. 'I am frustrated and disappointed in this entire situation!' 'I feel hurt and abandoned!' she sobbed.",
+    "label": "bad",
+    "score": 0.09,
+    "flaws": ["on_the_nose_emotion", "missing_subtext_action", "disproportionate_emotion"]
+  },
+  {
+    "text": "'Yes, I agree,' said [CHARACTER_NAME_KAEL]. 'Absolutely right,' [CHARACTER_NAME_MIRA] nodded. 'Of course, that makes perfect sense.' 'Exactly what I was thinking.' 'Right, we're completely aligned.' 'Agreed. Let's proceed with the plan.' 'Yes, let's.' They nodded in unison and moved forward together.",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["no_dialogue_conflict", "flat_duelogue", "no_power_shift"]
+  },
+  {
+    "text": "'Let me tell you about the history of our kingdom,' the elder began. 'Seven hundred years ago, King [CHARACTER_NAME_ALDRIC] the First united the twelve provinces under one banner. His son, [CHARACTER_NAME_ALDRIC] the Second, expanded the borders northward. Then came the Winter Wars of 1342, which lasted forty years and claimed three hundred thousand lives. After the wars, the Treaty of [LOCATION_NAME_IRONWOOD] established the current borders. The council of seven was formed in 1401. Each council member represents two provinces. The current council head is Lord [CHARACTER_NAME_VOSS], who assumed the role after the death of Lady [CHARACTER_NAME_MAREN] in 1498.'",
+    "label": "bad",
+    "score": 0.08,
+    "flaws": ["unweaponized_exposition", "info_dump", "no_dialogue_conflict"]
+  },
+  {
+    "text": "'The reason I betrayed you is because my father abandoned me as a child,' [CHARACTER_NAME_KAEL] explained calmly. 'My motivation stems from deep-seated abandonment issues. I did it because I was afraid of being left behind again. That is the core of who I am—a man shaped by childhood trauma who projects his fears onto his relationships.'",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["neat_self_explanation", "on_the_nose_emotion", "missing_subtext_action"]
+  },
+  {
+    "text": "'Good morning, Detective.' 'Good morning, Captain. How was your weekend?' 'Fine, thanks. And yours?' 'Not bad. So, about the case—' 'Yes, the case. Well, as we discussed yesterday, the victim was found at the pier.' 'Right, and as you mentioned, the time of death was approximately midnight.' 'Correct. As you know, that matches the witness statement from Mrs. [CHARACTER_NAME_HENDERSON].'",
+    "label": "bad",
+    "score": 0.07,
+    "flaws": ["purposeless_chitchat", "as_you_know_bob", "filler_talk", "redundant_recap"]
+  },
+  {
+    "text": "'My heart is a shattered mirror reflecting only the void of your betrayal!' she cried. 'Each shard cuts deeper than the last, and the blood of my broken dreams pools at my feet like the tears of a thousand fallen angels!' 'Your words are daggers of ice piercing the warm summer of my devotion!' he replied.",
+    "label": "bad",
+    "score": 0.05,
+    "flaws": ["disproportionate_emotion", "dialogue_cliche", "on_the_nose_emotion"]
+  },
+  {
+    "text": "'I, your brother, am telling you that we, the sons of King [CHARACTER_NAME_ALDRIC], must unite our forces—the combined armies of the Northern and Southern provinces—to face this threat.' 'Yes, brother, you are right. Our father, King [CHARACTER_NAME_ALDRIC], who died three years ago on this very day, would have wanted us to stand together.'",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["as_you_know_bob", "unweaponized_exposition", "redundant_recap"]
+  },
+  {
+    "text": "'Oh no!' [CHARACTER_NAME_MIRA] gasped. 'What is it?' 'Look!' 'Oh my!' 'This is terrible!' 'What should we do?' 'I don't know!' 'Think of something!' 'I can't!' They both stood there, panicking. 'We have to do something!' 'But what?' 'Anything!'",
+    "label": "bad",
+    "score": 0.09,
+    "flaws": ["purposeless_chitchat", "no_dialogue_conflict", "filler_talk", "missing_subtext_action"]
+  },
+  {
+    "text": "'You're not like the others,' she whispered, gazing into his piercing blue eyes. 'Something about you is different.' 'I'm just a simple man trying to do the right thing,' he said with a rugged smile. 'But enough about me. We need to focus on the mission. Are you with me?' 'Always,' she breathed. 'Then let's save the world.'",
+    "label": "bad",
+    "score": 0.11,
+    "flaws": ["dialogue_cliche", "flat_duelogue", "no_dialogue_conflict", "filler_talk"]
+  },
+  {
+    "text": "'What did they offer you?' [CHARACTER_NAME_KAEL] asked. The general stared at the map. 'Enough.' 'Enough to betray thirty years of service?' 'Enough to feed my family for the rest of theirs.' He moved a pin on the map, though his hands had no authority to do so anymore. 'You have until dawn,' [CHARACTER_NAME_KAEL] said. 'After that, the offer I make you will be considerably less generous.' The general's finger rested on the pin. He did not remove it.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "'She's lying,' Dr. [CHARACTER_NAME_VOSS] said quietly. The patient smiled from behind the glass. 'Ask me anything.' 'Where were you on the fourteenth?' 'Buying tulips.' 'There are no florists in that district.' The smile didn't waver. 'Then I suppose I was buying something else.' [CHARACTER_NAME_VOSS] made a note. The patient watched the pen move. 'You always write more when you're afraid,' she observed. [CHARACTER_NAME_VOSS] stopped writing.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "The old sailor never spoke about the storm directly. Instead, he spoke about the coffee. 'The mug slid across the table,' he said. 'I caught it. I caught it six more times. On the seventh, I let it go.' He paused. 'That was when I stopped fighting.' His granddaughter waited. 'The coffee?' she asked. He looked at the sea. 'Everything.'",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "'I need you to sign this,' said the lawyer, placing the paper between them. [CHARACTER_NAME_MAREN] looked at it but did not pick it up. 'What happens if I don't?' 'Then the court decides.' 'The court has never met my children.' 'That's precisely the argument your husband is making.' The word 'husband' landed like a slap. [CHARACTER_NAME_MAREN] picked up the pen. She held it over the line for a long time. When she finally signed, her handwriting was someone else's.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "'You think I don't see what you're doing?' the apprentice said. The master continued polishing the blade. 'I think you see exactly what I'm doing. The question is whether you understand why.' 'You're testing me.' 'I'm not testing you. I'm showing you the door. Whether you walk through it is not my concern.' The apprentice reached for the blade. The master did not stop him. That was the test.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "She didn't shout. She didn't even raise her voice. She simply said, 'I packed your things,' and returned to the kitchen. He stood in the hallway holding a suitcase he hadn't seen before. It was new. She had bought him a new suitcase to leave with. That detail—the newness of it—was worse than any accusation she could have made.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "'I suppose my abandonment issues stem from my father leaving when I was four,' the warrior explained calmly while sharpening his blade. 'That's why I have difficulty forming attachments. My psyche constructed defense mechanisms of emotional distance and performative aggression to compensate for the primal wound of paternal rejection. Frankly, I'm aware that my hostility toward authority figures is a displaced anger response.'",
+    "label": "bad",
+    "score": 0.07,
+    "flaws": ["knowing_talk", "author_intrusion", "neat_self_explanation"]
+  },
+  {
+    "text": "'My dear friends, let me tell you the story of how I came to be standing here before you today. It all began thirty years ago when I was but a boy on the streets of [LOCATION_NAME_CARDOVA]. The sun beat down upon us with merciless fury and the rain when it came was a cold and unforgiving torrent. My mother, bless her soul, worked in the textile mills from dawn until dusk while my father tended bar at the old tavern. In those days the tavern was the center of civic life and my father knew everyone who walked through the door. He taught me the value of listening, of watching, of patience. I carried those lessons with me through the academy and into the service and eventually to this very podium where I now address you with the full weight of my accumulated experience and the deep conviction that what I am about to propose will change the course of our community forever.'",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["monologue_fallacy", "info_dump", "unweaponized_exposition"]
+  },
+  {
+    "text": "'You forgot to buy milk?!' she screamed, hurling the empty carton across the room. 'How could you DO this to me?! My entire world is CRUMBLING because of your NEGLIGENCE! Every dream I ever had, every hope, every tender aspiration—SHATTERED by your inability to remember ONE SIMPLE THING!' She collapsed onto the kitchen floor, weeping. 'I am DESTROYED,' she whispered. 'Utterly and completely destroyed.'",
+    "label": "bad",
+    "score": 0.05,
+    "flaws": ["melodramatic_expression", "disproportionate_emotion", "on_the_nose_emotion"]
+  },
+  {
+    "text": "'The luminescent tendrils of twilight's gossamer embrace enveloped the weary traveler in a chrysalis of melancholic reverie,' he mused, adjusting his spectacles with the practiced insouciance of one who has gazed upon the abyss of human frailty and found therein a reflection not unlike the shimmering iridescence of a butterfly's ephemeral wing. 'Indeed,' she responded, 'the concatenation of circumstances has precipitated an outcome both lamentable and, in its own paradoxical fashion, edifying.'",
+    "label": "bad",
+    "score": 0.04,
+    "flaws": ["ostentatious_language", "incredibility"]
+  },
+  {
+    "text": "'Her heart was as cold as ice. His blood ran cold. The tension was thick enough to cut with a knife. She was a diamond in the rough. He was drowning in a sea of troubles. Time healed all wounds, she supposed, and every cloud had a silver lining. At the end of the day, it was water under the bridge. She opened a new chapter in her life and turned over a new leaf.'",
+    "label": "bad",
+    "score": 0.04,
+    "flaws": ["dead_metaphor", "dialogue_cliche", "filler_talk"]
+  },
+  {
+    "text": "'Good morning,' said the shopkeeper. 'What can I get you?' 'Two loaves of bread, please.' 'White or wheat?' 'Wheat.' 'That'll be four coins.' 'Here you are.' 'Thank you. Have a nice day.' 'You too.' The customer left the shop and walked down the street. The shopkeeper arranged the remaining bread on the shelf and waited for the next customer.",
+    "label": "bad",
+    "score": 0.05,
+    "flaws": ["shapeless_scene", "no_turning_point", "no_dialogue_conflict", "purposeless_chitchat"]
+  },
+  {
+    "text": "'You left the gate open,' the rancher said, not looking up from the fence wire. The boy stood behind him. 'I thought—' 'You thought.' The rancher pulled the wire taut with pliers. 'Three calves in the river. One drowned.' The boy's hands went to his pockets. 'I'm sorry.' 'Sorry doesn't float.' The rancher handed him the pliers without turning around. 'Fix it. Then we'll talk about sorry.'",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "The grandmother set her teacup down with the precision of a judge's gavel. 'You want my blessing.' It was not a question. 'Yes, ma'am.' 'He's divorced.' 'Yes.' 'With children.' 'Two.' 'And what does your mother think?' 'She sent me to ask you.' The grandmother picked up her cup again. She sipped. She set it down. 'Bring him to Sunday dinner. I'll decide then.' She paused. 'And tell your mother she's a coward.'",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "The mechanic wiped grease on her overalls. 'Transmission's shot.' 'How much?' 'More than the car's worth.' He stared at the engine. 'It was my father's.' She looked at him, then at the car. 'I'll see what I can do.' She didn't say she'd fix it for free. She didn't need to. The way she put her hand on the hood said it.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "'I brought your coat,' she said, holding it out. He didn't take it. 'It's cold,' she added. 'I know.' He still didn't take it. She draped it on the bench between them. It sat there like an unanswered question. After a while he said, 'The blue one was always your favorite.' 'It was yours,' she said. 'I know,' he said again, and this time the words carried thirty years of a different meaning.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "'Let me be honest with you,' [CHARACTER_NAME_MARCUS] said. 'I need you to understand how I feel. What I am really saying is that I want you to know that I care. Honestly, I think we need to talk about this. The point I am making is simple. Frankly, I believe we should be more open. I need you to hear me when I say this. Truthfully, I want you to know the truth.'",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["on_the_nose_writing", "filler_talk", "missing_subtext_action"]
+  },
+  {
+    "text": "'Please stay,' she begged. 'I am begging you, do not go. Do not leave me here alone. Stay here with me, I am asking you. I need you to stay. Please do not go away. Stay with me, I am pleading. I want you to stay here. Please, please do not leave.' He stood by the door, unmoved, as she repeated herself for the ninth time.",
+    "label": "bad",
+    "score": 0.05,
+    "flaws": ["repetition_flaw", "on_the_nose_emotion", "no_dialogue_conflict"]
+  },
+  {
+    "text": "'You see, when I was a child, I was always afraid of the dark. I have always been a lonely person, ever since I was a kid. The thing about me is that I never learned to trust anyone. I feel sad because my mother left when I was young. You have to understand, growing up in that house changed me. What you need to know about me is that I have always been afraid.'",
+    "label": "bad",
+    "score": 0.07,
+    "flaws": ["telling_not_showing", "on_the_nose_emotion", "neat_self_explanation"]
+  },
+  {
+    "text": "'We need to facilitate a strategic implementation of the operational framework,' said Commander [CHARACTER_NAME_VOSS]. 'In terms of the utilization of our resources, it has been determined that we should optimize the facilitation of troop deployment. With regard to the implementation of phase two, we must leverage our synergies and incentivize the operational teams in relation to the objectives pertaining to the northern front.'",
+    "label": "bad",
+    "score": 0.04,
+    "flaws": ["abstract_language", "incredibility", "arid_language"]
+  },
+  {
+    "text": "'We should probably go now,' said [CHARACTER_NAME_MARCUS]. 'Yes, we should probably leave,' said [CHARACTER_NAME_ELENA]. 'It seems like a good idea to depart,' said [CHARACTER_NAME_VIKTOR]. 'I agree, leaving would be prudent,' said [CHARACTER_NAME_MARCUS]. 'Let us go then,' said [CHARACTER_NAME_ELENA]. 'Agreed, we should head out,' said [CHARACTER_NAME_VIKTOR]. They all spoke the same way, thought the same thoughts, and used the same measured, neutral tone.",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["indistinct_voices", "no_dialogue_conflict", "filler_talk"]
+  },
+  {
+    "text": "'I am very angry at you right now and I want you to know that I feel betrayed by your actions. The reason I am upset is because you lied to me and that makes me feel sad and disappointed. I need you to understand that my feelings are hurt and I am going through a very difficult time emotionally because of what you did to me,' she explained clearly and calmly.",
+    "label": "bad",
+    "score": 0.04,
+    "flaws": ["on_the_nose_writing", "on_the_nose_emotion", "telling_not_showing", "neat_self_explanation"]
+  }
+]

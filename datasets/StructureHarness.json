@@ -1,0 +1,11 @@
+[
+  {
+    "text": "The hero arrived at the mountain. The dragon roared, blocking the path. The hero readied their weapon.",
+    "label": "good"
+  },
+  {
+    "text": "The hero went to the mountain.",
+    "label": "bad",
+    "flaws": ["Missing conflict", "Missing resolution setup"]
+  }
+]

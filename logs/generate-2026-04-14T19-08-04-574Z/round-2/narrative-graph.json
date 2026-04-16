@@ -1,0 +1,126 @@
+{
+  "turningValues": [
+    {
+      "scene": "The server crash",
+      "valueBefore": "safety",
+      "valueAfter": "danger",
+      "changed": true,
+      "location": "paragraph 4-5"
+    },
+    {
+      "scene": "Marcus intervenes at the terminal",
+      "valueBefore": "detachment",
+      "valueAfter": "engagement",
+      "changed": true,
+      "location": "paragraph 13-16"
+    },
+    {
+      "scene": "The system recovery",
+      "valueBefore": "chaos",
+      "valueAfter": "order",
+      "changed": true,
+      "location": "paragraph 22-24"
+    },
+    {
+      "scene": "Evelyn reveals Marcus's identity",
+      "valueBefore": "anonymity",
+      "valueAfter": "exposure",
+      "changed": true,
+      "location": "paragraph 28-32"
+    },
+    {
+      "scene": "Marcus accepts the Chief Architect role",
+      "valueBefore": "peace",
+      "valueAfter": "responsibility",
+      "changed": true,
+      "location": "paragraph 37-40"
+    }
+  ],
+  "stakes": [
+    {
+      "description": "Marcus's desire to remain anonymous and avoid corporate stress",
+      "level": "personal",
+      "order": 1,
+      "escalatesFromPrevious": false
+    },
+    {
+      "description": "The loss of twelve hours of data for three million users",
+      "level": "professional",
+      "order": 2,
+      "escalatesFromPrevious": true
+    },
+    {
+      "description": "The collapse of the company's infrastructure and the livelihoods of the engineering team",
+      "level": "societal",
+      "order": 3,
+      "escalatesFromPrevious": true
+    }
+  ],
+  "protagonistDesires": [
+    {
+      "character": "Marcus Vance",
+      "goal": "Maintain a low-stress, anonymous life as an L3 engineer",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Richard Sterling",
+      "goal": "Maintain control and save the company's reputation",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "goal": "Secure the best talent to fix the failing backend",
+      "hasGoal": true,
+      "obstaclePresent": true
+    }
+  ],
+  "themeDeliveries": [
+    {
+      "theme": "True expertise cannot hide from responsibility",
+      "delivery": "shown",
+      "location": "Marcus's internal struggle vs his inability to watch bad code destroy the system"
+    },
+    {
+      "theme": "Corporate hierarchy stifles innovation",
+      "delivery": "shown",
+      "location": "The contrast between the panicked, incompetent management and Marcus's calm, effective solution"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "inner",
+      "description": "Marcus's desire for peace vs his professional integrity and compulsion to fix broken systems",
+      "parties": [
+        "Marcus Vance"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "personal",
+      "description": "Marcus vs Richard Sterling regarding authority and technical competence",
+      "parties": [
+        "Marcus Vance",
+        "Richard Sterling"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "extra_personal",
+      "description": "The engineering team vs the failing monolithic database architecture",
+      "parties": [
+        "Synthetix Engineering Team",
+        "The Database"
+      ],
+      "resolved": true
+    }
+  ],
+  "premiseCounterPremise": [
+    {
+      "premise": "Competence is the ultimate authority",
+      "counterPremise": "Corporate hierarchy and titles dictate power",
+      "counterPresent": true
+    }
+  ]
+}

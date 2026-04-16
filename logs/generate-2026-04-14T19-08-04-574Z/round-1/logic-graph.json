@@ -1,0 +1,273 @@
+{
+  "propositions": [
+    {
+      "id": "p1",
+      "text": "Marcus Vance is an L3 Junior Backend Developer",
+      "subject": "Marcus Vance",
+      "predicate": "is_l3_developer",
+      "truth": true,
+      "location": "paragraph 4"
+    },
+    {
+      "id": "p2",
+      "text": "Marcus Vance is an L9 Distinguished Engineer",
+      "subject": "Marcus Vance",
+      "predicate": "is_l9_engineer",
+      "truth": true,
+      "location": "paragraph 3"
+    },
+    {
+      "id": "p3",
+      "text": "Marcus Vance is an L9 Distinguished Engineer",
+      "subject": "Marcus Vance",
+      "predicate": "is_l9_engineer",
+      "truth": false,
+      "location": "paragraph 4"
+    },
+    {
+      "id": "p4",
+      "text": "Synthetix has a monolithic database structure patched with microservices",
+      "subject": "Synthetix",
+      "predicate": "has_monolithic_structure",
+      "truth": true,
+      "location": "paragraph 10"
+    },
+    {
+      "id": "p5",
+      "text": "Marcus Vance promised not to get involved in management",
+      "subject": "Marcus Vance",
+      "predicate": "promised_no_management",
+      "truth": true,
+      "location": "paragraph 15"
+    },
+    {
+      "id": "p6",
+      "text": "Marcus Vance got involved in management/technical crisis",
+      "subject": "Marcus Vance",
+      "predicate": "promised_no_management",
+      "truth": false,
+      "location": "paragraph 18"
+    },
+    {
+      "id": "p7",
+      "text": "Marcus Vance can write a sharding protocol on the fly",
+      "subject": "Marcus Vance",
+      "predicate": "can_write_sharding_protocol",
+      "truth": true,
+      "location": "paragraph 26"
+    },
+    {
+      "id": "p8",
+      "text": "Greg believes writing a sharding protocol takes weeks",
+      "subject": "Greg",
+      "predicate": "believes_sharding_takes_weeks",
+      "truth": true,
+      "location": "paragraph 25"
+    },
+    {
+      "id": "p_v1",
+      "text": "Marcus Vance is a former L9 Chief Architect of NovaTech",
+      "subject": "Marcus Vance",
+      "predicate": "is_former_novatech_architect",
+      "truth": true,
+      "location": "paragraph 38"
+    },
+    {
+      "id": "p_v2",
+      "text": "The Synthetix engineering floor is in a state of panic",
+      "subject": "Synthetix engineering floor",
+      "predicate": "is_panicked",
+      "truth": true,
+      "location": "paragraph 8"
+    },
+    {
+      "id": "p_v3",
+      "text": "The US-East servers are experiencing a cascading failure",
+      "subject": "US-East servers",
+      "predicate": "is_failing",
+      "truth": true,
+      "location": "paragraph 9"
+    }
+  ],
+  "rules": [
+    {
+      "id": "r1",
+      "antecedent": "p7",
+      "consequent": "p8",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 26"
+    },
+    {
+      "id": "r2",
+      "antecedent": "p5",
+      "consequent": "p6",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 15-18"
+    }
+  ],
+  "conclusions": [
+    {
+      "claim": "Marcus Vance is the former L9 Chief Architect of NovaTech",
+      "premises": [
+        "p2"
+      ],
+      "inferenceType": "unsupported",
+      "location": "paragraph 38"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "description": "Marcus Vance quits L9 position",
+      "agent": "Marcus Vance",
+      "order": 1,
+      "location": "paragraph 4"
+    },
+    {
+      "id": "e2",
+      "description": "Marcus Vance applies as L3 Junior Developer",
+      "agent": "Marcus Vance",
+      "order": 2,
+      "location": "paragraph 4"
+    },
+    {
+      "id": "e3",
+      "description": "US-East servers drop packets",
+      "agent": "System",
+      "order": 3,
+      "location": "paragraph 8"
+    },
+    {
+      "id": "e4",
+      "description": "Marcus Vance bypasses load balancer and fixes system",
+      "agent": "Marcus Vance",
+      "order": 4,
+      "location": "paragraph 24"
+    },
+    {
+      "id": "e5",
+      "description": "Richard Sterling is fired",
+      "agent": "Board of Directors",
+      "order": 5,
+      "location": "paragraph 41"
+    },
+    {
+      "id": "e_v1",
+      "description": "Marcus Vance pushes Greg out of the way",
+      "agent": "Marcus Vance",
+      "order": 3.5,
+      "location": "paragraph 19"
+    },
+    {
+      "id": "e_v2",
+      "description": "Marcus Vance types commands into the terminal",
+      "agent": "Marcus Vance",
+      "order": 3.7,
+      "location": "paragraph 22"
+    }
+  ],
+  "temporalConstraints": [
+    {
+      "before": "e1",
+      "after": "e2",
+      "type": "causal",
+      "satisfied": true
+    }
+  ],
+  "stateChanges": [
+    {
+      "entity": "Synthetix server status",
+      "attribute": "health",
+      "from": "crimson/failure",
+      "to": "green/stable",
+      "atEvent": "e4"
+    },
+    {
+      "entity": "Richard Sterling",
+      "attribute": "employment_status",
+      "from": "CEO",
+      "to": "terminated",
+      "atEvent": "e5"
+    },
+    {
+      "entity": "Overhead monitors",
+      "attribute": "color",
+      "from": "strobing crimson",
+      "to": "black",
+      "atEvent": "e4"
+    },
+    {
+      "entity": "Overhead monitors",
+      "attribute": "color",
+      "from": "black",
+      "to": "green",
+      "atEvent": "e4"
+    }
+  ],
+  "knowledge": [
+    {
+      "agent": "Evelyn Vance",
+      "knows": "Marcus Vance is L9 Chief Architect",
+      "since": "e4",
+      "how": "witnessed"
+    },
+    {
+      "agent": "Richard Sterling",
+      "knows": "Marcus Vance's true identity as an L9 engineer",
+      "since": "paragraph 39",
+      "how": "unexplained"
+    }
+  ],
+  "abilities": [
+    {
+      "agent": "Marcus Vance",
+      "can": "write kernel-level sharding protocols",
+      "established": "backstory"
+    }
+  ],
+  "obligations": [
+    {
+      "agent": "Marcus Vance",
+      "must": "not get involved in management",
+      "source": "self-imposed",
+      "fulfilled": false
+    }
+  ],
+  "prohibitions": [],
+  "worldRules": [
+    {
+      "rule": "Hard-resetting US-East cluster wipes 12 hours of data",
+      "type": "necessary",
+      "source": "narrative"
+    },
+    {
+      "rule": "Digital system recovery from a cascading failure requires time for state propagation",
+      "type": "necessary",
+      "source": "common_sense_physics"
+    }
+  ],
+  "inventory": [
+    {
+      "agent": "Marcus Vance",
+      "item": "mechanical keyboard",
+      "acquiredAt": "e4",
+      "status": "held"
+    }
+  ],
+  "locations": [
+    {
+      "agent": "Marcus Vance",
+      "location": "Synthetix Engineering Floor",
+      "atEvent": "e4"
+    }
+  ],
+  "statuses": [
+    {
+      "agent": "Marcus Vance",
+      "state": "alive",
+      "since": "e1"
+    }
+  ]
+}

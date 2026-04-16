@@ -1,0 +1,134 @@
+[
+  {
+    "text": "If the bridge collapsed, then the village would flood. The bridge collapsed at dawn, and by noon the village was underwater. The elders had warned them: only if they reinforced the dam could they survive. They had not reinforced the dam. There was no surviving this.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "Elaria knew the rule of the Ashen Peaks: if you carry the Sunblade, then the shadow creatures cannot touch you. She gripped the Sunblade tightly as the shadows circled. They lunged but recoiled, unable to breach the blade's radiance. The rule held true.",
+    "label": "good",
+    "score": 0.92,
+    "flaws": []
+  },
+  {
+    "text": "The general reasoned carefully. Either the enemy would attack from the north or from the east. His scouts confirmed the northern pass was empty—no army approached from there. Therefore, the attack must come from the east. He repositioned his forces accordingly.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "Captain [CHARACTER_NAME_VOSS] examined the evidence. The footprints led into the cave, but none led out. The cave had only one entrance. Therefore, whoever entered was still inside. She drew her weapon and advanced.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "The alchemist's notes were clear: the potion requires moonflower AND dragonscale. Without both ingredients, the mixture is inert. She had the moonflower but lacked dragonscale. She set the vial aside—there was no point in attempting a half-recipe.",
+    "label": "good",
+    "score": 0.91,
+    "flaws": []
+  },
+  {
+    "text": "If the seal is broken, then the demon escapes. The seal remained intact, glowing with ancient power. The priests breathed easier—the demon remained imprisoned. Their vigil had not been in vain.",
+    "label": "good",
+    "score": 0.90,
+    "flaws": []
+  },
+  {
+    "text": "The oracle spoke in absolutes: 'Only a descendant of the First King can wield the Crown of Stars.' [CHARACTER_NAME_MAREN] was no descendant of the First King—she knew her lineage traced to common farmers. She passed the crown to [CHARACTER_NAME_ALDRIC], whose bloodline was true, and he placed it upon his brow.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "Neither the northern road nor the southern pass was safe. Bandits controlled the north; rockslides had sealed the south. With both routes blocked, they had no choice but to take the treacherous mountain trail—the only remaining path.",
+    "label": "good",
+    "score": 0.91,
+    "flaws": []
+  },
+  {
+    "text": "The detective laid out his chain of reasoning: if the butler did it, then the kitchen knife would be missing. The kitchen knife was indeed missing. But he was careful not to jump to conclusions—other explanations existed. The cook might have taken it for her work. He needed more evidence before accusing anyone.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "Whenever the red moon rises, the wolves howl at the gates. Tonight the red moon hung heavy and low. As if on cue, the howling began, echoing through the valley. The guards lit their torches and took their posts—exactly as tradition demanded.",
+    "label": "good",
+    "score": 0.90,
+    "flaws": []
+  },
+  {
+    "text": "The wizard declared that if the amulet glows, then danger approaches. The amulet began glowing. But the wizard concluded there was no danger and went back to sleep. Nothing happened, and morning came peacefully.",
+    "label": "bad",
+    "score": 0.15,
+    "flaws": ["contradiction", "ignored_established_rule"]
+  },
+  {
+    "text": "If a warrior drinks the sacred water, they become invincible. The enemy soldiers were invincible on the battlefield. Therefore, the general concluded, they must have drunk the sacred water. He ordered his troops to find and destroy the sacred spring.",
+    "label": "bad",
+    "score": 0.20,
+    "flaws": ["affirming_the_consequent"]
+  },
+  {
+    "text": "The prophecy stated: only if the chosen one speaks the true name can the gate open. The gate opened with a thunderous roar. The elder immediately declared Tomas the chosen one, despite Tomas having said nothing at all.",
+    "label": "bad",
+    "score": 0.18,
+    "flaws": ["affirming_the_consequent", "non_sequitur"]
+  },
+  {
+    "text": "If the potion is brewed correctly, it turns blue. The apprentice's potion did not turn blue. Yet the master alchemist praised the apprentice, declaring the potion was brewed perfectly and ready for use.",
+    "label": "bad",
+    "score": 0.12,
+    "flaws": ["contradiction", "invalid_modus_tollens"]
+  },
+  {
+    "text": "Elaria was terrified of the dark. She refused to enter any cave or unlit passage. But when the plot demanded it, she cheerfully descended into the pitch-black catacombs without a moment of hesitation or any source of light, humming a tune.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["contradiction", "character_inconsistency"]
+  },
+  {
+    "text": "The captain swore she would never betray her crew. She valued loyalty above all else. In the very next scene, she sold their location to the enemy for a bag of gold, then casually sat down to dinner with her crew as though nothing had happened.",
+    "label": "bad",
+    "score": 0.08,
+    "flaws": ["contradiction", "character_inconsistency", "unsupported_conclusion"]
+  },
+  {
+    "text": "If the river floods, the crops are ruined. The crops were not ruined this season. The farmer therefore concluded that rain would never come again and abandoned his fields forever.",
+    "label": "bad",
+    "score": 0.22,
+    "flaws": ["non_sequitur", "unsupported_conclusion"]
+  },
+  {
+    "text": "The scholar read the ancient text: 'Unless the blood moon rises, the seal holds.' The blood moon did not rise that century. The scholar panicked and declared the seal was broken, rallying the armies for a war that was entirely unnecessary.",
+    "label": "bad",
+    "score": 0.15,
+    "flaws": ["invalid_unless_reasoning", "non_sequitur"]
+  },
+  {
+    "text": "The spy reported that the fortress had exactly three entrances. Later in the same chapter, the hero escaped through a secret fourth entrance that had never been mentioned, discovered, or foreshadowed.",
+    "label": "bad",
+    "score": 0.13,
+    "flaws": ["contradiction", "plot_hole"]
+  },
+  {
+    "text": "The healer explained that the antidote requires either silverleaf or goldroot. The party had neither silverleaf nor goldroot. Despite this, the healer brewed the antidote successfully and cured the patient, never explaining what substitute she used.",
+    "label": "bad",
+    "score": 0.14,
+    "flaws": ["contradiction", "violated_disjunction", "unsupported_conclusion"]
+  },
+  {
+    "text": "[CHARACTER_NAME_MAREN] had never learned to swim. The river was wide and deep, with a deadly current. She leaped into the water and swam across effortlessly, emerging dry on the other side.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["contradiction", "character_inconsistency"]
+  },
+  {
+    "text": "If the magic sword is drawn, it cannot be sheathed until it tastes blood. The knight drew the sword to show his companions. He then carefully sheathed it and they continued walking, the sword's curse conveniently forgotten by the author.",
+    "label": "bad",
+    "score": 0.11,
+    "flaws": ["contradiction", "ignored_established_rule"]
+  }
+]

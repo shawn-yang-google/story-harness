@@ -1,0 +1,94 @@
+{
+  "characters": [
+    {
+      "name": "Marcus Vance",
+      "mask": "A low-level, unassuming L3 junior developer content with simple tasks.",
+      "trueNature": "A brilliant, perfectionist L9 architect who cannot resist fixing broken systems, even at the cost of his own peace.",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Richard Sterling",
+      "mask": "A decisive, authoritative CEO in control of his company.",
+      "trueNature": "An insecure, incompetent leader who relies on bluster and intimidation to hide his lack of technical understanding.",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Evelyn Vance",
+      "mask": "A cold, ruthless, and detached venture capitalist.",
+      "trueNature": "A predatory opportunist who values results and talent above all else, willing to manipulate anyone to secure her interests.",
+      "maskMatchesTruth": false
+    }
+  ],
+  "pressureChoices": [
+    {
+      "character": "Marcus Vance",
+      "pressure": "The company's database is failing, and the CEO is about to make a catastrophic error.",
+      "choiceA": "Stay hidden as an L3 and let the company fail, preserving his quiet life.",
+      "choiceB": "Intervene, reveal his true identity, and take responsibility for the fix.",
+      "chosen": "Intervene, reveal his true identity, and take responsibility for the fix.",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    },
+    {
+      "character": "Richard Sterling",
+      "pressure": "The board is watching, and the system is crashing.",
+      "choiceA": "Listen to the engineers and troubleshoot.",
+      "choiceB": "Order a hard reset to look decisive, risking massive data loss.",
+      "chosen": "Order a hard reset to look decisive, risking massive data loss.",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    }
+  ],
+  "dimensions": [
+    {
+      "character": "Marcus Vance",
+      "dimension": "detachment vs responsibility",
+      "positive": "takes responsibility to save the team",
+      "negative": "tries to hide from his own talent and duty",
+      "present": true
+    },
+    {
+      "character": "Richard Sterling",
+      "dimension": "authority vs incompetence",
+      "positive": "maintains a commanding presence",
+      "negative": "makes reckless decisions that endanger the company",
+      "present": true
+    }
+  ],
+  "emotionalMoments": [
+    {
+      "character": "Marcus Vance",
+      "emotion": "resignation",
+      "trigger": "realizing he has to abandon his quiet life to fix the architecture.",
+      "earned": true,
+      "proportionate": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "emotion": "predatory excitement",
+      "trigger": "discovering Marcus Vance is the one fixing the system.",
+      "earned": true,
+      "proportionate": true
+    }
+  ],
+  "desires": [
+    {
+      "character": "Marcus Vance",
+      "consciousDesire": "A simple, stress-free life as a junior developer.",
+      "subconsciousDesire": "The intellectual satisfaction of solving complex problems and being recognized for his mastery.",
+      "hasDesire": true
+    },
+    {
+      "character": "Richard Sterling",
+      "consciousDesire": "Maintain control and authority over his company.",
+      "subconsciousDesire": "Validation from the board and the appearance of competence.",
+      "hasDesire": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "consciousDesire": "Fix the backend and monetize the company.",
+      "subconsciousDesire": "Control over high-level talent to ensure her investments succeed.",
+      "hasDesire": true
+    }
+  ]
+}

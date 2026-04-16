@@ -1,0 +1,134 @@
+[
+  {
+    "text": "Captain [CHARACTER_NAME_VOSS] had always presented herself as the unshakeable commander. Her soldiers saw iron discipline, cold logic, unwavering resolve. But when the ambush killed her lieutenant—the only person who knew her real name—the mask shattered. She screamed, not an order but a name. Beneath the surface of the officer was a woman who had buried her grief so deep it had calcified into command. Her true self emerged: not fearless, but someone who had made fear her armor.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "[CHARACTER_NAME_MAREN] stood at the crossroads. Left: the mountain pass where her brother was held captive. Right: the village where three hundred people waited for the medicine only she carried. She could not do both. She chose between the person she loved most and the strangers who would die without her. The cost was everything. She turned right, and the scream she swallowed became the silence she would carry forever.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "[CHARACTER_NAME_ALDRIC] was brave in battle yet paralyzed by the thought of reading his father's final letter. He could face a charging cavalry line without flinching, but a child asking about his mother reduced him to silence. Generous with gold to strangers, yet cruel to the sister who loved him most. Despite his iron discipline on the field, he drank himself unconscious every night behind locked doors. A man of contradictions—loyal but deceitful, compassionate although merciless when cornered.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "When the old king died, the entire court wept. But [CHARACTER_NAME_SERA] did not. She stood dry-eyed at the funeral while whispers called her heartless. Three days later, alone in the empty throne room, she placed her hand on the cold stone and finally let go. The grief that came was not tears but a sound—low, animal, wrenched from somewhere beneath language. It had taken the loss of a kingdom to earn that sound. No one heard it. That was the point.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "[CHARACTER_NAME_KAEL] set the letter down slowly. 'When did you plan to tell me?' he asked, his voice quiet. [CHARACTER_NAME_MIRA] looked away. 'The soup is getting cold,' she said. He stared at the back of her head for a long moment, then folded the letter and placed it in his pocket. 'I suppose it is,' he said. Neither of them moved toward the table. The silence between them said everything their words chose not to.",
+    "label": "good",
+    "score": 0.92,
+    "flaws": []
+  },
+  {
+    "text": "The assassin wanted only one thing: to find the man who had killed her daughter. Every step, every disguise, every blade was in service of that single desire. But when she finally cornered him, he was holding a child—his own. She recognized the terror in the girl's eyes. It was the same look her daughter had worn. Her conscious desire screamed kill him. Something deeper, something she could not name, whispered put down the knife. Her actions contradicted her words. She sheathed the blade.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "The healer claimed she did not care about the soldiers. 'They chose this war,' she said, bandaging the wound with rough efficiency. But her hands were gentle despite her words. She stayed through the night when she could have left. She learned their names when she said she would not. Her actions betrayed her claims. The gap between what she said and what she did was the truest portrait of who she was.",
+    "label": "good",
+    "score": 0.91,
+    "flaws": []
+  },
+  {
+    "text": "Commander Roan appeared calm as she gave the evacuation order. Her voice was steady, her instructions precise. But her adjutant noticed her hand trembling against her thigh, hidden from the troops. She had been trained to wear composure like armor. The mask held—until a private asked if they would see their families again. 'Of course,' she lied, and the lie cost her more than the battle ever would. Her true character was not bravery. It was the willingness to carry the weight of a necessary deception.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "Tomasz had spent thirty years building his reputation as the honest judge. But when his own son stood in the dock, the defining dimension of his character cracked open. Justice demanded conviction. Love demanded mercy. He could not be both the father and the judge. He sentenced his son and did not speak for three days afterward. The contradiction did not destroy him—it revealed him. He was a man who loved justice more than peace, and it had cost him everything.",
+    "label": "good",
+    "score": 0.97,
+    "flaws": []
+  },
+  {
+    "text": "The thief was known for taking everything—gold, jewels, secrets. But she never touched books. Not because she could not read, but because a book had once saved her life. In a cellar where she had been locked as a child, a single water-damaged novel had kept her sane for fourteen days. She could steal a crown from a sleeping king without hesitation, but a bookshop made her hands shake. This contradiction—fearless in every realm except one—was what made her human.",
+    "label": "good",
+    "score": 0.92,
+    "flaws": []
+  },
+  {
+    "text": "[CHARACTER_NAME_KAEL] was brave. He was strong. He was honorable. He was kind to children. He was loyal to his friends. He was determined. He always did the right thing. He never hesitated. He was tall with broad shoulders and a noble jaw. He wore shining armor and carried a legendary sword. Everyone admired him. He was the perfect hero in every way, inside and out.",
+    "label": "bad",
+    "score": 0.12,
+    "flaws": ["cement_block_character", "missing_mask", "single_dimension", "stereotypical_traits"]
+  },
+  {
+    "text": "Lord Blackthorn was purely evil. He existed solely to cause suffering. There was no reason for his cruelty—he simply enjoyed it. He had no backstory, no motivation, no complexity. His wickedness was absolute and unwavering. He tortured because he was born to torture. He was evil in every dimension of his character, without exception or nuance.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["flat_no_contradiction", "single_dimension", "stereotypical_traits", "no_antagonism_layers"]
+  },
+  {
+    "text": "[CHARACTER_NAME_KAEL] walked to the market and picked an apple. He could have chosen a pear but he preferred apples. He paid the merchant and walked home. It was pleasant. He decided to go for a walk. He could have stayed home but walking seemed nice. Nothing was at risk. There was nothing to lose and nothing to gain. He made choices freely without any pressure or cost.",
+    "label": "bad",
+    "score": 0.11,
+    "flaws": ["no_pressure_choice", "no_character_desire"]
+  },
+  {
+    "text": "'I am angry at you,' said [CHARACTER_NAME_KAEL]. 'I feel betrayed,' said [CHARACTER_NAME_MIRA]. 'I am sad because you lied to me,' [CHARACTER_NAME_KAEL] replied. 'I love you but I am hurt,' [CHARACTER_NAME_MIRA] said. 'I am frustrated and confused,' [CHARACTER_NAME_KAEL] responded. 'I feel guilty about what happened,' [CHARACTER_NAME_MIRA] admitted. 'I am jealous of your success,' [CHARACTER_NAME_KAEL] confessed. They stated every emotion directly.",
+    "label": "bad",
+    "score": 0.13,
+    "flaws": ["on_the_nose_dialogue", "no_subtext"]
+  },
+  {
+    "text": "She found a slightly wilted flower on the windowsill and tears streamed down her face. Her heart broke into a thousand pieces at the sight of a single fallen petal. She sobbed uncontrollably, her body shaking with the deepest grief imaginable. The flower meant nothing special—she had just bought it yesterday—but the emotion overwhelmed her completely. She wept and wept, devastated beyond measure by this minor occurrence.",
+    "label": "bad",
+    "score": 0.14,
+    "flaws": ["unearned_emotion", "disproportionate_emotion"]
+  },
+  {
+    "text": "The hero was purely good. He was kind to everyone. He was brave in every situation. He was honest in every conversation. He was generous in every interaction. He never wavered, never doubted, never faltered. His goodness was absolute and unwavering. There was no darkness in him, no flaw, no contradiction. He was perfectly virtuous in every dimension of his character.",
+    "label": "bad",
+    "score": 0.11,
+    "flaws": ["flat_no_contradiction", "single_dimension", "cement_block_character"]
+  },
+  {
+    "text": "The warrior fought enemies. He defeated them. He moved on to the next battle. He won again. His expression never changed. His approach never varied. He swung his sword the same way every time. He felt nothing different from one fight to the next. His arc was a straight line—unchanged by any event, unaffected by any loss, unmoved by any victory.",
+    "label": "bad",
+    "score": 0.15,
+    "flaws": ["static_no_arc", "monotone_arc", "missing_mask"]
+  },
+  {
+    "text": "The princess was beautiful and kind. The villain was ugly and cruel. The sidekick was funny and loyal. The mentor was old and wise. Each character fit their role perfectly and predictably. The princess needed rescuing, the villain needed defeating, the sidekick provided comic relief, and the mentor dispensed wisdom at convenient moments.",
+    "label": "bad",
+    "score": 0.09,
+    "flaws": ["stereotypical_traits", "flat_no_contradiction", "single_dimension", "no_antagonism_layers"]
+  },
+  {
+    "text": "[CHARACTER_NAME_MARCUS] wandered through the city without thinking. He drifted from street to street. Nothing in particular drew him forward. He had no purpose, no direction, no goal. He sat on a bench. He watched people pass. He stood up again. He kept walking without purpose. No desire drove him, no ambition called, no need pulled him anywhere. He existed without wanting.",
+    "label": "bad",
+    "score": 0.08,
+    "flaws": ["no_character_desire", "static_no_arc"]
+  },
+  {
+    "text": "The general was angry and always angry. He shouted in meetings. He shouted at meals. He shouted at dawn and at dusk. His soldiers feared him because he shouted. His enemies feared him because he shouted louder. There was no quiet moment, no contrast, no dimension beyond rage. Fury was his only mode, his only expression, his entire personality.",
+    "label": "bad",
+    "score": 0.13,
+    "flaws": ["single_dimension", "monotone_arc", "missing_mask"]
+  },
+  {
+    "text": "The spy pretended to be someone else, and that was his entire character. He wore disguises. He told lies. He was a spy. There was no question of what lay beneath the mask because the story never asked. He changed faces but never changed inside. The mask was not stripped—it was simply swapped for another mask, endlessly, revealing nothing.",
+    "label": "bad",
+    "score": 0.16,
+    "flaws": ["missing_mask", "static_no_arc", "no_pressure_choice"]
+  },
+  {
+    "text": "When the door slammed, [CHARACTER_NAME_ELENA] burst into tears of indescribable anguish. Her soul was torn asunder by the sound. She collapsed to the floor, overwhelmed by a tsunami of devastating sorrow. The door had merely been caught by the wind—no one had left, nothing was wrong. But the narrative insisted her pain was profound and earth-shattering despite the complete absence of cause.",
+    "label": "bad",
+    "score": 0.12,
+    "flaws": ["unearned_emotion", "disproportionate_emotion"]
+  }
+]

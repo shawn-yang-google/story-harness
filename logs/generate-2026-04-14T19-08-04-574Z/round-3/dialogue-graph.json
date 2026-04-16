@@ -1,0 +1,372 @@
+{
+  "speeches": [
+    {
+      "id": "s1",
+      "speaker": "Greg",
+      "text": "Who touched the US-East repo?",
+      "wordCount": 5,
+      "order": 1,
+      "location": "paragraph 6"
+    },
+    {
+      "id": "s2",
+      "speaker": "L5 engineer",
+      "text": "Nobody! It’s a cascade. The primary database is locking up.",
+      "wordCount": 10,
+      "order": 2,
+      "location": "paragraph 7"
+    },
+    {
+      "id": "s3",
+      "speaker": "Greg",
+      "text": "Where is the failover?",
+      "wordCount": 4,
+      "order": 3,
+      "location": "paragraph 8"
+    },
+    {
+      "id": "s4",
+      "speaker": "L5 engineer",
+      "text": "It's... it's looping back! Routing paradox!",
+      "wordCount": 6,
+      "order": 4,
+      "location": "paragraph 9"
+    },
+    {
+      "id": "s5",
+      "speaker": "Richard",
+      "text": "Greg, my phone is vibrating. The board is asking why our enterprise SLAs are currently bleeding out on the floor. Care to illuminate us?",
+      "wordCount": 24,
+      "order": 5,
+      "location": "paragraph 12"
+    },
+    {
+      "id": "s6",
+      "speaker": "Greg",
+      "text": "We're managing it, Richard. The load balancer is choking. I have to hard-reset the US-East cluster.",
+      "wordCount": 16,
+      "order": 6,
+      "location": "paragraph 13"
+    },
+    {
+      "id": "s7",
+      "speaker": "Evelyn",
+      "text": "A hard reset, Greg? Fascinating strategy. I suppose our legal department has been looking for an excuse to work weekends. Three million users losing twelve hours of data should keep them busy.",
+      "wordCount": 32,
+      "order": 7,
+      "location": "paragraph 15"
+    },
+    {
+      "id": "s8",
+      "speaker": "Richard",
+      "text": "It’s a necessary amputation, Evelyn! Do it. Now.",
+      "wordCount": 8,
+      "order": 8,
+      "location": "paragraph 16"
+    },
+    {
+      "id": "s9",
+      "speaker": "Marcus",
+      "text": "Greg, wait.",
+      "wordCount": 2,
+      "order": 9,
+      "location": "paragraph 21"
+    },
+    {
+      "id": "s10",
+      "speaker": "Richard",
+      "text": "Who gave you clearance for the command desk? Get away from that terminal!",
+      "wordCount": 13,
+      "order": 10,
+      "location": "paragraph 22"
+    },
+    {
+      "id": "s11",
+      "speaker": "Marcus",
+      "text": "You don't have a routing paradox, Greg. You have a traffic jam in your garbage collection.",
+      "wordCount": 16,
+      "order": 11,
+      "location": "paragraph 23"
+    },
+    {
+      "id": "s12",
+      "speaker": "Richard",
+      "text": "Security! Get this... whoever this is, out of my building!",
+      "wordCount": 10,
+      "order": 12,
+      "location": "paragraph 24"
+    },
+    {
+      "id": "s13",
+      "speaker": "Marcus",
+      "text": "I'm bypassing the load balancer.",
+      "wordCount": 5,
+      "order": 13,
+      "location": "paragraph 25"
+    },
+    {
+      "id": "s14",
+      "speaker": "Greg",
+      "text": "You can't spin up a virtual shard on the fly! That takes weeks!",
+      "wordCount": 13,
+      "order": 14,
+      "location": "paragraph 26"
+    },
+    {
+      "id": "s15",
+      "speaker": "Marcus",
+      "text": "Only if you read the manual.",
+      "wordCount": 6,
+      "order": 15,
+      "location": "paragraph 27"
+    },
+    {
+      "id": "s16",
+      "speaker": "Richard",
+      "text": "What did you just do?",
+      "wordCount": 5,
+      "order": 16,
+      "location": "paragraph 29"
+    },
+    {
+      "id": "s17",
+      "speaker": "Richard",
+      "text": "A lucky parlor trick. You bypassed protocol, endangered client data, and insubordinated your CTO. Security is going to help you find the exit. Clear your desk.",
+      "wordCount": 26,
+      "order": 17,
+      "location": "paragraph 33"
+    },
+    {
+      "id": "s18",
+      "speaker": "Marcus",
+      "text": "Richard.",
+      "wordCount": 1,
+      "order": 18,
+      "location": "paragraph 34"
+    },
+    {
+      "id": "s19",
+      "speaker": "Evelyn",
+      "text": "Rotate the camera. I want to see the parlor trick.",
+      "wordCount": 10,
+      "order": 19,
+      "location": "paragraph 36"
+    },
+    {
+      "id": "s20",
+      "speaker": "Marcus",
+      "text": "Hello, Evelyn.",
+      "wordCount": 2,
+      "order": 20,
+      "location": "paragraph 38"
+    },
+    {
+      "id": "s21",
+      "speaker": "Evelyn",
+      "text": "Well. I suppose the rumors of your retirement were exaggerated, Marcus.",
+      "wordCount": 11,
+      "order": 21,
+      "location": "paragraph 39"
+    },
+    {
+      "id": "s22",
+      "speaker": "Richard",
+      "text": "You know this L3, Evelyn?",
+      "wordCount": 5,
+      "order": 22,
+      "location": "paragraph 40"
+    },
+    {
+      "id": "s23",
+      "speaker": "Evelyn",
+      "text": "L3. Richard, you truly are a marvel. That is Marcus Vance. He designed the infrastructure you’re currently failing to monetize. We spent three years trying to headhunt him. Slumming it, Marcus?",
+      "wordCount": 32,
+      "order": 23,
+      "location": "paragraph 41"
+    },
+    {
+      "id": "s24",
+      "speaker": "Marcus",
+      "text": "The Jira tickets are very soothing. And nobody asks me about synergy.",
+      "wordCount": 12,
+      "order": 24,
+      "location": "paragraph 42"
+    },
+    {
+      "id": "s25",
+      "speaker": "Richard",
+      "text": "I... I wasn't informed...",
+      "wordCount": 4,
+      "order": 25,
+      "location": "paragraph 43"
+    },
+    {
+      "id": "s26",
+      "speaker": "Evelyn",
+      "text": "Clearly. Richard, we will discuss your crisis management protocols at the board meeting tomorrow. For now, step aside.",
+      "wordCount": 19,
+      "order": 26,
+      "location": "paragraph 44"
+    },
+    {
+      "id": "s27",
+      "speaker": "Evelyn",
+      "text": "So, Marcus. You clearly still care if the ship sinks.",
+      "wordCount": 10,
+      "order": 27,
+      "location": "paragraph 46"
+    },
+    {
+      "id": "s28",
+      "speaker": "Marcus",
+      "text": "I'm not wearing a suit, Evelyn. I down-leveled for a reason.",
+      "wordCount": 11,
+      "order": 28,
+      "location": "paragraph 47"
+    },
+    {
+      "id": "s29",
+      "speaker": "Evelyn",
+      "text": "Wear whatever you want. Rebuild the architecture from the studs up. Take over as Chief Architect. Just fix my backend.",
+      "wordCount": 20,
+      "order": 29,
+      "location": "paragraph 48"
+    },
+    {
+      "id": "s30",
+      "speaker": "Marcus",
+      "text": "I'm going to need a lot of server space. And we're killing the morning stand-ups.",
+      "wordCount": 15,
+      "order": 30,
+      "location": "paragraph 50"
+    },
+    {
+      "id": "s31",
+      "speaker": "Evelyn",
+      "text": "Draft the memo. Welcome back to the top, Marcus.",
+      "wordCount": 9,
+      "order": 31,
+      "location": "paragraph 51"
+    }
+  ],
+  "subtext": [
+    {
+      "speechId": "s7",
+      "surfaceMeaning": "Critiquing the reset strategy",
+      "hiddenMeaning": "Asserting dominance and highlighting Richard's incompetence",
+      "type": "irony"
+    },
+    {
+      "speechId": "s11",
+      "surfaceMeaning": "Technical correction",
+      "hiddenMeaning": "I am smarter than everyone in this room",
+      "type": "none"
+    },
+    {
+      "speechId": "s15",
+      "surfaceMeaning": "Technical advice",
+      "hiddenMeaning": "You are incompetent",
+      "type": "double_meaning"
+    },
+    {
+      "speechId": "s23",
+      "surfaceMeaning": "Identifying Marcus",
+      "hiddenMeaning": "Humiliating Richard by revealing his ignorance",
+      "type": "weaponized"
+    },
+    {
+      "speechId": "s24",
+      "surfaceMeaning": "Explaining his job",
+      "hiddenMeaning": "I prefer simplicity over your corporate nonsense",
+      "type": "none"
+    },
+    {
+      "speechId": "s27",
+      "surfaceMeaning": "Observing Marcus's actions",
+      "hiddenMeaning": "I have successfully manipulated you into working for me again",
+      "type": "double_meaning"
+    }
+  ],
+  "exposition": [
+    {
+      "speechId": "s23",
+      "content": "Marcus Vance designed the infrastructure.",
+      "type": "weaponized"
+    }
+  ],
+  "voices": [
+    {
+      "character": "Marcus",
+      "vocabulary": "technical",
+      "avgSentenceLength": 8,
+      "distinctiveTraits": [
+        "calm",
+        "authoritative",
+        "concise"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Richard",
+      "vocabulary": "formal",
+      "avgSentenceLength": 9,
+      "distinctiveTraits": [
+        "aggressive",
+        "panicked",
+        "status-obsessed"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Evelyn",
+      "vocabulary": "formal",
+      "avgSentenceLength": 15,
+      "distinctiveTraits": [
+        "predatory",
+        "sarcastic",
+        "calculated"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Greg",
+      "vocabulary": "colloquial",
+      "avgSentenceLength": 7,
+      "distinctiveTraits": [
+        "panicked",
+        "stuttering"
+      ],
+      "distinctFromOthers": true
+    }
+  ],
+  "conflicts": [
+    {
+      "speechId": "s5",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s7",
+      "type": "disagreement"
+    },
+    {
+      "speechId": "s10",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s17",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s23",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s29",
+      "type": "negotiation"
+    }
+  ],
+  "chitchatSpeeches": [],
+  "monologueSpeeches": [],
+  "onTheNoseSpeeches": [],
+  "clicheSpeeches": []
+}

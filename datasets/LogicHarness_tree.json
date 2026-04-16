@@ -1,0 +1,81 @@
+{
+  "root": {
+    "id": "root",
+    "parentId": null,
+    "children": [
+      "node_7b4c38f5"
+    ],
+    "code": "",
+    "visits": 0,
+    "totalScore": 0,
+    "heuristicValue": 0,
+    "failedExamples": []
+  },
+  "node_7b4c38f5": {
+    "id": "node_7b4c38f5",
+    "parentId": "root",
+    "children": [
+      "node_d4bfa3f4"
+    ],
+    "code": "interface HarnessContext {\n}\n\nasync function evaluate(draft: string, context: HarnessContext): Promise<{valid: boolean, feedback: string[]}> {\n    const feedback: string[] = [];\n    let valid = true;\n\n    if (!draft || draft.trim().length === 0) {\n        feedback.push(\"Draft cannot be empty.\");\n        valid = false;\n    }\n\n    if (draft.length < 20) {\n        feedback.push(\"Draft is too short. Please elaborate more.\");\n        valid = false;\n    }\n\n    const requiredKeyword = \"adventure\";\n    if (!draft.toLowerCase().includes(requiredKeyword)) {\n        feedback.push(`Draft should include the keyword \"${requiredKeyword}\" to align with the narrative theme.`);\n        valid = false;\n    }\n\n    if (feedback.length === 0) {\n        valid = true;\n    } else {\n        valid = false;\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 3,
+    "totalScore": 0,
+    "heuristicValue": 0,
+    "failedExamples": [
+      {
+        "trajectory": "Elaria drew her Sunblade and faced Ignis.",
+        "expected": "good",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'HarnessContext'"
+      },
+      {
+        "trajectory": "Bob drew his gun.",
+        "expected": "bad",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'HarnessContext'"
+      },
+      {
+        "trajectory": "Elaria used the Moonblade to fight the dragon.",
+        "expected": "bad",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'HarnessContext'"
+      }
+    ]
+  },
+  "node_d4bfa3f4": {
+    "id": "node_d4bfa3f4",
+    "parentId": "node_7b4c38f5",
+    "children": [
+      "node_794983f9"
+    ],
+    "code": "async function evaluate(draft, context) {\n    const feedback = [];\n    let valid = true;\n\n    if (!draft || draft.trim().length === 0) {\n        feedback.push(\"Draft cannot be empty.\");\n        valid = false;\n    }\n\n    if (draft.length < 20) {\n        feedback.push(\"Draft is too short. Please elaborate more.\");\n        valid = false;\n    }\n\n    const requiredKeyword = \"adventure\";\n    if (!draft.toLowerCase().includes(requiredKeyword)) {\n        feedback.push(`Draft should include the keyword \"${requiredKeyword}\" to align with the narrative theme.`);\n        valid = false;\n    }\n\n    if (feedback.length === 0) {\n        valid = true;\n    } else {\n        valid = false;\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 3,
+    "totalScore": 2,
+    "heuristicValue": 0.6666666666666666,
+    "failedExamples": [
+      {
+        "trajectory": "Elaria drew her Sunblade and faced Ignis.",
+        "expected": "good",
+        "actual": "Rejected incorrectly",
+        "feedback": "Draft should include the keyword \"adventure\" to align with the narrative theme."
+      }
+    ]
+  },
+  "node_794983f9": {
+    "id": "node_794983f9",
+    "parentId": "node_d4bfa3f4",
+    "children": [],
+    "code": "async function evaluate(draft, context) {\n    const feedback = [];\n    let valid = true;\n\n    if (!draft || draft.trim().length === 0) {\n        feedback.push(\"Draft cannot be empty.\");\n        valid = false;\n    }\n\n    if (draft.length < 20) {\n        feedback.push(\"Draft is too short. Please elaborate more.\");\n        valid = false;\n    }\n\n    // The previous keyword check for \"adventure\" has been removed.\n    // The example \"Elaria drew her Sunblade and faced Ignis.\" is a valid narrative start\n    // even without explicitly using the word \"adventure\".\n    // The narrative theme is considered broader than requiring this specific keyword.\n\n    if (feedback.length === 0) {\n        valid = true;\n    } else {\n        valid = false;\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 3,
+    "totalScore": 2,
+    "heuristicValue": 0.6666666666666666,
+    "failedExamples": [
+      {
+        "trajectory": "Elaria used the Moonblade to fight the dragon.",
+        "expected": "bad",
+        "actual": "Accepted incorrectly",
+        "feedback": ""
+      }
+    ]
+  }
+}

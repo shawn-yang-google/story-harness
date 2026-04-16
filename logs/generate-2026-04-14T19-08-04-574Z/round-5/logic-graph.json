@@ -1,0 +1,168 @@
+{
+  "propositions": [
+    {
+      "id": "p1",
+      "text": "Marcus Vance is an L3 engineer",
+      "subject": "Marcus Vance",
+      "predicate": "is_l3_engineer",
+      "truth": true,
+      "location": "paragraph 3"
+    },
+    {
+      "id": "p2",
+      "text": "Marcus Vance is an L9 architect",
+      "subject": "Marcus Vance",
+      "predicate": "is_l9_architect",
+      "truth": true,
+      "location": "paragraph 12"
+    },
+    {
+      "id": "p3",
+      "text": "Only L9 architects can bypass load balancers on the fly",
+      "subject": "L9 architects",
+      "predicate": "can_bypass_load_balancer",
+      "truth": true,
+      "location": "paragraph 17"
+    },
+    {
+      "id": "p4",
+      "text": "Marcus bypassed the load balancer",
+      "subject": "Marcus Vance",
+      "predicate": "bypassed_load_balancer",
+      "truth": true,
+      "location": "paragraph 15"
+    },
+    {
+      "id": "p5",
+      "text": "Marcus promised himself he was just an L3",
+      "subject": "Marcus Vance",
+      "predicate": "has_promise_to_be_l3",
+      "truth": true,
+      "location": "paragraph 12"
+    },
+    {
+      "id": "p6",
+      "text": "Marcus broke his rule",
+      "subject": "Marcus Vance",
+      "predicate": "broke_rule",
+      "truth": true,
+      "location": "paragraph 35"
+    }
+  ],
+  "rules": [
+    {
+      "id": "r1",
+      "antecedent": "p3",
+      "consequent": "p2",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 17"
+    },
+    {
+      "id": "r2",
+      "antecedent": "p6",
+      "consequent": "p2",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 35"
+    }
+  ],
+  "conclusions": [
+    {
+      "claim": "Marcus is an L9 architect",
+      "premises": [
+        "p3",
+        "p4"
+      ],
+      "inferenceType": "modus_ponens",
+      "location": "paragraph 17"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "description": "Marcus bypasses the load balancer",
+      "agent": "Marcus Vance",
+      "order": 1,
+      "location": "paragraph 15"
+    },
+    {
+      "id": "e2",
+      "description": "Server status returns to green",
+      "agent": "System",
+      "order": 2,
+      "location": "paragraph 21"
+    }
+  ],
+  "temporalConstraints": [
+    {
+      "before": "e1",
+      "after": "e2",
+      "type": "causal",
+      "satisfied": true
+    }
+  ],
+  "stateChanges": [
+    {
+      "entity": "server_status",
+      "attribute": "status",
+      "from": "choking",
+      "to": "stable",
+      "atEvent": "e2"
+    }
+  ],
+  "knowledge": [
+    {
+      "agent": "Evelyn Vance",
+      "knows": "Marcus is an L9 architect",
+      "since": "e1",
+      "how": "witnessed"
+    }
+  ],
+  "abilities": [
+    {
+      "agent": "Marcus Vance",
+      "can": "bypass_load_balancer",
+      "established": "backstory"
+    }
+  ],
+  "obligations": [
+    {
+      "agent": "Marcus Vance",
+      "must": "rebuild_architecture",
+      "source": "Evelyn Vance",
+      "fulfilled": false
+    }
+  ],
+  "prohibitions": [
+    {
+      "agent": "Marcus Vance",
+      "mustNot": "get_involved",
+      "source": "self",
+      "violated": true,
+      "consequenceAcknowledged": true
+    }
+  ],
+  "worldRules": [
+    {
+      "rule": "Only L9 architects can bypass load balancers on the fly",
+      "type": "necessary",
+      "source": "narrative"
+    }
+  ],
+  "inventory": [],
+  "locations": [
+    {
+      "agent": "Marcus Vance",
+      "location": "Synthetix office",
+      "atEvent": "e1"
+    }
+  ],
+  "statuses": [
+    {
+      "agent": "Marcus Vance",
+      "state": "alive",
+      "since": "e1"
+    }
+  ]
+}

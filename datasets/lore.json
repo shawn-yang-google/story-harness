@@ -1,0 +1,11 @@
+{
+  "protagonist": {
+    "name": "Elaria",
+    "weapon": "Sunblade",
+    "weakness": "Fear of the dark"
+  },
+  "setting": {
+    "location": "The Ashen Peaks",
+    "dragon_name": "Ignis"
+  }
+}

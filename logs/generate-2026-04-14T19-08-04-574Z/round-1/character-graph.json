@@ -1,0 +1,103 @@
+{
+  "characters": [
+    {
+      "name": "Marcus Vance",
+      "mask": "L3 Junior Backend Developer who wants a quiet, stress-free life",
+      "trueNature": "A brilliant, high-stakes architect who thrives on control and technical mastery",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Richard Sterling",
+      "mask": "Decisive, authoritative CEO",
+      "trueNature": "Incompetent, panic-prone, and technically illiterate leader",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Evelyn Vance",
+      "mask": "Ruthless, cold venture capitalist",
+      "trueNature": "Pragmatic, opportunistic power-broker who values competence above all else",
+      "maskMatchesTruth": false
+    }
+  ],
+  "pressureChoices": [
+    {
+      "character": "Marcus Vance",
+      "pressure": "System failure threatening to destroy the company and client data",
+      "choiceA": "Stay hidden as an L3 and let the company fail",
+      "choiceB": "Intervene, reveal his true identity, and fix the system",
+      "chosen": "Intervene, reveal his true identity, and fix the system",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    },
+    {
+      "character": "Richard Sterling",
+      "pressure": "Cascading server failure and board scrutiny",
+      "choiceA": "Hard-reset the cluster (wiping data, risking lawsuits)",
+      "choiceB": "Wait for a technical fix (risking total system collapse)",
+      "chosen": "Hard-reset the cluster",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    },
+    {
+      "character": "Marcus Vance",
+      "pressure": "Evelyn offering him the CEO position",
+      "choiceA": "Reject the offer and return to his quiet L3 life",
+      "choiceB": "Accept the CEO role to fix the company and protect his peers",
+      "chosen": "Accept the CEO role",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    }
+  ],
+  "dimensions": [
+    {
+      "character": "Marcus Vance",
+      "dimension": "humility vs arrogance",
+      "positive": "willing to do the 'grunt work' of a junior dev",
+      "negative": "arrogantly assumes he is the only one capable of fixing the system",
+      "present": true
+    },
+    {
+      "character": "Richard Sterling",
+      "dimension": "authority vs incompetence",
+      "positive": "projects the image of a strong, decisive leader",
+      "negative": "lacks the technical understanding to make informed decisions",
+      "present": true
+    }
+  ],
+  "emotionalMoments": [
+    {
+      "character": "Greg",
+      "emotion": "relief/grief",
+      "trigger": "The system recovery after the near-catastrophic failure",
+      "earned": true,
+      "proportionate": true
+    },
+    {
+      "character": "Marcus Vance",
+      "emotion": "satisfaction",
+      "trigger": "Successfully forcing the handshake and stabilizing the system",
+      "earned": true,
+      "proportionate": true
+    }
+  ],
+  "desires": [
+    {
+      "character": "Marcus Vance",
+      "consciousDesire": "To be a low-level developer with no responsibilities",
+      "subconsciousDesire": "To be in control of a system he respects and to lead effectively",
+      "hasDesire": true
+    },
+    {
+      "character": "Richard Sterling",
+      "consciousDesire": "To maintain his status and satisfy the board",
+      "subconsciousDesire": "To be seen as a competent leader (which he is not)",
+      "hasDesire": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "consciousDesire": "To protect the company's market cap",
+      "subconsciousDesire": "To secure a high-performing asset (Marcus) to maximize her investment",
+      "hasDesire": true
+    }
+  ]
+}

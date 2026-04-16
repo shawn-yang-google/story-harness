@@ -1,0 +1,94 @@
+{
+  "characters": [
+    {
+      "name": "Marcus Vance",
+      "mask": "A mid-level L3 junior developer seeking anonymity and simple tasks.",
+      "trueNature": "A brilliant, perfectionist L9 Chief Architect who cannot tolerate incompetence or bad systems.",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Richard Sterling",
+      "mask": "A decisive, authoritative CEO in control of his company.",
+      "trueNature": "An insecure, incompetent leader who relies on others to fix his mistakes while posturing for the board.",
+      "maskMatchesTruth": false
+    },
+    {
+      "name": "Evelyn Vance",
+      "mask": "A ruthless, cold-blooded venture capitalist.",
+      "trueNature": "A pragmatic opportunist who values results and talent over corporate hierarchy and loyalty.",
+      "maskMatchesTruth": false
+    }
+  ],
+  "pressureChoices": [
+    {
+      "character": "Marcus Vance",
+      "pressure": "The company database is crashing, and the CTO is about to perform a destructive hard-reset.",
+      "choiceA": "Stay hidden and maintain his peaceful anonymity as an L3.",
+      "choiceB": "Intervene, fix the system, and blow his cover as a former L9 architect.",
+      "chosen": "Intervene, fix the system, and blow his cover as a former L9 architect.",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    },
+    {
+      "character": "Marcus Vance",
+      "pressure": "Evelyn offers him the Chief Architect role after he reveals his identity.",
+      "choiceA": "Refuse the role and return to his quiet life, leaving the engineers to suffer.",
+      "choiceB": "Accept the role, sacrificing his peace to save the engineers and fix the architecture.",
+      "chosen": "Accept the role, sacrificing his peace to save the engineers and fix the architecture.",
+      "isGenuineDilemma": true,
+      "revealsCharacter": true
+    }
+  ],
+  "dimensions": [
+    {
+      "character": "Marcus Vance",
+      "dimension": "detachment vs responsibility",
+      "positive": "takes ownership of systemic failures to protect others",
+      "negative": "hides his true potential to avoid the burdens of leadership",
+      "present": true
+    },
+    {
+      "character": "Richard Sterling",
+      "dimension": "authority vs incompetence",
+      "positive": "projects the image of a strong, decisive CEO",
+      "negative": "lacks the technical understanding to manage his own company",
+      "present": true
+    }
+  ],
+  "emotionalMoments": [
+    {
+      "character": "Marcus Vance",
+      "emotion": "resignation",
+      "trigger": "realizing the engineers are suffocating under bad management and he is the only one who can help.",
+      "earned": true,
+      "proportionate": true
+    },
+    {
+      "character": "Richard Sterling",
+      "emotion": "humiliation",
+      "trigger": "being publicly corrected and undermined by his own employee in front of the board.",
+      "earned": true,
+      "proportionate": true
+    }
+  ],
+  "desires": [
+    {
+      "character": "Marcus Vance",
+      "consciousDesire": "A quiet, low-stress life with simple Jira tickets.",
+      "subconsciousDesire": "The intellectual satisfaction of solving complex problems and mentoring others.",
+      "hasDesire": true
+    },
+    {
+      "character": "Richard Sterling",
+      "consciousDesire": "Maintain control and authority over his company.",
+      "subconsciousDesire": "Validation from the board and the appearance of success.",
+      "hasDesire": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "consciousDesire": "Fix the company's backend and protect her investment.",
+      "subconsciousDesire": "Control over the most talented assets in the industry.",
+      "hasDesire": true
+    }
+  ]
+}

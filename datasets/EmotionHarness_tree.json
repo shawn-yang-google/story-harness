@@ -1,0 +1,74 @@
+{
+  "root": {
+    "id": "root",
+    "parentId": null,
+    "children": [
+      "node_d6ae4749"
+    ],
+    "code": "",
+    "visits": 0,
+    "totalScore": 0,
+    "heuristicValue": 0,
+    "failedExamples": []
+  },
+  "node_d6ae4749": {
+    "id": "node_d6ae4749",
+    "parentId": "root",
+    "children": [
+      "node_03fa3f8d"
+    ],
+    "code": "interface HarnessContext {\n    /**\n     * Optional array of emotion categories that *must* be detected in the draft.\n     * Valid categories: 'positive', 'negative', 'neutral'.\n     */\n    requiredEmotionCategories?: ('positive' | 'negative' | 'neutral')[];\n    /**\n     * Optional array of emotion categories that *must not* be detected in the draft.\n     * Valid categories: 'positive', 'negative', 'neutral'.\n     */\n    forbiddenEmotionCategories?: ('positive' | 'negative' | 'neutral')[];\n    /**\n     * Minimum number of distinct emotion keywords that should be detected.\n     * Defaults to 1 if not specified.\n     */\n    minDetectedKeywords?: number;\n    /**\n     * Minimum length of the draft for meaningful emotional analysis.\n     * Defaults to 20 if not specified.\n     */\n    minDraftLength?: number;\n}\n\nasync function evaluate(draft: string, context: HarnessContext): Promise<{valid: boolean, feedback: string[]}> {\n    const feedback: string[] = [];\n    let valid = true;\n\n    const lowerDraft = draft.toLowerCase();\n\n    const MIN_DRAFT_LENGTH = context.minDraftLength ?? 20;\n    const MIN_DETECTED_KEYWORDS = context.minDetectedKeywords ?? 1;\n\n    // --- Pre-check: Draft Length ---\n    if (draft.length < MIN_DRAFT_LENGTH) {\n        valid = false;\n        feedback.push(`Draft is too short (${draft.length} characters). Emotional analysis requires more context. Minimum ${MIN_DRAFT_LENGTH} characters.`);\n        return { valid, feedback }; // Early exit if too short\n    }\n\n    // --- Emotion Keyword Definitions ---\n    const emotionKeywords = {\n        positive: ['happy', 'joy', 'delight', 'excited', 'love', 'glad', 'optimistic', 'hopeful', 'elated', 'thrilled', 'content', 'peace'],\n        negative: ['sad', 'anger', 'fear', 'grief', 'frustration', 'anxious', 'despair', 'lonely', 'upset', 'worried', 'stressed', 'resentment', 'bitter'],\n        neutral: ['calm', 'peaceful', 'serene', 'thoughtful', 'reflective', 'observant', 'indifferent', 'apathetic']\n    };\n\n    // --- Detected Emotions ---\n    const detectedCategories: Set<'positive' | 'negative' | 'neutral'> = new Set();\n    const detectedKeywords: string[] = [];\n\n    for (const category of Object.keys(emotionKeywords) as ('positive' | 'negative' | 'neutral')[]) {\n        for (const keyword of emotionKeywords[category]) {\n            if (lowerDraft.includes(keyword)) {\n                detectedCategories.add(category);\n                detectedKeywords.push(keyword);\n            }\n        }\n    }\n\n    // --- Feedback on detected emotions ---\n    if (detectedKeywords.length > 0) {\n        feedback.push(`Detected keywords: ${detectedKeywords.map(k => `'${k}'`).join(', ')}.`);\n        feedback.push(`Detected emotion categories: ${Array.from(detectedCategories).join(', ')}.`);\n    } else {\n        feedback.push(\"No explicit emotional keywords detected in the draft.\");\n    }\n\n    // --- Validation Rules ---\n\n    // Rule 1: Minimum number of detected keywords\n    if (detectedKeywords.length < MIN_DETECTED_KEYWORDS) {\n        valid = false;\n        feedback.push(`Validation failed: Expected at least ${MIN_DETECTED_KEYWORDS} emotional keyword(s), but found ${detectedKeywords.length}.`);\n    }\n\n    // Rule 2: Required emotion categories\n    if (context.requiredEmotionCategories && context.requiredEmotionCategories.length > 0) {\n        for (const requiredCategory of context.requiredEmotionCategories) {\n            if (!detectedCategories.has(requiredCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Required emotion category '${requiredCategory}' was not detected.`);\n            }\n        }\n    }\n\n    // Rule 3: Forbidden emotion categories\n    if (context.forbiddenEmotionCategories && context.forbiddenEmotionCategories.length > 0) {\n        for (const forbiddenCategory of context.forbiddenEmotionCategories) {\n            if (detectedCategories.has(forbiddenCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Forbidden emotion category '${forbiddenCategory}' was detected.`);\n            }\n        }\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 2,
+    "totalScore": 0,
+    "heuristicValue": 0,
+    "failedExamples": [
+      {
+        "trajectory": "Elaria's hands trembled. The dark cave reminded her of her worst fears, but she gripped the Sunblade tighter, finding courage in its light.",
+        "expected": "good",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'HarnessContext'"
+      },
+      {
+        "trajectory": "Elaria walked in. She was not scared. She hit the dragon.",
+        "expected": "bad",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'HarnessContext'"
+      }
+    ]
+  },
+  "node_03fa3f8d": {
+    "id": "node_03fa3f8d",
+    "parentId": "node_d6ae4749",
+    "children": [
+      "node_dec5ec2d"
+    ],
+    "code": "/**\n * @typedef {object} HarnessContext\n * @property {('positive' | 'negative' | 'neutral')[]} [requiredEmotionCategories] - Optional array of emotion categories that *must* be detected in the draft. Valid categories: 'positive', 'negative', 'neutral'.\n * @property {('positive' | 'negative' | 'neutral')[]} [forbiddenEmotionCategories] - Optional array of emotion categories that *must not* be detected in the draft. Valid categories: 'positive', 'negative', 'neutral'.\n * @property {number} [minDetectedKeywords] - Minimum number of distinct emotion keywords that should be detected. Defaults to 1 if not specified.\n * @property {number} [minDraftLength] - Minimum length of the draft for meaningful emotional analysis. Defaults to 20 if not specified.\n */\n\n/**\n * Evaluates the emotional content of a draft based on specified criteria.\n * @param {string} draft - The text draft to evaluate.\n * @param {HarnessContext} context - The context object containing evaluation parameters.\n * @returns {Promise<{valid: boolean, feedback: string[]}>} A promise that resolves to an object indicating validity and feedback messages.\n */\nasync function evaluate(draft, context) {\n    const feedback = [];\n    let valid = true;\n\n    const lowerDraft = draft.toLowerCase();\n\n    const MIN_DRAFT_LENGTH = context.minDraftLength ?? 20;\n    const MIN_DETECTED_KEYWORDS = context.minDetectedKeywords ?? 1;\n\n    // --- Pre-check: Draft Length ---\n    if (draft.length < MIN_DRAFT_LENGTH) {\n        valid = false;\n        feedback.push(`Draft is too short (${draft.length} characters). Emotional analysis requires more context. Minimum ${MIN_DRAFT_LENGTH} characters.`);\n        return { valid, feedback }; // Early exit if too short\n    }\n\n    // --- Emotion Keyword Definitions ---\n    const emotionKeywords = {\n        positive: ['happy', 'joy', 'delight', 'excited', 'love', 'glad', 'optimistic', 'hopeful', 'elated', 'thrilled', 'content', 'peace'],\n        negative: ['sad', 'anger', 'fear', 'grief', 'frustration', 'anxious', 'despair', 'lonely', 'upset', 'worried', 'stressed', 'resentment', 'bitter'],\n        neutral: ['calm', 'peaceful', 'serene', 'thoughtful', 'reflective', 'observant', 'indifferent', 'apathetic']\n    };\n\n    // --- Detected Emotions ---\n    const detectedCategories = new Set();\n    const detectedKeywords = [];\n\n    for (const category of Object.keys(emotionKeywords)) {\n        for (const keyword of emotionKeywords[category]) {\n            if (lowerDraft.includes(keyword)) {\n                detectedCategories.add(category);\n                detectedKeywords.push(keyword);\n            }\n        }\n    }\n\n    // --- Feedback on detected emotions ---\n    if (detectedKeywords.length > 0) {\n        feedback.push(`Detected keywords: ${detectedKeywords.map(k => `'${k}'`).join(', ')}.`);\n        feedback.push(`Detected emotion categories: ${Array.from(detectedCategories).join(', ')}.`);\n    } else {\n        feedback.push(\"No explicit emotional keywords detected in the draft.\");\n    }\n\n    // --- Validation Rules ---\n\n    // Rule 1: Minimum number of detected keywords\n    if (detectedKeywords.length < MIN_DETECTED_KEYWORDS) {\n        valid = false;\n        feedback.push(`Validation failed: Expected at least ${MIN_DETECTED_KEYWORDS} emotional keyword(s), but found ${detectedKeywords.length}.`);\n    }\n\n    // Rule 2: Required emotion categories\n    if (context.requiredEmotionCategories && context.requiredEmotionCategories.length > 0) {\n        for (const requiredCategory of context.requiredEmotionCategories) {\n            if (!detectedCategories.has(requiredCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Required emotion category '${requiredCategory}' was not detected.`);\n            }\n        }\n    }\n\n    // Rule 3: Forbidden emotion categories\n    if (context.forbiddenEmotionCategories && context.forbiddenEmotionCategories.length > 0) {\n        for (const forbiddenCategory of context.forbiddenEmotionCategories) {\n            if (detectedCategories.has(forbiddenCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Forbidden emotion category '${forbiddenCategory}' was detected.`);\n            }\n        }\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 2,
+    "totalScore": 2,
+    "heuristicValue": 1,
+    "failedExamples": []
+  },
+  "node_dec5ec2d": {
+    "id": "node_dec5ec2d",
+    "parentId": "node_03fa3f8d",
+    "children": [],
+    "code": "interface EmotionCategory {\n    positive: string[];\n    negative: string[];\n    neutral: string[];\n}\n\ntype EmotionCategoryName = keyof EmotionCategory;\n\ninterface HarnessContext {\n    requiredEmotionCategories?: EmotionCategoryName[];\n    forbiddenEmotionCategories?: EmotionCategoryName[];\n    minDetectedKeywords?: number;\n    minDraftLength?: number;\n}\n\nasync function evaluate(draft: string, context: HarnessContext): Promise<{ valid: boolean, feedback: string[] }> {\n    const feedback: string[] = [];\n    let valid: boolean = true;\n\n    const lowerDraft: string = draft.toLowerCase();\n\n    const MIN_DRAFT_LENGTH: number = context.minDraftLength ?? 20;\n    const MIN_DETECTED_KEYWORDS: number = context.minDetectedKeywords ?? 1;\n\n    // --- Pre-check: Draft Length ---\n    if (draft.length < MIN_DRAFT_LENGTH) {\n        valid = false;\n        feedback.push(`Draft is too short (${draft.length} characters). Emotional analysis requires more context. Minimum ${MIN_DRAFT_LENGTH} characters.`);\n        return { valid, feedback }; // Early exit if too short\n    }\n\n    // --- Emotion Keyword Definitions ---\n    const emotionKeywords: EmotionCategory = {\n        positive: ['happy', 'joy', 'delight', 'excited', 'love', 'glad', 'optimistic', 'hopeful', 'elated', 'thrilled', 'content', 'peace'],\n        negative: ['sad', 'anger', 'fear', 'grief', 'frustration', 'anxious', 'despair', 'lonely', 'upset', 'worried', 'stressed', 'resentment', 'bitter'],\n        neutral: ['calm', 'peaceful', 'serene', 'thoughtful', 'reflective', 'observant', 'indifferent', 'apathetic']\n    };\n\n    // --- Detected Emotions ---\n    const detectedCategories = new Set<EmotionCategoryName>();\n    const detectedKeywords: string[] = [];\n\n    for (const categoryName of Object.keys(emotionKeywords) as EmotionCategoryName[]) {\n        for (const keyword of emotionKeywords[categoryName]) {\n            if (lowerDraft.includes(keyword)) {\n                detectedCategories.add(categoryName);\n                detectedKeywords.push(keyword);\n            }\n        }\n    }\n\n    // --- Feedback on detected emotions ---\n    if (detectedKeywords.length > 0) {\n        feedback.push(`Detected keywords: ${detectedKeywords.map(k => `'${k}'`).join(', ')}.`);\n        feedback.push(`Detected emotion categories: ${Array.from(detectedCategories).join(', ')}.`);\n    } else {\n        feedback.push(\"No explicit emotional keywords detected in the draft.\");\n    }\n\n    // --- Validation Rules ---\n\n    // Rule 1: Minimum number of detected keywords\n    if (detectedKeywords.length < MIN_DETECTED_KEYWORDS) {\n        valid = false;\n        feedback.push(`Validation failed: Expected at least ${MIN_DETECTED_KEYWORDS} emotional keyword(s), but found ${detectedKeywords.length}.`);\n    }\n\n    // Rule 2: Required emotion categories\n    if (context.requiredEmotionCategories && context.requiredEmotionCategories.length > 0) {\n        for (const requiredCategory of context.requiredEmotionCategories) {\n            if (!detectedCategories.has(requiredCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Required emotion category '${requiredCategory}' was not detected.`);\n            }\n        }\n    }\n\n    // Rule 3: Forbidden emotion categories\n    if (context.forbiddenEmotionCategories && context.forbiddenEmotionCategories.length > 0) {\n        for (const forbiddenCategory of context.forbiddenEmotionCategories) {\n            if (detectedCategories.has(forbiddenCategory)) {\n                valid = false;\n                feedback.push(`Validation failed: Forbidden emotion category '${forbiddenCategory}' was detected.`);\n            }\n        }\n    }\n\n    return { valid, feedback };\n}",
+    "visits": 2,
+    "totalScore": 0,
+    "heuristicValue": 0,
+    "failedExamples": [
+      {
+        "trajectory": "Elaria's hands trembled. The dark cave reminded her of her worst fears, but she gripped the Sunblade tighter, finding courage in its light.",
+        "expected": "good",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'EmotionCategory'"
+      },
+      {
+        "trajectory": "Elaria walked in. She was not scared. She hit the dragon.",
+        "expected": "bad",
+        "actual": "Execution Error",
+        "feedback": "Sandbox Execution Error: Unexpected identifier 'EmotionCategory'"
+      }
+    ]
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "turningValues": [
+    {
+      "scene": "The server crash",
+      "valueBefore": "safety",
+      "valueAfter": "danger",
+      "changed": true,
+      "location": "paragraphs 7-10"
+    },
+    {
+      "scene": "Marcus intervenes",
+      "valueBefore": "helplessness",
+      "valueAfter": "control",
+      "changed": true,
+      "location": "paragraphs 16-21"
+    },
+    {
+      "scene": "The resolution of the crash",
+      "valueBefore": "chaos",
+      "valueAfter": "order",
+      "changed": true,
+      "location": "paragraphs 22-25"
+    },
+    {
+      "scene": "The CEO's firing and the job offer",
+      "valueBefore": "anonymity",
+      "valueAfter": "responsibility",
+      "changed": true,
+      "location": "paragraphs 26-35"
+    }
+  ],
+  "stakes": [
+    {
+      "description": "Marcus's desire to maintain his low-stress L3 lifestyle",
+      "level": "personal",
+      "order": 1,
+      "escalatesFromPrevious": false
+    },
+    {
+      "description": "The potential loss of petabytes of client data and company bankruptcy",
+      "level": "professional",
+      "order": 2,
+      "escalatesFromPrevious": true
+    },
+    {
+      "description": "The systemic collapse of the company and the future of the engineering team",
+      "level": "societal",
+      "order": 3,
+      "escalatesFromPrevious": true
+    }
+  ],
+  "protagonistDesires": [
+    {
+      "character": "Marcus Vance",
+      "goal": "To remain an anonymous, low-stress L3 developer",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Richard Sterling",
+      "goal": "To save the company's stock price and his own position",
+      "hasGoal": true,
+      "obstaclePresent": true
+    }
+  ],
+  "themeDeliveries": [
+    {
+      "theme": "True leadership requires technical competence, not just authority",
+      "delivery": "shown",
+      "location": "The contrast between Richard's panic/incompetence and Marcus's calm/expertise"
+    },
+    {
+      "theme": "One cannot escape the burden of their own talent",
+      "delivery": "shown",
+      "location": "Marcus's forced transition from L3 developer back to CEO"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "extra_personal",
+      "description": "Marcus vs the failing server infrastructure",
+      "parties": [
+        "Marcus",
+        "Synthetix servers"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "personal",
+      "description": "Marcus vs Richard Sterling's incompetence",
+      "parties": [
+        "Marcus",
+        "Richard Sterling"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "inner",
+      "description": "Marcus's desire for a quiet life vs his moral obligation to fix the system",
+      "parties": [
+        "Marcus"
+      ],
+      "resolved": true
+    }
+  ],
+  "premiseCounterPremise": [
+    {
+      "premise": "Competence is the ultimate authority",
+      "counterPremise": "Corporate hierarchy dictates power",
+      "counterPresent": true
+    }
+  ]
+}

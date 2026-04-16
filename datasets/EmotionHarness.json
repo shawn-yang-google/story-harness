@@ -1,0 +1,11 @@
+[
+  {
+    "text": "Elaria's hands trembled. The dark cave reminded her of her worst fears, but she gripped the Sunblade tighter, finding courage in its light.",
+    "label": "good"
+  },
+  {
+    "text": "Elaria walked in. She was not scared. She hit the dragon.",
+    "label": "bad",
+    "flaws": ["No emotional resonance", "Telling instead of showing"]
+  }
+]

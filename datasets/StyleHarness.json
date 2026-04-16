@@ -1,0 +1,16 @@
+[
+  {
+    "text": "The dragon's scales shimmered like molten gold. It unleashed a torrent of fire.",
+    "label": "good"
+  },
+  {
+    "text": "The dragon was very big and red. It breathed fire hotly.",
+    "label": "bad",
+    "flaws": ["Use of passive voice or weak verbs", "Too many adverbs"]
+  },
+  {
+    "text": "It was a dark and stormy night. The dragon was bad.",
+    "label": "bad",
+    "flaws": ["Cliché"]
+  }
+]

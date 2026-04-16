@@ -1,0 +1,347 @@
+{
+  "speeches": [
+    {
+      "id": "s1",
+      "speaker": "L5 Engineer",
+      "text": "We’re dropping packets across all US-East servers!",
+      "wordCount": 7,
+      "order": 1,
+      "location": "paragraph 11"
+    },
+    {
+      "id": "s2",
+      "speaker": "Greg",
+      "text": "It’s a cascading failure. The primary database is locked. If it corrupts, we lose petabytes of client data. Where is the failover?",
+      "wordCount": 22,
+      "order": 2,
+      "location": "paragraph 12"
+    },
+    {
+      "id": "s3",
+      "speaker": "L5 Engineer",
+      "text": "The failover is looping back into the primary! It’s a routing paradox!",
+      "wordCount": 12,
+      "order": 3,
+      "location": "paragraph 13"
+    },
+    {
+      "id": "s4",
+      "speaker": "Richard Sterling",
+      "text": "Greg! The board is watching our stock plummet in real-time! We are breaching our enterprise SLAs. Fix it!",
+      "wordCount": 18,
+      "order": 4,
+      "location": "paragraph 15"
+    },
+    {
+      "id": "s5",
+      "speaker": "Greg",
+      "text": "I'm trying, Richard! But the load balancer is completely fried. The only way to stop the corruption is to hard-reset the US-East cluster.",
+      "wordCount": 23,
+      "order": 5,
+      "location": "paragraph 16"
+    },
+    {
+      "id": "s6",
+      "speaker": "Evelyn Vance",
+      "text": "If you hard-reset, Greg, you wipe the last twelve hours of un-synced data for three million enterprise users. Synthetix will be sued into oblivion.",
+      "wordCount": 24,
+      "order": 6,
+      "location": "paragraph 17"
+    },
+    {
+      "id": "s7",
+      "speaker": "Richard Sterling",
+      "text": "It’s that or we lose everything, Evelyn! Do it, Greg. Pull the plug.",
+      "wordCount": 13,
+      "order": 7,
+      "location": "paragraph 18"
+    },
+    {
+      "id": "s8",
+      "speaker": "Richard Sterling",
+      "text": "Hey! Who the hell are you? Get away from that terminal!",
+      "wordCount": 11,
+      "order": 8,
+      "location": "paragraph 23"
+    },
+    {
+      "id": "s9",
+      "speaker": "Marcus",
+      "text": "You don't have a routing paradox. You have a race condition in your garbage collection protocol. The failover isn't looping; it's waiting for a handshake that the primary database is too choked to send.",
+      "wordCount": 34,
+      "order": 9,
+      "location": "paragraph 25"
+    },
+    {
+      "id": "s10",
+      "speaker": "Richard Sterling",
+      "text": "Security! Get this junior dev out of here!",
+      "wordCount": 8,
+      "order": 10,
+      "location": "paragraph 26"
+    },
+    {
+      "id": "s11",
+      "speaker": "Marcus",
+      "text": "I am bypassing the load balancer. I'm spinning up a virtual shard to catch the overflow traffic. I'm going to manually force the handshake, decouple the microservices, and drain the queue.",
+      "wordCount": 32,
+      "order": 11,
+      "location": "paragraph 28"
+    },
+    {
+      "id": "s12",
+      "speaker": "Greg",
+      "text": "That's impossible. You can't write a sharding protocol on the fly! It takes weeks to configure!",
+      "wordCount": 16,
+      "order": 12,
+      "location": "paragraph 29"
+    },
+    {
+      "id": "s13",
+      "speaker": "Marcus",
+      "text": "It takes forty-five seconds if you know the kernel architecture.",
+      "wordCount": 10,
+      "order": 13,
+      "location": "paragraph 30"
+    },
+    {
+      "id": "s14",
+      "speaker": "Richard Sterling",
+      "text": "You reckless idiot! You could have destroyed the entire company! You are fired! Pack up your desk immediately!",
+      "wordCount": 18,
+      "order": 14,
+      "location": "paragraph 38"
+    },
+    {
+      "id": "s15",
+      "speaker": "Marcus",
+      "text": "Richard. Shut up.",
+      "wordCount": 3,
+      "order": 15,
+      "location": "paragraph 39"
+    },
+    {
+      "id": "s16",
+      "speaker": "Evelyn Vance",
+      "text": "Move the camera closer.",
+      "wordCount": 4,
+      "order": 16,
+      "location": "paragraph 42"
+    },
+    {
+      "id": "s17",
+      "speaker": "Marcus",
+      "text": "Hello, Evelyn.",
+      "wordCount": 2,
+      "order": 17,
+      "location": "paragraph 44"
+    },
+    {
+      "id": "s18",
+      "speaker": "Evelyn Vance",
+      "text": "Marcus? Marcus Vance? What in God's name are you doing in a Synthetix cubicle?",
+      "wordCount": 14,
+      "order": 18,
+      "location": "paragraph 45"
+    },
+    {
+      "id": "s19",
+      "speaker": "Richard Sterling",
+      "text": "You... you know this L3, Evelyn?",
+      "wordCount": 6,
+      "order": 19,
+      "location": "paragraph 46"
+    },
+    {
+      "id": "s20",
+      "speaker": "Evelyn Vance",
+      "text": "L3? Richard, you absolute clown. That man is the former L9 Chief Architect of NovaTech. He designed the cloud infrastructure that half the modern internet runs on. We tried to headhunt him for three years and he ignored our emails. Why are you masquerading as a junior developer?",
+      "wordCount": 51,
+      "order": 20,
+      "location": "paragraph 47"
+    },
+    {
+      "id": "s21",
+      "speaker": "Marcus",
+      "text": "I wanted to write code. I was tired of dealing with incompetent executives. Turns out, you can't escape them.",
+      "wordCount": 19,
+      "order": 21,
+      "location": "paragraph 48"
+    },
+    {
+      "id": "s22",
+      "speaker": "Richard Sterling",
+      "text": "I... I didn't know...",
+      "wordCount": 4,
+      "order": 22,
+      "location": "paragraph 49"
+    },
+    {
+      "id": "s23",
+      "speaker": "Evelyn Vance",
+      "text": "Clearly. Richard, your technical ignorance nearly cost us our entire market cap today. Your instinct was to destroy client data rather than diagnose the problem. The board has discussed your lack of leadership for months. Today was the final straw. You are terminated, effective immediately.",
+      "wordCount": 48,
+      "order": 23,
+      "location": "paragraph 50"
+    },
+    {
+      "id": "s24",
+      "speaker": "Evelyn Vance",
+      "text": "Marcus, Synthetix has brilliant raw tech, but our architecture is a mess and our leadership is gone. We need someone who understands the code from the absolute bottom to the very top.",
+      "wordCount": 32,
+      "order": 24,
+      "location": "paragraph 52"
+    },
+    {
+      "id": "s25",
+      "speaker": "Marcus",
+      "text": "Evelyn, no. I down-leveled for a reason. I don't want to be a VP again.",
+      "wordCount": 14,
+      "order": 25,
+      "location": "paragraph 53"
+    },
+    {
+      "id": "s26",
+      "speaker": "Evelyn Vance",
+      "text": "I'm not offering you a VP role. I'm offering you the CEO position. You have total autonomy. Fire whoever you want. Rebuild the architecture however you see fit. You want to write code? Fine. Be the first coding CEO in the Fortune 500. But this company needs a captain who actually knows how the ship works.",
+      "wordCount": 56,
+      "order": 26,
+      "location": "paragraph 54"
+    },
+    {
+      "id": "s27",
+      "speaker": "Marcus",
+      "text": "I have three conditions. First, we rewrite the entire backend from scratch. Second, no more mandatory morning stand-ups. And third... I get to keep my mechanical keyboard.",
+      "wordCount": 28,
+      "order": 27,
+      "location": "paragraph 56"
+    },
+    {
+      "id": "s28",
+      "speaker": "Evelyn Vance",
+      "text": "Done. Welcome to the C-suite, Marcus.",
+      "wordCount": 6,
+      "order": 28,
+      "location": "paragraph 57"
+    }
+  ],
+  "subtext": [
+    {
+      "speechId": "s9",
+      "surfaceMeaning": "Technical diagnosis",
+      "hiddenMeaning": "Asserting dominance and exposing incompetence",
+      "type": "none"
+    },
+    {
+      "speechId": "s14",
+      "surfaceMeaning": "Firing Marcus",
+      "hiddenMeaning": "Deflecting blame for the system failure",
+      "type": "deflection"
+    },
+    {
+      "speechId": "s15",
+      "surfaceMeaning": "Commanding silence",
+      "hiddenMeaning": "Total power shift; stripping Richard of authority",
+      "type": "none"
+    },
+    {
+      "speechId": "s21",
+      "surfaceMeaning": "Explaining his job choice",
+      "hiddenMeaning": "Mocking the corporate hierarchy",
+      "type": "none"
+    },
+    {
+      "speechId": "s26",
+      "surfaceMeaning": "Offering a job",
+      "hiddenMeaning": "Manipulating Marcus into saving her investment",
+      "type": "double_meaning"
+    }
+  ],
+  "exposition": [
+    {
+      "speechId": "s2",
+      "content": "System failure details",
+      "type": "natural"
+    },
+    {
+      "speechId": "s20",
+      "content": "Marcus's true identity as L9 Architect",
+      "type": "weaponized"
+    }
+  ],
+  "voices": [
+    {
+      "character": "Marcus",
+      "vocabulary": "technical",
+      "avgSentenceLength": 18,
+      "distinctiveTraits": [
+        "precise",
+        "calm",
+        "authoritative"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Richard",
+      "vocabulary": "colloquial",
+      "avgSentenceLength": 9,
+      "distinctiveTraits": [
+        "panicked",
+        "shouting",
+        "reactive"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Evelyn",
+      "vocabulary": "formal",
+      "avgSentenceLength": 22,
+      "distinctiveTraits": [
+        "aristocratic",
+        "ruthless",
+        "calculating"
+      ],
+      "distinctFromOthers": true
+    },
+    {
+      "character": "Greg",
+      "vocabulary": "technical",
+      "avgSentenceLength": 12,
+      "distinctiveTraits": [
+        "anxious",
+        "stuttering"
+      ],
+      "distinctFromOthers": true
+    }
+  ],
+  "conflicts": [
+    {
+      "speechId": "s4",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s7",
+      "type": "disagreement"
+    },
+    {
+      "speechId": "s14",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s23",
+      "type": "confrontation"
+    },
+    {
+      "speechId": "s26",
+      "type": "negotiation"
+    }
+  ],
+  "chitchatSpeeches": [],
+  "monologueSpeeches": [],
+  "onTheNoseSpeeches": [
+    "s14"
+  ],
+  "clicheSpeeches": [
+    "s10"
+  ]
+}

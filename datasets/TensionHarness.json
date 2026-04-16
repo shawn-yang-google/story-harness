@@ -1,0 +1,11 @@
+[
+  {
+    "text": "The ground shook. Ignis lunged, flames erupting from its maw. Elaria barely dodged, the heat singeing her armor. She had one chance.",
+    "label": "good"
+  },
+  {
+    "text": "Elaria saw the dragon. They had a polite conversation about the weather for twenty minutes.",
+    "label": "bad",
+    "flaws": ["No stakes", "Boring pacing"]
+  }
+]

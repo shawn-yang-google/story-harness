@@ -1,0 +1,204 @@
+{
+  "propositions": [
+    {
+      "id": "p1",
+      "text": "Marcus Vance is an L3 junior developer",
+      "subject": "Marcus Vance",
+      "predicate": "is_l3_junior",
+      "truth": true,
+      "location": "paragraph 3"
+    },
+    {
+      "id": "p2",
+      "text": "Marcus Vance is an L9 Chief Architect",
+      "subject": "Marcus Vance",
+      "predicate": "is_l9_architect",
+      "truth": true,
+      "location": "paragraph 2"
+    },
+    {
+      "id": "p3",
+      "text": "Marcus Vance has a promise to himself to be an L3",
+      "subject": "Marcus Vance",
+      "predicate": "has_promise_to_be_l3",
+      "truth": true,
+      "location": "paragraph 11"
+    },
+    {
+      "id": "p4",
+      "text": "Bad architecture offends Marcus on a spiritual level",
+      "subject": "Marcus Vance",
+      "predicate": "offended_by_bad_architecture",
+      "truth": true,
+      "location": "paragraph 12"
+    },
+    {
+      "id": "p5",
+      "text": "Marcus can spin up a virtual shard on the fly",
+      "subject": "Marcus Vance",
+      "predicate": "can_spin_up_virtual_shard",
+      "truth": true,
+      "location": "paragraph 23"
+    },
+    {
+      "id": "p6",
+      "text": "Spinning up a virtual shard takes weeks",
+      "subject": "virtual_shard",
+      "predicate": "takes_weeks_to_spin_up",
+      "truth": true,
+      "location": "paragraph 22"
+    },
+    {
+      "id": "p7",
+      "text": "Marcus can spin up a virtual shard on the fly",
+      "subject": "Marcus Vance",
+      "predicate": "can_spin_up_virtual_shard",
+      "truth": false,
+      "location": "paragraph 22 (Greg's claim)"
+    }
+  ],
+  "rules": [
+    {
+      "id": "r1",
+      "antecedent": "p4",
+      "consequent": "e5",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 12"
+    },
+    {
+      "id": "r2",
+      "antecedent": "p6",
+      "consequent": "p7",
+      "type": "conditional",
+      "source": "narrative",
+      "location": "paragraph 22"
+    }
+  ],
+  "conclusions": [
+    {
+      "claim": "Marcus is an L9 architect",
+      "premises": [
+        "p5",
+        "p6"
+      ],
+      "inferenceType": "other",
+      "location": "paragraph 35"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "description": "Marcus drops his last name and applies as L3",
+      "agent": "Marcus Vance",
+      "order": 1,
+      "location": "paragraph 3"
+    },
+    {
+      "id": "e2",
+      "description": "Overhead monitors strobe crimson",
+      "agent": "System",
+      "order": 2,
+      "location": "paragraph 4"
+    },
+    {
+      "id": "e3",
+      "description": "Marcus steps between CTO and terminal",
+      "agent": "Marcus Vance",
+      "order": 3,
+      "location": "paragraph 14"
+    },
+    {
+      "id": "e4",
+      "description": "Marcus hits the Enter key",
+      "agent": "Marcus Vance",
+      "order": 4,
+      "location": "paragraph 23"
+    },
+    {
+      "id": "e5",
+      "description": "Marcus accepts role as Chief Architect",
+      "agent": "Marcus Vance",
+      "order": 5,
+      "location": "paragraph 45"
+    }
+  ],
+  "temporalConstraints": [
+    {
+      "before": "e1",
+      "after": "e5",
+      "type": "causal",
+      "satisfied": true
+    }
+  ],
+  "stateChanges": [
+    {
+      "entity": "server_status",
+      "attribute": "status",
+      "from": "error",
+      "to": "stable_green",
+      "atEvent": "e4"
+    }
+  ],
+  "knowledge": [
+    {
+      "agent": "Evelyn Vance",
+      "knows": "Marcus Vance's true identity",
+      "since": "e4",
+      "how": "witnessed"
+    }
+  ],
+  "abilities": [
+    {
+      "agent": "Marcus Vance",
+      "can": "architect_infrastructure",
+      "established": "backstory"
+    }
+  ],
+  "obligations": [
+    {
+      "agent": "Marcus Vance",
+      "must": "maintain L3 persona",
+      "source": "self-imposed",
+      "fulfilled": false
+    }
+  ],
+  "prohibitions": [
+    {
+      "agent": "Marcus Vance",
+      "mustNot": "interfere with architecture",
+      "source": "self-imposed",
+      "violated": true,
+      "consequenceAcknowledged": true
+    }
+  ],
+  "worldRules": [
+    {
+      "rule": "Only L9 architects can bypass load balancers on the fly",
+      "type": "necessary",
+      "source": "narrative"
+    }
+  ],
+  "inventory": [
+    {
+      "agent": "Marcus Vance",
+      "item": "L3 badge",
+      "acquiredAt": "e1",
+      "status": "held"
+    }
+  ],
+  "locations": [
+    {
+      "agent": "Marcus Vance",
+      "location": "Synthetix Office",
+      "atEvent": "e4"
+    }
+  ],
+  "statuses": [
+    {
+      "agent": "Marcus Vance",
+      "state": "alive",
+      "since": "e1"
+    }
+  ]
+}

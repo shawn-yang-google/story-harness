@@ -1,0 +1,119 @@
+{
+  "turningValues": [
+    {
+      "scene": "The system crash",
+      "valueBefore": "safety",
+      "valueAfter": "danger",
+      "changed": true,
+      "location": "paragraph 4-6"
+    },
+    {
+      "scene": "Marcus intervenes",
+      "valueBefore": "detachment",
+      "valueAfter": "engagement",
+      "changed": true,
+      "location": "paragraph 13-18"
+    },
+    {
+      "scene": "The reveal of Marcus's identity",
+      "valueBefore": "anonymity",
+      "valueAfter": "exposure",
+      "changed": true,
+      "location": "paragraph 26-30"
+    },
+    {
+      "scene": "Marcus accepts the role",
+      "valueBefore": "peace",
+      "valueAfter": "responsibility",
+      "changed": true,
+      "location": "paragraph 35-37"
+    }
+  ],
+  "stakes": [
+    {
+      "description": "Marcus's desire for a quiet, low-stress life",
+      "level": "personal",
+      "order": 1,
+      "escalatesFromPrevious": false
+    },
+    {
+      "description": "The company's enterprise SLAs and data integrity",
+      "level": "professional",
+      "order": 2,
+      "escalatesFromPrevious": true
+    },
+    {
+      "description": "The collapse of the company's infrastructure and the careers of the engineering team",
+      "level": "societal",
+      "order": 3,
+      "escalatesFromPrevious": true
+    }
+  ],
+  "protagonistDesires": [
+    {
+      "character": "Marcus Vance",
+      "goal": "Maintain anonymity and avoid corporate responsibility",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Richard Sterling",
+      "goal": "Maintain control and save the company's reputation",
+      "hasGoal": true,
+      "obstaclePresent": true
+    },
+    {
+      "character": "Evelyn Vance",
+      "goal": "Secure the best talent to fix the failing infrastructure",
+      "hasGoal": true,
+      "obstaclePresent": true
+    }
+  ],
+  "themeDeliveries": [
+    {
+      "theme": "Competence creates its own burden of responsibility",
+      "delivery": "shown",
+      "location": "Marcus's internal struggle and eventual decision to fix the system"
+    },
+    {
+      "theme": "Corporate hierarchy values optics over actual solutions",
+      "delivery": "shown",
+      "location": "Richard's reaction to the crisis and his focus on the board's perception"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "inner",
+      "description": "Marcus's desire for peace vs his professional integrity",
+      "parties": [
+        "Marcus"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "personal",
+      "description": "Marcus vs Richard's incompetence",
+      "parties": [
+        "Marcus",
+        "Richard"
+      ],
+      "resolved": true
+    },
+    {
+      "type": "extra_personal",
+      "description": "The engineering team vs the failing infrastructure",
+      "parties": [
+        "Engineering Team",
+        "Synthetix Infrastructure"
+      ],
+      "resolved": true
+    }
+  ],
+  "premiseCounterPremise": [
+    {
+      "premise": "True expertise cannot hide from the demands of the world",
+      "counterPremise": "One can escape the pressures of success by choosing a simpler life",
+      "counterPresent": true
+    }
+  ]
+}

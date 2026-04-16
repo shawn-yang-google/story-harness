@@ -1,0 +1,16 @@
+[
+  {
+    "text": "Elaria drew her Sunblade and faced Ignis.",
+    "label": "good"
+  },
+  {
+    "text": "Bob drew his gun.",
+    "label": "bad",
+    "flaws": ["Wrong protagonist name", "Wrong weapon"]
+  },
+  {
+    "text": "Elaria used the Moonblade to fight the dragon.",
+    "label": "bad",
+    "flaws": ["Wrong weapon"]
+  }
+]

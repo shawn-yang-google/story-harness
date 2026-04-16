@@ -1,0 +1,17 @@
+node_modules/
+.env
+dist/
+tree_state.json
+harnesses/**/*.js
+.gemini/hook-dispatch.log
+
+# Secrets — never commit
+client_secret.json
+
+# Google-internal backup code
+backup/
+
+# Agent state
+.sisyphus/
+.gemini/hook-dispatch.log
+.gemini/

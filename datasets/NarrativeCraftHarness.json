@@ -1,0 +1,134 @@
+[
+  {
+    "text": "[CHARACTER_NAME_KAEL] stepped into the throne room expecting to negotiate peace. Instead, the king drew a blade. The guards blocked the exits. He had come seeking peace—now he fought for his life. The crown he sought gleamed on the throne, tantalizingly close. He had to choose: flee and live, or seize the crown and risk everything.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "[CHARACTER_NAME_MAREN] rushed toward the crumbling bridge, her only thought the child trapped on the far side. The ropes snapped one by one. She leapt as the final plank gave way, catching the railing with bloodied fingers. Below, the river roared. She pulled herself up, inch by agonizing inch, the child's screams driving her forward.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "Captain [CHARACTER_NAME_VOSS] had always believed loyalty was absolute. But when her commander ordered the village burned, she stood between the soldiers and the doors. 'I won't do it,' she said. The commander's eyes hardened. 'Then you die with them.' In that moment, her true character emerged—not the obedient officer the army had made, but the woman who could not watch innocents burn.",
+    "label": "good",
+    "score": 0.96,
+    "flaws": []
+  },
+  {
+    "text": "The old fisherman had told his daughter the sea would provide. She believed him until the nets came up empty for the third week. Their savings were gone. She stood at the dock watching the other boats return full, and for the first time in her life, she considered stealing from a neighbor's catch. Her hand hovered over the rope. Then she dropped it—and walked to the harbor master to beg for work instead.",
+    "label": "good",
+    "score": 0.92,
+    "flaws": []
+  },
+  {
+    "text": "The assassin expected the target to beg. Instead, the old woman smiled and said, 'I've been waiting for you.' She set down two cups of tea. 'Sit,' she said. 'You deserve to know why they sent you.' The gap between what the assassin expected and what she found shattered his certainty. He sat. He listened. And when he left, the contract was torn to pieces in his pocket.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "Every night, the prisoner scratched another mark on the wall. Forty-seven marks now. On the forty-eighth night, the guard forgot to lock the cell. Freedom was one step away. But the prisoner knew the guard would be executed for the mistake. He pulled the door shut from inside. The forty-eighth mark joined the others. Some choices cost more than freedom.",
+    "label": "good",
+    "score": 0.97,
+    "flaws": []
+  },
+  {
+    "text": "Lira wanted nothing more than to hear her mother's voice one last time. The necromancer's price was steep: ten years of her own life. She'd already lost twenty to grief. 'Done,' she said, without hesitation. But the voice that emerged from the ritual circle was not her mother's. It was her own—older, broken, warning her to stop. The gap between desire and consequence yawned wide.",
+    "label": "good",
+    "score": 0.95,
+    "flaws": []
+  },
+  {
+    "text": "The rebel leader's argument was compelling: the king was a tyrant, the people suffered, revolution was the only path. But then the story showed what revolution cost—villages burned by both sides, children orphaned, former friends killing each other over ideology. Neither side was wholly right. The story let both premises breathe, and the audience had to weigh them.",
+    "label": "good",
+    "score": 0.91,
+    "flaws": []
+  },
+  {
+    "text": "She had trained for this moment her entire life. The dragon landed, and she raised her spear. But the dragon spoke. It said her father had sent it—not to kill her, but to test her. Now the spear felt wrong in her hands. The creature she'd been taught to hate was the messenger she needed most. Everything she believed was upended in a single sentence.",
+    "label": "good",
+    "score": 0.93,
+    "flaws": []
+  },
+  {
+    "text": "The detective arrived expecting a crime scene. Instead, he found a confession letter, neatly folded, beside a cup of tea still warm. The suspect had anticipated his every move. For the first time in his career, he felt outmatched. The stakes escalated: if the suspect was this far ahead, what else had she planned? He reached for his radio, but the batteries were dead. She'd thought of that too.",
+    "label": "good",
+    "score": 0.94,
+    "flaws": []
+  },
+  {
+    "text": "The journey taught young Marco an important lesson about friendship. The moral of the story was that true friends never abandon you. This showed that loyalty is the most important virtue. The narrator hopes the reader takes this lesson to heart, because in today's world, friendship matters more than ever.",
+    "label": "bad",
+    "score": 0.08,
+    "flaws": ["didactic_theme", "condescending_exposition"]
+  },
+  {
+    "text": "They sat around the fire and everyone agreed the plan was excellent. 'I think we should go north,' said [CHARACTER_NAME_KAEL]. 'Yes, north is best,' agreed [CHARACTER_NAME_MIRA]. 'North it is,' confirmed the elder. They all nodded. The fire crackled pleasantly. They drank tea and spoke of how wonderful their journey had been so far. Nobody raised an objection.",
+    "label": "bad",
+    "score": 0.12,
+    "flaws": ["non_turning_scene", "no_value_change"]
+  },
+  {
+    "text": "A man walked through the forest. He looked at the trees. The birds sang. He continued walking. The path curved to the left. He followed it without thinking. A stream appeared. He crossed it. The forest continued on the other side. He walked some more. Nothing in particular drew him forward.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["no_protagonist_desire", "non_turning_scene", "no_value_change"]
+  },
+  {
+    "text": "[CHARACTER_NAME_KAEL] easily defeated the first guard. The second guard fell just as quickly. The locked door opened without effort when he simply pushed it. The dragon cowered at the sight of him and surrendered immediately. [CHARACTER_NAME_KAEL] took the crown without any real challenge. Everything went according to plan. No obstacle could stand against him, and none did.",
+    "label": "bad",
+    "score": 0.11,
+    "flaws": ["one_sided_argument", "stakes_flat", "no_gap"]
+  },
+  {
+    "text": "The village was peaceful. Everyone was happy. The sun shone brightly. The farmers harvested their crops with satisfaction. The children played in the meadow. The baker baked bread and everyone thanked him. No disagreements arose. All was well and everyone was content with their lives. The day passed without incident.",
+    "label": "bad",
+    "score": 0.09,
+    "flaws": ["non_turning_scene", "no_value_change", "stakes_flat"]
+  },
+  {
+    "text": "The Brave Hero was tall, strong, and handsome. The Evil Villain was ugly, cruel, and mean. The Beautiful Princess was kind and gentle. The Wise Old Man gave the hero a magic sword. The hero fought the villain and won because good always triumphs. The princess kissed the hero. They lived happily ever after. The end.",
+    "label": "bad",
+    "score": 0.13,
+    "flaws": ["stereotypical", "one_sided_argument", "didactic_theme", "no_gap"]
+  },
+  {
+    "text": "She sat at the table and ate her breakfast. Then she walked to work. At work, she sat at her desk and typed. She ate lunch. She went back to typing. At five o'clock, she walked home. She ate dinner. She watched television. She went to sleep. The next day was the same.",
+    "label": "bad",
+    "score": 0.07,
+    "flaws": ["non_turning_scene", "no_value_change", "no_protagonist_desire", "stakes_flat"]
+  },
+  {
+    "text": "The knight was known as the bravest in the land. He had a scar on his cheek and wore silver armor. His horse was black and his cape was red. He was tall with blue eyes and a strong jaw. He spoke in a deep voice and carried a legendary sword. Everyone admired him. He was, in every way, the perfect hero.",
+    "label": "bad",
+    "score": 0.15,
+    "flaws": ["surface_characterization", "non_turning_scene", "no_value_change"]
+  },
+  {
+    "text": "The princess needed rescuing. The hero rode to the tower. He climbed the wall. He opened the door. The dragon was asleep so he tiptoed past it. He found the princess. 'Let's go,' he said. 'Okay,' she said. They left. The dragon didn't wake up. They arrived home safely. Everything worked out perfectly.",
+    "label": "bad",
+    "score": 0.14,
+    "flaws": ["one_sided_argument", "stakes_flat", "no_gap", "stereotypical"]
+  },
+  {
+    "text": "Lord Blackthorn was evil because he was born evil. There was no reason for his cruelty—he simply enjoyed causing pain. He had no backstory, no motivation, no complexity. He existed solely so the hero could defeat him. When the hero did defeat him, it was easily and without cost. The audience was expected to cheer.",
+    "label": "bad",
+    "score": 0.10,
+    "flaws": ["stereotypical", "one_sided_argument", "surface_characterization", "no_gap"]
+  },
+  {
+    "text": "And then the story just stopped. There was no resolution, no climax, no final confrontation. The characters were still in the middle of their journey. The central question—would they find the artifact?—was never answered. The narrative simply ceased, as if the author grew bored and walked away.",
+    "label": "bad",
+    "score": 0.06,
+    "flaws": ["quit_mid_story", "missing_obligatory_scene"]
+  },
+  {
+    "text": "The world of the story included medieval castles, spaceships, underwater civilizations, modern city streets, ancient Egyptian tombs, and a dimension made entirely of music. The protagonist traveled between all of them in a single chapter, encountering pirates, aliens, pharaohs, jazz musicians, and talking dolphins. None of these worlds were explored in depth.",
+    "label": "bad",
+    "score": 0.12,
+    "flaws": ["diffuse_world", "non_turning_scene"]
+  }
+]
