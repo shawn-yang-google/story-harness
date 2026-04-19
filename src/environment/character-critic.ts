@@ -13,7 +13,7 @@ interface CharacterCriticResult {
  * Evaluates narrative passages for character craft quality using
  * [MASTER_THEORIST]'s character creation principles as a knowledge base.
  *
- * HIGH-VALUE CHARACTER SKILLS (18):
+ * HIGH-VALUE CHARACTER SKILLS (19):
  * - characterization-vs-true-character: surface traits vs inner truth
  * - principle-of-the-mask: the gap between appearance and reality
  * - choice-under-pressure: true character revealed through dilemmas
@@ -24,7 +24,8 @@ interface CharacterCriticResult {
  * - life-in-the-subtext: what lies beneath spoken dialogue
  * - motivation-vs-desire: why characters act vs what they want
  * - conscious-vs-subconscious-desire: stated want vs hidden need
- * - protagonist-design: building the central character
+ * - hero-function (09): hero's role in the character web
+ * - hero-archetype (13): audience identification figure and engine of the plot
  * - character-arc-and-change: transformation through events
  * - four-levels-of-antagonism: inner/personal/social/cosmic conflict
  * - empathy-vs-sympathy: audience connection mechanisms
@@ -131,10 +132,12 @@ SUBCONSCIOUS DESIRE = what the character truly needs (often contradicts the cons
 The gap between these two desires creates inner conflict and depth.
 The richest characters pursue one thing while needing another.
 
-#### Protagonist Design (protagonist-design)
+#### Hero Function & Archetype (hero-function, hero-archetype)
 The protagonist must have WILLPOWER to pursue desire against opposition.
 They must be EMPATHETIC (the audience must understand their motivation).
 They must have the CAPACITY to pursue their object of desire.
+The hero serves as the audience's identification figure, the engine of the plot,
+and the character who undergoes the most significant transformation.
 A passive protagonist who wants nothing is not a protagonist.
 
 #### Character Arc and Change (character-arc-and-change)
@@ -177,7 +180,44 @@ and capacity for change all contribute to dimensional characters.
 2. REVELATION: the story strips away surface to show hidden truth
 3. FASCINATION: contradictions and depth sustain audience interest
 
-### ENRICHMENT CRITERIA (20 Skills)
+### ENRICHMENT CRITERIA (30 Skills)
+
+#### The Ghost (ghost)
+The Ghost is an event from the past that still haunts the hero—an open wound, a source of
+weakness, an internal opponent. It is the counter-desire holding the hero back. Until they
+confront it, they cannot truly change. The Ghost is often the root cause of both the hero's
+weakness and their unconscious need. A protagonist without a ghost risks feeling shallow.
+
+#### Character Archetypes (Beyond Hero/Shadow)
+- MENTOR: provides gifts (knowledge, tools, confidence) and must be removed so the hero
+  stands alone. A story where the mentor solves the hero's problems robs the hero of growth.
+- THRESHOLD GUARDIAN: tests the hero's commitment at each boundary crossing. Not necessarily
+  enemies—they test worthiness. The hero must ADAPT to pass, not just fight.
+- HERALD: announces the need for change, delivers the call to adventure. Can be a person,
+  event, or internal realization. Without a herald, the story may lack a clear inciting force.
+- SHAPESHIFTER: characters whose loyalty or nature shifts, creating doubt and suspense.
+  Often appears in romantic interests. The audience should never be sure which side they're on.
+- TRICKSTER: provides comic relief, challenges the status quo, catalyzes change through chaos.
+  Embodies the energy of mischief and desire for transformation.
+- ALLY: serves as sounding board, humanizes the hero, carries subplot. An ally without a
+  narrative function is dead weight.
+
+#### Fake-Ally and Fake-Opponent Dynamics
+- FAKE-ALLY OPPONENT: appears to be on the hero's side but is secretly working against them.
+  Must have a REVEAL/UNMASKING event or the setup is dangling.
+- FAKE-OPPONENT ALLY: appears hostile but ultimately helps the hero. Creates surprise and
+  thematic depth through misdirection.
+
+#### Self-Revelation Setup (self-revelation-setup)
+Self-revelation must be PLANTED from the very beginning through weakness and need. If a
+character has a revelation at the end but no corresponding flaw at the start, the revelation
+is unearned. Both PSYCHOLOGICAL (hurting self) and MORAL (hurting others) revelations
+should be set up through visible behaviors early in the story.
+
+#### Character Technique: Cutting (character-technique-cutting)
+Every character must earn their place. If two characters serve the same function, merge them.
+If a character has no function in the web, cut them. Extraneous characters dilute focus and
+confuse the audience. Test: remove the character—if nothing changes, they shouldn't be there.
 
 #### Cast Design Principles
 - Cast Map Technique: ensemble characters should create a constellation of contrasts.
@@ -219,6 +259,11 @@ and capacity for change all contribute to dimensional characters.
 8. Does the character ARC feel earned through progressive complications?
 9. Are antagonistic forces present at multiple levels?
 10. Is the character an ARCHETYPE (unique expression of universals) or a STEREOTYPE?
+11. Does the protagonist have a GHOST — a past wound driving their weakness?
+12. Are essential ARCHETYPAL ROLES present in the cast (mentor, shadow, threshold guardian)?
+13. Are FAKE-ALLY characters properly unmasked/revealed?
+14. Is the SELF-REVELATION set up from the beginning through weakness and need?
+15. Does every character earn their place, or are there EXTRANEOUS characters?
 
 ## Output Format
 
@@ -232,7 +277,8 @@ Output valid JSON only with the following schema:
     // "unearned_emotion", "on_the_nose_dialogue", "no_character_desire",
     // "static_no_arc", "no_subtext", "stereotypical_traits", "missing_mask",
     // "single_dimension", "monotone_arc", "disproportionate_emotion",
-    // "no_antagonism_layers"
+    // "no_antagonism_layers", "ghost_missing", "archetypal_cast_incomplete",
+    // "fake_ally_unresolved", "self_revelation_unearned", "extraneous_character"
 }
 
 Excerpt to evaluate:

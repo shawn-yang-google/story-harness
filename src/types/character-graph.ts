@@ -14,6 +14,28 @@ export interface Character {
   trueNature: string;
   /** true = cement-block character (bad) — no gap between mask and truth */
   maskMatchesTruth: boolean;
+  /** Backstory wound that haunts the character: "lost his family in a fire" */
+  ghost?: string;
+  /** What the character ultimately realizes about themselves or the world */
+  selfRevelation?: string;
+  /** A character flaw or moral/psychological weakness */
+  weakness?: string;
+  /** What the character truly needs (distinct from conscious desire) */
+  need?: string;
+  /** Archetypal role in the story: hero, mentor, threshold_guardian, etc. */
+  archetypeRole?: "hero" | "mentor" | "threshold_guardian" | "herald" | "shapeshifter" | "shadow" | "ally" | "trickster";
+  /** true = character appears to be an ally but is secretly working against the protagonist */
+  fakeAlly?: boolean;
+  /** Description of the event where the fake ally is unmasked/exposed */
+  revealEvent?: string;
+}
+
+export interface AllyEntry {
+  character: string;
+  /** The narrative function the ally serves */
+  function?: "sounding_board" | "subplot" | "humanizing_hero" | "comic_relief" | "thematic_mirror";
+  /** Does this ally serve a discernible purpose in the story? */
+  hasFunction: boolean;
 }
 
 export interface PressureChoice {
@@ -71,6 +93,7 @@ export interface CharacterGraph {
   dimensions: DimensionalContradiction[];
   emotionalMoments: EmotionalMoment[];
   desires: DesireEntry[];
+  allies: AllyEntry[];
 }
 
 /** Creates an empty CharacterGraph with all arrays initialized */
@@ -81,5 +104,6 @@ export function createEmptyCharacterGraph(): CharacterGraph {
     dimensions: [],
     emotionalMoments: [],
     desires: [],
+    allies: [],
   };
 }

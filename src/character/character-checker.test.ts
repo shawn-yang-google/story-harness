@@ -273,4 +273,256 @@ describe("CharacterChecker", () => {
     expect(flatErrors[0].evidence).toContain("Flat Fred");
     expect(flatErrors[0].evidence).not.toContain("Elara");
   });
+
+  // === Check 7: Ghost Missing ===
+
+  //#given a protagonist (archetypeRole="hero") with no ghost
+  //#when checking character craft
+  //#then a ghost_missing warning is returned
+  it("detects missing ghost for protagonist", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Aria", mask: "brave", trueNature: "afraid", maskMatchesTruth: false, archetypeRole: "hero" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const ghostWarnings = results.filter(r => r.rule === "ghost_missing");
+    expect(ghostWarnings.length).toBe(1);
+    expect(ghostWarnings[0].checker).toBe("CharacterChecker");
+    expect(ghostWarnings[0].severity).toBe("warning");
+    expect(ghostWarnings[0].message).toContain("no ghost");
+    expect(ghostWarnings[0].evidence).toContain("Aria");
+  });
+
+  //#given a protagonist with a ghost
+  //#when checking character craft
+  //#then no ghost_missing warning
+  it("does not flag ghost_missing when protagonist has a ghost", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Aria", mask: "brave", trueNature: "afraid", maskMatchesTruth: false, archetypeRole: "hero", ghost: "lost her family in the war" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const ghostWarnings = results.filter(r => r.rule === "ghost_missing");
+    expect(ghostWarnings.length).toBe(0);
+  });
+
+  //#given a non-hero character with no ghost
+  //#when checking character craft
+  //#then no ghost_missing warning (only heroes need ghosts)
+  it("does not flag ghost_missing for non-hero characters", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Mentor Sage", mask: "wise", trueNature: "bitter", maskMatchesTruth: false, archetypeRole: "mentor" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const ghostWarnings = results.filter(r => r.rule === "ghost_missing");
+    expect(ghostWarnings.length).toBe(0);
+  });
+
+  // === Check 8: Self-Revelation Unearned ===
+
+  //#given a character with selfRevelation but no weakness or need
+  //#when checking character craft
+  //#then a self_revelation_unearned warning is returned
+  it("detects unearned self-revelation (no weakness or need)", () => {
+    const graph = graphWith({
+      characters: [
+        {
+          name: "Dorne",
+          mask: "noble",
+          trueNature: "selfish",
+          maskMatchesTruth: false,
+          selfRevelation: "realizes power corrupts",
+        },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const revelationWarnings = results.filter(r => r.rule === "self_revelation_unearned");
+    expect(revelationWarnings.length).toBe(1);
+    expect(revelationWarnings[0].checker).toBe("CharacterChecker");
+    expect(revelationWarnings[0].severity).toBe("warning");
+    expect(revelationWarnings[0].message).toContain("no corresponding weakness or need");
+    expect(revelationWarnings[0].evidence).toContain("Dorne");
+  });
+
+  //#given a character with selfRevelation and a weakness
+  //#when checking character craft
+  //#then no self_revelation_unearned warning
+  it("does not flag revelation when weakness is present", () => {
+    const graph = graphWith({
+      characters: [
+        {
+          name: "Dorne",
+          mask: "noble",
+          trueNature: "selfish",
+          maskMatchesTruth: false,
+          selfRevelation: "realizes power corrupts",
+          weakness: "ambition blinds him to consequences",
+        },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const revelationWarnings = results.filter(r => r.rule === "self_revelation_unearned");
+    expect(revelationWarnings.length).toBe(0);
+  });
+
+  //#given a character with selfRevelation and a need
+  //#when checking character craft
+  //#then no self_revelation_unearned warning
+  it("does not flag revelation when need is present", () => {
+    const graph = graphWith({
+      characters: [
+        {
+          name: "Dorne",
+          mask: "noble",
+          trueNature: "selfish",
+          maskMatchesTruth: false,
+          selfRevelation: "realizes power corrupts",
+          need: "to value people over power",
+        },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const revelationWarnings = results.filter(r => r.rule === "self_revelation_unearned");
+    expect(revelationWarnings.length).toBe(0);
+  });
+
+  // === Check 9: Archetypal Cast Incomplete ===
+
+  //#given 4+ characters but no mentor or shadow
+  //#when checking character craft
+  //#then an archetypal_cast_incomplete warning is returned
+  it("detects incomplete archetypal cast (no mentor or shadow)", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Hero", mask: "brave", trueNature: "afraid", maskMatchesTruth: false, archetypeRole: "hero" },
+        { name: "Herald", mask: "mysterious", trueNature: "desperate", maskMatchesTruth: false, archetypeRole: "herald" },
+        { name: "Ally", mask: "loyal", trueNature: "conflicted", maskMatchesTruth: false, archetypeRole: "ally" },
+        { name: "Trickster", mask: "funny", trueNature: "sharp", maskMatchesTruth: false, archetypeRole: "trickster" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const castWarnings = results.filter(r => r.rule === "archetypal_cast_incomplete");
+    expect(castWarnings.length).toBe(1);
+    expect(castWarnings[0].checker).toBe("CharacterChecker");
+    expect(castWarnings[0].severity).toBe("warning");
+    expect(castWarnings[0].message).toContain("missing both mentor and shadow");
+  });
+
+  //#given 4+ characters with a mentor present
+  //#when checking character craft
+  //#then no archetypal_cast_incomplete warning
+  it("does not flag cast when mentor is present", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Hero", mask: "brave", trueNature: "afraid", maskMatchesTruth: false, archetypeRole: "hero" },
+        { name: "Mentor", mask: "wise", trueNature: "regretful", maskMatchesTruth: false, archetypeRole: "mentor" },
+        { name: "Ally", mask: "loyal", trueNature: "conflicted", maskMatchesTruth: false, archetypeRole: "ally" },
+        { name: "Herald", mask: "mysterious", trueNature: "desperate", maskMatchesTruth: false, archetypeRole: "herald" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const castWarnings = results.filter(r => r.rule === "archetypal_cast_incomplete");
+    expect(castWarnings.length).toBe(0);
+  });
+
+  //#given fewer than 4 characters
+  //#when checking character craft
+  //#then no archetypal_cast_incomplete warning (too few to judge)
+  it("does not flag cast when fewer than 4 characters", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Hero", mask: "brave", trueNature: "afraid", maskMatchesTruth: false, archetypeRole: "hero" },
+        { name: "Ally", mask: "loyal", trueNature: "conflicted", maskMatchesTruth: false, archetypeRole: "ally" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const castWarnings = results.filter(r => r.rule === "archetypal_cast_incomplete");
+    expect(castWarnings.length).toBe(0);
+  });
+
+  // === Check 10: Fake Ally Unmasked ===
+
+  //#given a fake ally character with no reveal event
+  //#when checking character craft
+  //#then a fake_ally_unmasked warning is returned
+  it("detects fake ally without reveal event", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Siren", mask: "helpful guide", trueNature: "traitor", maskMatchesTruth: false, fakeAlly: true },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const fakeAllyWarnings = results.filter(r => r.rule === "fake_ally_unmasked");
+    expect(fakeAllyWarnings.length).toBe(1);
+    expect(fakeAllyWarnings[0].checker).toBe("CharacterChecker");
+    expect(fakeAllyWarnings[0].severity).toBe("warning");
+    expect(fakeAllyWarnings[0].message).toContain("never unmasked");
+    expect(fakeAllyWarnings[0].evidence).toContain("Siren");
+  });
+
+  //#given a fake ally character with a reveal event
+  //#when checking character craft
+  //#then no fake_ally_unmasked warning
+  it("does not flag fake ally with reveal event", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "Siren", mask: "helpful guide", trueNature: "traitor", maskMatchesTruth: false, fakeAlly: true, revealEvent: "betrays the hero at the bridge" },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const fakeAllyWarnings = results.filter(r => r.rule === "fake_ally_unmasked");
+    expect(fakeAllyWarnings.length).toBe(0);
+  });
+
+  //#given a non-fake-ally character
+  //#when checking character craft
+  //#then no fake_ally_unmasked warning
+  it("does not flag non-fake-ally characters", () => {
+    const graph = graphWith({
+      characters: [
+        { name: "True Friend", mask: "loyal", trueNature: "loyal", maskMatchesTruth: true, fakeAlly: false },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const fakeAllyWarnings = results.filter(r => r.rule === "fake_ally_unmasked");
+    expect(fakeAllyWarnings.length).toBe(0);
+  });
+
+  // === Check 11: Ally Without Function ===
+
+  //#given an ally entry where hasFunction is false
+  //#when checking character craft
+  //#then an ally_without_function warning is returned
+  it("detects ally without function", () => {
+    const graph = graphWith({
+      allies: [
+        { character: "Bob the Sidekick", hasFunction: false },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const allyWarnings = results.filter(r => r.rule === "ally_without_function");
+    expect(allyWarnings.length).toBe(1);
+    expect(allyWarnings[0].checker).toBe("CharacterChecker");
+    expect(allyWarnings[0].severity).toBe("warning");
+    expect(allyWarnings[0].message).toContain("no discernible narrative function");
+    expect(allyWarnings[0].evidence).toContain("Bob the Sidekick");
+  });
+
+  //#given an ally entry where hasFunction is true
+  //#when checking character craft
+  //#then no ally_without_function warning
+  it("does not flag ally with function", () => {
+    const graph = graphWith({
+      allies: [
+        { character: "Wise Companion", function: "sounding_board", hasFunction: true },
+      ],
+    });
+    const results = checkCharacter(graph);
+    const allyWarnings = results.filter(r => r.rule === "ally_without_function");
+    expect(allyWarnings.length).toBe(0);
+  });
 });

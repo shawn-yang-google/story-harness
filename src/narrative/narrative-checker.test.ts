@@ -3,11 +3,22 @@ import { checkNarrative } from "./narrative-checker";
 import { createEmptyNarrativeGraph } from "../types/narrative-graph";
 import type { NarrativeGraph } from "../types/narrative-graph";
 
-/** Base graph with one real conflict to avoid no_conflict noise in unrelated tests */
+/** Base graph with defaults to avoid noise from unrelated checks in targeted tests */
 const baseGraph: NarrativeGraph = {
   ...createEmptyNarrativeGraph(),
   conflicts: [
     { type: "inner", description: "default conflict", parties: ["A"], resolved: false },
+  ],
+  moralChoices: [
+    { character: "A", dilemma: "default dilemma", location: "act 2", nearClimax: true },
+  ],
+  catharsisPresent: true,
+  thematicRevelation: "default thematic revelation",
+  journeyStages: [
+    { stage: "ordinary_world", description: "start", location: "act 1" },
+    { stage: "call_to_adventure", description: "call", location: "act 1" },
+    { stage: "ordeal", description: "ordeal", location: "act 2" },
+    { stage: "return_with_elixir", description: "return", location: "act 3" },
   ],
 };
 
@@ -20,16 +31,20 @@ describe("NarrativeChecker", () => {
 
   //#given an empty narrative graph
   //#when checking narrative craft
-  //#then only the no_conflict error is returned (empty = no conflict data)
-  it("returns only no_conflict for an empty graph", () => {
+  //#then no_conflict, no_moral_choice, thematic_revelation_missing, and journey_stages_missing are returned
+  it("returns expected warnings for an empty graph", () => {
     const results = checkNarrative(createEmptyNarrativeGraph());
-    expect(results.length).toBe(1);
-    expect(results[0].rule).toBe("no_conflict");
+    const rules = results.map(r => r.rule);
+    expect(rules).toContain("no_conflict");
+    expect(rules).toContain("no_moral_choice");
+    expect(rules).toContain("thematic_revelation_missing");
+    expect(rules).toContain("journey_stages_missing");
+    expect(results.length).toBe(4);
   });
 
   // === Well-Crafted Narrative ===
 
-  //#given a well-crafted narrative with turning values, escalating stakes, goals with obstacles, and shown themes
+  //#given a well-crafted narrative with turning values, escalating stakes, goals with obstacles, shown themes, moral choice, catharsis, revelation, and journey stages
   //#when checking narrative craft
   //#then no errors or warnings are returned
   it("returns no errors for a well-crafted narrative", () => {
@@ -53,6 +68,17 @@ describe("NarrativeChecker", () => {
       ],
       premiseCounterPremise: [
         { premise: "courage conquers fear", counterPremise: "fear is rational self-preservation", counterPresent: true },
+      ],
+      moralChoices: [
+        { character: "Hero", dilemma: "save one or save many", location: "act 3", nearClimax: true },
+      ],
+      catharsisPresent: true,
+      thematicRevelation: "True courage is not the absence of fear but acting despite it",
+      journeyStages: [
+        { stage: "ordinary_world", description: "peaceful village", location: "act 1" },
+        { stage: "call_to_adventure", description: "threat appears", location: "act 1" },
+        { stage: "ordeal", description: "confrontation", location: "act 2" },
+        { stage: "return_with_elixir", description: "village saved", location: "act 3" },
       ],
     });
     const results = checkNarrative(graph);
@@ -336,6 +362,10 @@ describe("NarrativeChecker", () => {
         { theme: "greed is bad", delivery: "didactic", location: "epilogue" },
       ],
       conflicts: [],
+      moralChoices: [],
+      catharsisPresent: false,
+      thematicRevelation: undefined,
+      journeyStages: [],
     });
     const results = checkNarrative(graph);
     const rules = results.map(r => r.rule);
@@ -343,5 +373,160 @@ describe("NarrativeChecker", () => {
     expect(rules).toContain("no_protagonist_goal");
     expect(rules).toContain("didactic_theme");
     expect(rules).toContain("no_conflict");
+    expect(rules).toContain("no_moral_choice");
+    expect(rules).toContain("no_catharsis");
+    expect(rules).toContain("thematic_revelation_missing");
+    expect(rules).toContain("journey_stages_missing");
+  });
+
+  // === Check 8: No Moral Choice ===
+
+  //#given a narrative with an empty moralChoices array
+  //#when checking narrative craft
+  //#then a no_moral_choice warning is returned
+  it("detects missing moral choice", () => {
+    const graph = graphWith({
+      moralChoices: [],
+    });
+    const results = checkNarrative(graph);
+    const moralWarnings = results.filter(r => r.rule === "no_moral_choice");
+    expect(moralWarnings.length).toBe(1);
+    expect(moralWarnings[0].checker).toBe("NarrativeChecker");
+    expect(moralWarnings[0].severity).toBe("warning");
+    expect(moralWarnings[0].message).toContain("No moral choice");
+  });
+
+  //#given a narrative with a moral choice present
+  //#when checking narrative craft
+  //#then no no_moral_choice warning
+  it("does not flag moral choice when present", () => {
+    const graph = graphWith({
+      moralChoices: [
+        { character: "Hero", dilemma: "save one or save many", location: "act 3", nearClimax: true },
+      ],
+    });
+    const results = checkNarrative(graph);
+    const moralWarnings = results.filter(r => r.rule === "no_moral_choice");
+    expect(moralWarnings.length).toBe(0);
+  });
+
+  // === Check 9: No Catharsis ===
+
+  //#given a narrative where catharsisPresent is false
+  //#when checking narrative craft
+  //#then a no_catharsis warning is returned
+  it("detects missing catharsis", () => {
+    const graph = graphWith({
+      catharsisPresent: false,
+    });
+    const results = checkNarrative(graph);
+    const catharsisWarnings = results.filter(r => r.rule === "no_catharsis");
+    expect(catharsisWarnings.length).toBe(1);
+    expect(catharsisWarnings[0].checker).toBe("NarrativeChecker");
+    expect(catharsisWarnings[0].severity).toBe("warning");
+    expect(catharsisWarnings[0].message).toContain("No catharsis");
+  });
+
+  //#given a narrative where catharsisPresent is true
+  //#when checking narrative craft
+  //#then no no_catharsis warning
+  it("does not flag catharsis when present", () => {
+    const graph = graphWith({
+      catharsisPresent: true,
+    });
+    const results = checkNarrative(graph);
+    const catharsisWarnings = results.filter(r => r.rule === "no_catharsis");
+    expect(catharsisWarnings.length).toBe(0);
+  });
+
+  // === Check 10: Thematic Revelation Missing ===
+
+  //#given a narrative with no thematicRevelation
+  //#when checking narrative craft
+  //#then a thematic_revelation_missing warning is returned
+  it("detects missing thematic revelation", () => {
+    const graph = graphWith({
+      thematicRevelation: undefined,
+    });
+    const results = checkNarrative(graph);
+    const revelationWarnings = results.filter(r => r.rule === "thematic_revelation_missing");
+    expect(revelationWarnings.length).toBe(1);
+    expect(revelationWarnings[0].checker).toBe("NarrativeChecker");
+    expect(revelationWarnings[0].severity).toBe("warning");
+    expect(revelationWarnings[0].message).toContain("No thematic revelation");
+  });
+
+  //#given a narrative with an empty string thematicRevelation
+  //#when checking narrative craft
+  //#then a thematic_revelation_missing warning is returned (empty string is falsy)
+  it("detects empty string thematic revelation", () => {
+    const graph = graphWith({
+      thematicRevelation: "",
+    });
+    const results = checkNarrative(graph);
+    const revelationWarnings = results.filter(r => r.rule === "thematic_revelation_missing");
+    expect(revelationWarnings.length).toBe(1);
+  });
+
+  //#given a narrative with a thematicRevelation present
+  //#when checking narrative craft
+  //#then no thematic_revelation_missing warning
+  it("does not flag thematic revelation when present", () => {
+    const graph = graphWith({
+      thematicRevelation: "Power corrupts absolutely",
+    });
+    const results = checkNarrative(graph);
+    const revelationWarnings = results.filter(r => r.rule === "thematic_revelation_missing");
+    expect(revelationWarnings.length).toBe(0);
+  });
+
+  // === Check 11: Journey Stages Missing ===
+
+  //#given a narrative with fewer than 4 journey stages
+  //#when checking narrative craft
+  //#then a journey_stages_missing warning is returned
+  it("detects insufficient journey stages", () => {
+    const graph = graphWith({
+      journeyStages: [
+        { stage: "ordinary_world", description: "start", location: "act 1" },
+        { stage: "call_to_adventure", description: "call", location: "act 1" },
+      ],
+    });
+    const results = checkNarrative(graph);
+    const journeyWarnings = results.filter(r => r.rule === "journey_stages_missing");
+    expect(journeyWarnings.length).toBe(1);
+    expect(journeyWarnings[0].checker).toBe("NarrativeChecker");
+    expect(journeyWarnings[0].severity).toBe("warning");
+    expect(journeyWarnings[0].message).toContain("2 Hero's Journey stage(s)");
+  });
+
+  //#given a narrative with 0 journey stages
+  //#when checking narrative craft
+  //#then a journey_stages_missing warning is returned
+  it("detects zero journey stages", () => {
+    const graph = graphWith({
+      journeyStages: [],
+    });
+    const results = checkNarrative(graph);
+    const journeyWarnings = results.filter(r => r.rule === "journey_stages_missing");
+    expect(journeyWarnings.length).toBe(1);
+    expect(journeyWarnings[0].message).toContain("0 Hero's Journey stage(s)");
+  });
+
+  //#given a narrative with 4+ journey stages
+  //#when checking narrative craft
+  //#then no journey_stages_missing warning
+  it("does not flag journey stages when 4 or more are present", () => {
+    const graph = graphWith({
+      journeyStages: [
+        { stage: "ordinary_world", description: "start", location: "act 1" },
+        { stage: "call_to_adventure", description: "call", location: "act 1" },
+        { stage: "ordeal", description: "ordeal", location: "act 2" },
+        { stage: "return_with_elixir", description: "return", location: "act 3" },
+      ],
+    });
+    const results = checkNarrative(graph);
+    const journeyWarnings = results.filter(r => r.rule === "journey_stages_missing");
+    expect(journeyWarnings.length).toBe(0);
   });
 });

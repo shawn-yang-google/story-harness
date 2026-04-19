@@ -11,6 +11,14 @@ client_secret.json
 # Google-internal backup code
 backup/
 
+# Skill reference material (new numbered skills from book extraction)
+character/[0-9]*.md
+dialogue/[0-9]*.md
+story/[0-9]*.md
+logic/[0-9]*.md
+theme/
+craft/
+
 # Agent state
 .sisyphus/
 .gemini/hook-dispatch.log

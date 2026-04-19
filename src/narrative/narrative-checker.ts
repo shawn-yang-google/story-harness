@@ -12,6 +12,10 @@ import type { CheckResult } from "../logic/types";
  * 5. didactic_theme — Theme stated directly instead of shown
  * 6. no_conflict — No conflict present in the narrative
  * 7. no_counter_premise — One-sided argument without genuine opposition
+ * 8. no_moral_choice — No genuine moral dilemma near the climax
+ * 9. no_catharsis — Story lacks emotional release
+ * 10. thematic_revelation_missing — No universal insight beyond personal arc
+ * 11. journey_stages_missing — Insufficient Hero's Journey structural stages
  */
 export function checkNarrative(graph: NarrativeGraph): CheckResult[] {
   const results: CheckResult[] = [];
@@ -22,6 +26,10 @@ export function checkNarrative(graph: NarrativeGraph): CheckResult[] {
   results.push(...checkThemeDeliveries(graph));
   results.push(...checkConflicts(graph));
   results.push(...checkPremiseCounterPremise(graph));
+  results.push(...checkMoralChoices(graph));
+  results.push(...checkCatharsis(graph));
+  results.push(...checkThematicRevelation(graph));
+  results.push(...checkJourneyStages(graph));
 
   return results;
 }
@@ -178,6 +186,104 @@ function checkPremiseCounterPremise(graph: NarrativeGraph): CheckResult[] {
         evidence: [pcp.premise],
       });
     }
+  }
+
+  return results;
+}
+
+/**
+ * Check 8: No Moral Choice
+ * A story should have a genuine moral dilemma, ideally near the climax.
+ * If the moralChoices array is empty, the story lacks a defining moral choice.
+ */
+function checkMoralChoices(graph: NarrativeGraph): CheckResult[] {
+  const results: CheckResult[] = [];
+
+  if (graph.moralChoices.length === 0) {
+    results.push({
+      checker: "NarrativeChecker",
+      rule: "no_moral_choice",
+      severity: "warning",
+      message:
+        "No moral choice present — the story lacks a genuine moral dilemma. " +
+        "A defining moral choice near the climax forces the protagonist to reveal " +
+        "their deepest values and gives the story its thematic weight.",
+      evidence: [],
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Check 9: No Catharsis
+ * The story should build to an emotional release. If catharsisPresent is false,
+ * the story may feel emotionally incomplete.
+ */
+function checkCatharsis(graph: NarrativeGraph): CheckResult[] {
+  const results: CheckResult[] = [];
+
+  if (!graph.catharsisPresent) {
+    results.push({
+      checker: "NarrativeChecker",
+      rule: "no_catharsis",
+      severity: "warning",
+      message:
+        "No catharsis — the story does not build to an emotional release. " +
+        "A story without catharsis risks leaving the audience emotionally unsatisfied, " +
+        "as the accumulated tension has no outlet.",
+      evidence: [],
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Check 10: Thematic Revelation Missing
+ * The story should deliver a universal insight beyond the personal arc.
+ * If thematicRevelation is missing or empty, warn.
+ */
+function checkThematicRevelation(graph: NarrativeGraph): CheckResult[] {
+  const results: CheckResult[] = [];
+
+  if (!graph.thematicRevelation) {
+    results.push({
+      checker: "NarrativeChecker",
+      rule: "thematic_revelation_missing",
+      severity: "warning",
+      message:
+        "No thematic revelation — the story lacks a universal insight beyond " +
+        "the personal character arc. Great stories deliver a truth about the " +
+        "human condition that transcends the specific events of the plot.",
+      evidence: [],
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Check 11: Journey Stages Missing
+ * Check for Hero's Journey structural stages. If fewer than 4 stages are
+ * identifiable, the story may lack structural backbone.
+ */
+function checkJourneyStages(graph: NarrativeGraph): CheckResult[] {
+  const results: CheckResult[] = [];
+
+  if (graph.journeyStages.length < 4) {
+    results.push({
+      checker: "NarrativeChecker",
+      rule: "journey_stages_missing",
+      severity: "warning",
+      message:
+        `Only ${graph.journeyStages.length} Hero's Journey stage(s) identified — ` +
+        `a story should have at least 4 identifiable structural stages to provide ` +
+        `narrative backbone. Key stages include: call to adventure, crossing the ` +
+        `threshold, ordeal, and return with elixir ` +
+        `([MASTER_THEORIST]: the-writers-journey-process).`,
+      evidence: graph.journeyStages.map(s => s.stage),
+    });
   }
 
   return results;

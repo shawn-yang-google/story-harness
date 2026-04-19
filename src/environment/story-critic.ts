@@ -170,6 +170,54 @@ Is there a unifying through-line connecting events?
 Universal human experience expressed through unique, specific characters = archetype.
 Flat, predictable stock characters = stereotype.
 
+#### Hero's Journey Stages
+A well-structured narrative should contain identifiable journey stages. Not all 12 are
+required, but a structural backbone should be present:
+- CALL TO ADVENTURE: the event that disrupts the ordinary world
+- TESTS, ALLIES, ENEMIES: the hero encounters challenges and builds relationships
+- ORDEAL: the central crisis where the hero faces their greatest fear
+- REWARD/ELIXIR: what the hero gains from surviving the ordeal
+- RESURRECTION: the final test where the hero proves transformation is permanent
+- RETURN WITH ELIXIR: the hero brings something back to share with the community
+A story that lacks any identifiable journey structure may feel episodic rather than purposeful.
+
+#### The Plan (plan)
+The protagonist must have an active STRATEGY to achieve their desire—not just react to
+events. The plan focuses the narrative and creates dramatic irony when it fails. A hero
+who only reacts is passive; a hero with a plan who must adapt reveals character.
+
+#### The Battle (battle)
+The climactic confrontation between hero and opponent must reveal the truth about both
+characters. The final battle should be the LAST place the hero wants to be, fighting the
+LAST person they want to fight. Victory through superior force alone is unsatisfying—the
+hero should win through self-knowledge gained during the journey.
+
+#### Self-Revelation (self-revelation)
+The hero's moment of truth—seeing themselves honestly, often for the first time. Must be
+BOTH psychological (understanding self) AND moral (understanding how they've hurt others).
+A self-revelation without the moral dimension feels incomplete.
+
+#### New Equilibrium (new-equilibrium)
+The story should end with the hero at a DIFFERENT level of existence—higher (comedy/triumph)
+or lower (tragedy/decline). If the world returns to exactly where it started with no
+permanent change, the journey was pointless.
+
+#### Slavery to Freedom World-Arc (slavery-to-freedom)
+The best stories track TWO parallel arcs: the hero's personal transformation AND the world's
+transformation. As the hero changes internally, the world around them should change too—
+from slavery/oppression to freedom, or from order to chaos. This parallel gives the story
+resonance beyond the personal.
+
+#### Moral Choice (moral-choice)
+Near the climax, the hero should face a genuine moral dilemma—a choice between two positive
+outcomes (sacrifice one good for another) or two negative outcomes (choose the lesser evil).
+A story without a defining moral choice at its peak moment lacks thematic weight.
+
+#### Catharsis (catharsis)
+The emotional purging experienced by the audience at the story's most intense moments.
+True catharsis requires setup: the audience must be deeply connected to the hero's struggle
+so that the resolution—whether triumph or tragedy—releases accumulated emotional tension.
+
 ## What to Check
 
 1. Does each scene/passage TURN a value (positive↔negative)?
@@ -182,6 +230,13 @@ Flat, predictable stock characters = stereotype.
 8. Does the audience's intelligence appear respected?
 9. Is the world focused and well-defined?
 10. Are characters archetypes (unique expressions of universal experience) or stereotypes?
+11. Are identifiable JOURNEY STAGES present (call, ordeal, reward, return)?
+12. Does the hero have an active PLAN (not just react)?
+13. Does the climactic BATTLE reveal character truth through self-knowledge?
+14. Is there a SELF-REVELATION with both psychological and moral dimensions?
+15. Does the story end at a NEW EQUILIBRIUM (different level of existence)?
+16. Is there a defining MORAL CHOICE near the climax?
+17. Does the story build to CATHARSIS (emotional release)?
 
 ## Output Format
 
@@ -195,7 +250,10 @@ Output valid JSON only with the following schema:
     // "one_sided_argument", "no_protagonist_desire", "stakes_flat",
     // "no_inciting_incident", "missing_obligatory_scene",
     // "condescending_exposition", "diffuse_world", "surface_characterization",
-    // "no_gap", "stereotypical", "quit_mid_story"
+    // "no_gap", "stereotypical", "quit_mid_story",
+    // "no_journey_structure", "passive_no_plan", "battle_lacks_revelation",
+    // "no_self_revelation", "no_new_equilibrium", "no_moral_choice",
+    // "no_catharsis", "no_world_arc"
 }
 
 Excerpt to evaluate:
