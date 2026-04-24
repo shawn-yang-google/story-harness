@@ -8,6 +8,10 @@ Inspired by [AutoHarness](https://arxiv.org/html/2603.03329v1) (LLM-synthesized 
 
 > 📊 **[View the interactive presentation →](https://shawn-yang-google.github.io/story-harness/)**
 
+<p align="center">
+  <img src="docs/demo.gif" alt="StoryHarness live demo — 5 rounds of automated story editing" width="900">
+</p>
+
 ## How It Works
 
 StoryHarness uses a **four-tier critic system** and a **gated pipeline** to evaluate LLM-generated narrative drafts:
