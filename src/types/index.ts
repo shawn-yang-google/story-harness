@@ -41,12 +41,29 @@ export { createEmptyNarrativeGraph } from "./narrative-graph";
 export type { CharacterGraph } from "./character-graph";
 export { createEmptyCharacterGraph } from "./character-graph";
 
+export type {
+  ReferenceGraph,
+  FactualClaim,
+  ClaimCategory,
+  ConfidenceLevel,
+  HistoricalReference,
+  GeographicReference,
+  CulturalReference,
+  ScientificReference,
+  LinguisticReference,
+  AnachronismEntry,
+  CrossReference,
+} from "./reference-graph";
+export { createEmptyReferenceGraph } from "./reference-graph";
+
 export type SynthesisMode = "code" | "prompt" | "hybrid";
 
 export interface HarnessContext {
   loreDb: Record<string, any>;
   previousBeats: string[];
   targetAudience: string;
+  /** Fine-grained checker flags and thresholds from a WriterPersona, if set. */
+  personaConfig?: import("../persona/persona-config").PersonaConfig;
 }
 
 export interface HarnessResult {

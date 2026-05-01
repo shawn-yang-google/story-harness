@@ -529,4 +529,71 @@ describe("NarrativeChecker", () => {
     const journeyWarnings = results.filter(r => r.rule === "journey_stages_missing");
     expect(journeyWarnings.length).toBe(0);
   });
+
+  // === Check 12: Editorializing Ending ===
+
+  //#given a story that ends with an author-editorializing summary paragraph
+  //#when checking narrative craft
+  //#then editorializing_ending is flagged
+  it("flags an editorializing ending that summarizes the theme", () => {
+    const graph = graphWith({
+      endingAnalysis: {
+        finalParagraph: "The hardships had forged her into steel. Time had taken her childhood, but in return gave her an unbreakable will. She had become a beacon for others.",
+        endsOnConcreteImagery: false,
+        endsOnAction: false,
+        summarizesTheme: true,
+        authorIntrusion: true,
+      },
+    });
+    const results = checkNarrative(graph);
+    const editorialWarnings = results.filter(r => r.rule === "editorializing_ending");
+    expect(editorialWarnings.length).toBe(1);
+    expect(editorialWarnings[0].severity).toBe("warning");
+  });
+
+  //#given a story that ends on concrete imagery
+  //#when checking narrative craft
+  //#then editorializing_ending is NOT flagged
+  it("passes an ending with concrete imagery and no editorializing", () => {
+    const graph = graphWith({
+      endingAnalysis: {
+        finalParagraph: "She touched the gray wool hat on her head and closed her eyes. The train whistle sounded low and long.",
+        endsOnConcreteImagery: true,
+        endsOnAction: false,
+        summarizesTheme: false,
+        authorIntrusion: false,
+      },
+    });
+    const results = checkNarrative(graph);
+    const editorialWarnings = results.filter(r => r.rule === "editorializing_ending");
+    expect(editorialWarnings.length).toBe(0);
+  });
+
+  //#given a story that ends on action
+  //#when checking narrative craft
+  //#then editorializing_ending is NOT flagged
+  it("passes an ending with concrete action", () => {
+    const graph = graphWith({
+      endingAnalysis: {
+        finalParagraph: "She turned the wheelchair around and rolled herself home. She changed into dry clothes.",
+        endsOnConcreteImagery: false,
+        endsOnAction: true,
+        summarizesTheme: false,
+        authorIntrusion: false,
+      },
+    });
+    const results = checkNarrative(graph);
+    const editorialWarnings = results.filter(r => r.rule === "editorializing_ending");
+    expect(editorialWarnings.length).toBe(0);
+  });
+
+  //#given no ending analysis data
+  //#when checking narrative craft
+  //#then editorializing_ending is NOT flagged (graceful skip)
+  it("skips editorializing check when endingAnalysis is absent", () => {
+    const graph = graphWith({});
+    const results = checkNarrative(graph);
+    const editorialWarnings = results.filter(r => r.rule === "editorializing_ending");
+    expect(editorialWarnings.length).toBe(0);
+  });
 });

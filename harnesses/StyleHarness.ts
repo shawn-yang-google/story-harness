@@ -1,24 +1,35 @@
+// TODO: Read thresholds from context.personaConfig.thresholds when available:
+//   - maxExclamationMarks (default: 2, comedy: 8, children: 6)
+//   - maxFillerWordOccurrences (default: 2, comedy: 5, children: 4)
+//   - minAvgSentenceLength, maxAvgSentenceLength, maxParagraphLengthWords
+// TODO: Add CJK-aware word counting (same pattern as StructureHarness)
+// TODO: Add checker for repetitive metaphors across sections
 async function evaluate(draft, context) {
     const feedback = [];
     let valid = true;
 
-    // No hard length limit — quality is judged by content, not character count.
-    // Pacing, structure, and style checks handle verbosity implicitly.
+    // Persona-aware thresholds
+    const thresholds = context.personaConfig?.thresholds ?? {};
+    const maxFillerOccurrences = thresholds.maxFillerWordOccurrences ?? 2;
+    const maxExclamations = thresholds.maxExclamationMarks ?? 2;
+    const minSentenceLen = thresholds.minAvgSentenceLength ?? 8;
+    const maxSentenceLen = thresholds.maxAvgSentenceLength ?? 30;
+    const maxParaWords = thresholds.maxParagraphLengthWords ?? 200;
 
     const fillerWords = ['just', 'very', 'really', 'basically', 'actually', 'quite', 'perhaps', 'maybe', 'sort of', 'kind of', 'you know', 'like'];
     const lowerDraft = draft.toLowerCase();
     fillerWords.forEach(word => {
         const regex = new RegExp(`\\b${word}\\b`, 'g');
         const matches = lowerDraft.match(regex);
-        if (matches && matches.length > 2) {
+        if (matches && matches.length > maxFillerOccurrences) {
             feedback.push(`Consider reducing the use of "${word}". It appears ${matches.length} times. Try to be more direct.`);
             valid = false;
         }
     });
 
     const exclamationMarks = (draft.match(/!/g) || []).length;
-    if (exclamationMarks > 2) {
-        feedback.push(`Be mindful of excessive exclamation marks. You used ${exclamationMarks} of them. Use sparingly for emphasis.`);
+    if (exclamationMarks > maxExclamations) {
+        feedback.push(`Be mindful of excessive exclamation marks. You used ${exclamationMarks} of them (limit: ${maxExclamations}). Use sparingly for emphasis.`);
         valid = false;
     }
 
@@ -27,14 +38,11 @@ async function evaluate(draft, context) {
         const totalWords = draft.split(/\s+/).filter(w => w.length > 0).length;
         const averageWordsPerSentence = totalWords / sentences.length;
 
-        const minAvgSentenceLength = 8;
-        const maxAvgSentenceLength = 30;
-
-        if (averageWordsPerSentence < minAvgSentenceLength) {
+        if (averageWordsPerSentence < minSentenceLen) {
             feedback.push(`Average sentence length is quite short (${averageWordsPerSentence.toFixed(1)} words). Consider varying sentence structure or combining some for better flow.`);
             valid = false;
         }
-        if (averageWordsPerSentence > maxAvgSentenceLength) {
+        if (averageWordsPerSentence > maxSentenceLen) {
             feedback.push(`Average sentence length is quite long (${averageWordsPerSentence.toFixed(1)} words). Consider breaking down some complex sentences for clarity.`);
             valid = false;
         }
@@ -51,10 +59,9 @@ async function evaluate(draft, context) {
     } else {
         // Short paragraphs are a deliberate pacing tool in fiction — not flagged.
         // Only flag excessively long paragraphs (walls of text).
-        const maxParagraphLengthWords = 200;
         paragraphs.forEach((paragraph, index) => {
             const paragraphWords = paragraph.split(/\s+/).filter(w => w.length > 0).length;
-            if (paragraphWords > maxParagraphLengthWords) {
+            if (paragraphWords > maxParaWords) {
                 feedback.push(`Paragraph ${index + 1} is quite long (${paragraphWords} words). Consider breaking it into smaller paragraphs for better readability.`);
                 valid = false;
             }

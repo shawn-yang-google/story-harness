@@ -79,6 +79,23 @@ export interface JourneyStage {
   location: string;
 }
 
+/**
+ * EndingAnalysis — Evaluates whether the story's final paragraph
+ * ends on concrete imagery/action vs. editorializing/summarizing.
+ */
+export interface EndingAnalysis {
+  /** The final paragraph text (or last 2-3 sentences). */
+  finalParagraph: string;
+  /** Does the ending use concrete, sensory imagery? */
+  endsOnConcreteImagery: boolean;
+  /** Does the ending use character action (doing something)? */
+  endsOnAction: boolean;
+  /** Does the ending summarize/restate the story's theme? */
+  summarizesTheme: boolean;
+  /** Does the author intrude with commentary/editorial? */
+  authorIntrusion: boolean;
+}
+
 export interface NarrativeGraph {
   turningValues: SceneTurningValue[];
   stakes: StakeEntry[];
@@ -92,6 +109,8 @@ export interface NarrativeGraph {
   /** A universal insight beyond the personal arc */
   thematicRevelation?: string;
   journeyStages: JourneyStage[];
+  /** Analysis of the story's ending quality */
+  endingAnalysis?: EndingAnalysis;
 }
 
 /** Creates an empty NarrativeGraph with all arrays initialized */

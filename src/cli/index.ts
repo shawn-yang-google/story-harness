@@ -1,9 +1,22 @@
 import { parseArgs } from "util";
 import { join } from "path";
-import { readFile, writeFile } from "fs/promises";
+import { readFile, writeFile, mkdir } from "fs/promises";
 import { HarnessSynthesizer } from "../synthesizer";
 import { RejectionSamplingRunner } from "../runner";
+import { MultiSectionRunner } from "../runner/multi-section";
 import { loadTrajectories } from "../environment/trajectory";
+import { loadPrompt } from "./prompt-loader";
+import {
+  type WriterPersona,
+  createPersona,
+  GENRES,
+  TONES,
+  STYLES,
+  AUDIENCE_AGES,
+  EMPHASES,
+} from "../persona";
+import { getEnabledHarnesses } from "../persona/harness-map";
+import { buildGenerationPrompt } from "../persona/prompt-builder";
 
 const { values, positionals } = parseArgs({
   args: Bun.argv,
@@ -34,6 +47,22 @@ const { values, positionals } = parseArgs({
       type: "string",
       default: "5",
     },
+    "multi-section": {
+      type: "boolean",
+    },
+    "max-words-per-section": {
+      type: "string",
+      default: "1200",
+    },
+    persona: {
+      type: "string",
+    },
+    plan: {
+      type: "string",
+    },
+    harness: {
+      type: "string",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -48,7 +77,11 @@ Usage: storyharness <command> [options]
 
 Commands:
   train <harness_name>        Train a specific sub-harness (e.g., LogicHarness)
-  generate <prompt>           Generate a story using the trained harnesses
+  generate <prompt|file.md>   Generate a story from a prompt string or .md/.txt file
+  split <prompt|file.md>      Split a long prompt into sections for review (saves plan JSON)
+  check <draft|file.md>       Run harnesses against a draft and report issues (no correction)
+  create-persona [name]       Interactively create a writer persona (saved as JSON)
+  list-personas               List available personas in personas/ directory
   watch [session-dir]         Watch a running generation session (default: latest)
 
 Options (train/generate):
@@ -57,6 +90,13 @@ Options (train/generate):
   --interactive           Run training with human-in-the-loop approval
   --ts-weight <number>    Thompson Sampling weight parameter (default: 1.0)
   --max-retries <number>  Max generation rounds (default: 5)
+
+Options (generate/split/check):
+  --persona <path>            Use a writer persona JSON file (enables persona-specific harnesses)
+  --multi-section             Split long stories into sections and generate iteratively
+  --plan <plan.json>          Generate from a reviewed split plan (from 'split' command)
+  --max-words-per-section <n> Max words per section (default: 1200)
+  --harness <names>           Run specific harnesses only (comma-separated, e.g. Style,Logic,Character)
   --help, -h              Show this help message
 
 Video generation has been moved to the 'videoharness' project.
@@ -109,12 +149,60 @@ Video generation has been moved to the 'videoharness' project.
       break;
     }
     case "generate": {
-      const prompt = positionals[3];
-      if (!prompt) {
-        console.error("Error: Must specify a prompt to generate from.");
+      const promptInput = positionals[3];
+      const planPath = values.plan as string | undefined;
+
+      if (!promptInput && !planPath) {
+        console.error("Error: Must specify a prompt, .md/.txt file, or --plan <plan.json>.");
         process.exit(1);
       }
-      console.log(`Generating story from prompt: "${prompt}"`);
+
+      let prompt = "";
+      if (planPath) {
+        console.log("Using plan: " + planPath);
+        // prompt is loaded from plan for context; sections drive generation
+      }
+      if (promptInput) {
+        prompt = await loadPrompt(promptInput);
+        const isFile = prompt !== promptInput;
+        if (isFile) {
+          console.log("Loaded prompt from file: " + promptInput + " (" + prompt.length + " chars)");
+        } else {
+          console.log('Generating story from prompt: "' + prompt + '"');
+        }
+      }
+
+      // Load persona if specified
+      let persona: WriterPersona | undefined;
+      let enabledHarnesses: string[] | undefined;
+      let systemPrompt: string | undefined;
+      let targetAudience = "general";
+      let personaConfig: import("../persona/persona-config").PersonaConfig | undefined;
+
+      if (values.persona) {
+        try {
+          const { resolvePersonaConfig } = await import("../persona/persona-config");
+          const personaRaw = await readFile(values.persona, "utf-8");
+          persona = JSON.parse(personaRaw) as WriterPersona;
+          enabledHarnesses = persona.enabledHarnesses ?? getEnabledHarnesses(persona);
+          systemPrompt = buildGenerationPrompt(persona);
+          personaConfig = persona.checkerConfig ?? resolvePersonaConfig(persona);
+          targetAudience = persona.audienceAge === "children" ? "children"
+            : persona.audienceAge === "young-adult" ? "young adult"
+            : persona.audienceAge === "adult" ? "adult"
+            : "general";
+          console.log(`Using persona: "${persona.name}" (${persona.genre}/${persona.tone}/${persona.style})`);
+          console.log(`Enabled harnesses: ${enabledHarnesses.join(", ")}`);
+          const disabledCheckers = Object.entries(personaConfig.enabledCheckers)
+            .filter(([, v]) => !v).map(([k]) => k);
+          if (disabledCheckers.length > 0) {
+            console.log(`Disabled checkers: ${disabledCheckers.join(", ")}`);
+          }
+        } catch (e: any) {
+          console.error(`Error loading persona from ${values.persona}: ${e.message}`);
+          process.exit(1);
+        }
+      }
       
       let loreDb = {};
       try {
@@ -125,20 +213,500 @@ Video generation has been moved to the 'videoharness' project.
       }
 
       const maxRetries = parseInt(values["max-retries"] as string) || 5;
-      const runner = new RejectionSamplingRunner({
-        harnessDirectory: "harnesses",
-        maxRetries,
+
+      if (planPath || values["multi-section"]) {
+        const maxWordsPerSection = parseInt(values["max-words-per-section"] as string) || 1200;
+
+        if (planPath) {
+          // Generate from a pre-reviewed plan file
+          const planRaw = await readFile(planPath, "utf-8");
+          const plan = JSON.parse(planRaw);
+          const sections = plan.sections as Array<{ title: string; prompt: string; estimatedWords: number }>;
+
+          if (!sections || sections.length === 0) {
+            console.error("Error: Plan file has no sections.");
+            process.exit(1);
+          }
+
+          console.log("Generating from plan: " + sections.length + " section(s)");
+
+          const runner = new RejectionSamplingRunner({
+            harnessDirectory: "harnesses",
+            maxRetries,
+            loreDb,
+            targetAudience,
+            enabledHarnesses,
+            systemPrompt,
+            personaConfig,
+          });
+
+          const generatedSections: Array<{ title: string; content: string }> = [];
+          for (let i = 0; i < sections.length; i++) {
+            const s = sections[i];
+            const divider = "=".repeat(60);
+            console.log("\n" + divider + "\nSection " + (i + 1) + "/" + sections.length + ": " + s.title + "\n" + divider);
+            try {
+              const content = await runner.generateScene(s.prompt);
+              generatedSections.push({ title: s.title, content });
+            } catch (err: any) {
+              console.error("Section \"" + s.title + "\" failed: " + err.message);
+              generatedSections.push({ title: s.title, content: "[Generation failed: " + err.message + "]" });
+            }
+          }
+
+          const combined = generatedSections
+            .map((s) => "## " + s.title + "\n\n" + s.content)
+            .join("\n\n---\n\n");
+          console.log("\n=== FINAL GENERATED STORY ===\n");
+          console.log(combined);
+          await mkdir("output", { recursive: true });
+          const outTs = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          const outPath = join("output", "story-" + outTs + ".md");
+          await writeFile(outPath, combined, "utf-8");
+          console.log("\n=== SUMMARY ===");
+          console.log("Generated " + generatedSections.length + " section(s) from plan.");
+          console.log("\x1b[32m\u2713\x1b[0m Saved to: \x1b[1m" + outPath + "\x1b[0m");
+        } else {
+          // Auto-split and generate
+          const runner = new MultiSectionRunner({
+            harnessDirectory: "harnesses",
+            maxRetries,
+            loreDb,
+            targetAudience,
+            maxWordsPerSection,
+            enabledHarnesses,
+            systemPrompt,
+            personaConfig,
+          });
+
+          try {
+            const result = await runner.generate(prompt);
+            console.log("\n=== FINAL GENERATED STORY ===\n");
+            console.log(result.combined);
+            await mkdir("output", { recursive: true });
+            const outTs2 = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+            const outPath2 = join("output", "story-" + outTs2 + ".md");
+            await writeFile(outPath2, result.combined, "utf-8");
+            console.log("\n=== SUMMARY ===");
+            console.log("Generated " + result.sections.length + " section(s).");
+            console.log("\x1b[32m\u2713\x1b[0m Saved to: \x1b[1m" + outPath2 + "\x1b[0m");
+          } catch (e: any) {
+            console.error("\nGeneration failed: " + e.message);
+            process.exit(1);
+          }
+        }
+      } else {
+        const runner = new RejectionSamplingRunner({
+          harnessDirectory: "harnesses",
+          maxRetries,
+          loreDb,
+          targetAudience,
+          enabledHarnesses,
+          systemPrompt,
+          personaConfig,
+        });
+
+        try {
+          const story = await runner.generateScene(prompt);
+          console.log("\n=== FINAL GENERATED STORY ===\n");
+          console.log(story);
+          await mkdir("output", { recursive: true });
+          const outTs3 = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          const outPath3 = join("output", "story-" + outTs3 + ".md");
+          await writeFile(outPath3, story, "utf-8");
+          console.log("\n\x1b[32m\u2713\x1b[0m Saved to: \x1b[1m" + outPath3 + "\x1b[0m");
+        } catch (e: any) {
+          console.error(`\nGeneration failed: ${e.message}`);
+          process.exit(1);
+        }
+      }
+      break;
+    }
+    case "check": {
+      const draftInput = positionals[3];
+      if (!draftInput) {
+        console.error("Error: Must specify a draft text or .md/.txt file to check.");
+        process.exit(1);
+      }
+
+      const draft = await loadPrompt(draftInput);
+      const isFile = draft !== draftInput;
+      console.log(isFile
+        ? "Checking file: " + draftInput + " (" + draft.split(/\s+/).length + " words)"
+        : "Checking inline draft (" + draft.split(/\s+/).length + " words)");
+
+      // Load persona config if provided
+      let personaConfigForCheck: import("../persona/persona-config").PersonaConfig | undefined;
+      let harnessFilter: string[] | undefined;
+
+      if (values.persona) {
+        const { resolvePersonaConfig } = await import("../persona/persona-config");
+        const personaRaw = await readFile(values.persona as string, "utf-8");
+        const persona = JSON.parse(personaRaw) as WriterPersona;
+        harnessFilter = persona.enabledHarnesses ?? getEnabledHarnesses(persona);
+        personaConfigForCheck = persona.checkerConfig ?? resolvePersonaConfig(persona);
+        console.log("Persona: " + persona.name + " (" + harnessFilter.length + " harnesses, " +
+          Object.values(personaConfigForCheck.enabledCheckers).filter(Boolean).length + " checkers)");
+      }
+
+      // Apply --harness filter (overrides persona if both set)
+      if (values.harness) {
+        const requested = (values.harness as string).split(",").map(s => s.trim());
+        harnessFilter = (harnessFilter ?? (await import("../persona/harness-map")).ALL_HARNESS_FILES.slice())
+          .filter(f => requested.some(r => f.toLowerCase().includes(r.toLowerCase())));
+        console.log("Harness filter: " + harnessFilter.join(", "));
+      }
+
+      // Build context
+      let loreDb = {};
+      try {
+        const loreRaw = await readFile("datasets/lore.json", "utf-8");
+        loreDb = JSON.parse(loreRaw);
+      } catch { /* no lore */ }
+
+      const context: import("../types").HarnessContext = {
         loreDb,
+        previousBeats: [],
         targetAudience: "general",
+        personaConfig: personaConfigForCheck,
+      };
+
+      // Load harnesses
+      const { readdir: readdirHarness } = await import("fs/promises");
+      const { executeHarnessInSandbox } = await import("../environment/sandbox");
+      const { executeHybridHarness } = await import("../environment/hybrid-harness");
+      const { executeLlmHarness } = await import("../environment/llm-harness");
+      const harnessDir = "harnesses";
+
+      let files: string[] = [];
+      try { files = await readdirHarness(harnessDir); } catch { /* no dir */ }
+
+      const transpiler = new Bun.Transpiler({ loader: "ts" });
+      let totalIssues = 0;
+      let totalPassed = 0;
+
+      console.log("\n\x1b[1;36m=== Running Checks ===\x1b[0m\n");
+
+      // Gate 1: Code harnesses
+      for (const file of files) {
+        if (!((file.endsWith(".ts") || file.endsWith(".js")) && !file.includes(".test."))) continue;
+        if (harnessFilter && !harnessFilter.includes(file)) continue;
+
+        const raw = await readFile(join(harnessDir, file), "utf-8");
+        const code = file.endsWith(".ts") ? transpiler.transformSync(raw) : raw;
+        try {
+          const result = await executeHarnessInSandbox(code, draft, context);
+          if (result.valid) {
+            console.log("  \x1b[32m\u2713\x1b[0m " + file);
+            totalPassed++;
+          } else {
+            console.log("  \x1b[31m\u2717\x1b[0m " + file);
+            for (const f of result.feedback) {
+              console.log("    \x1b[31m- " + f + "\x1b[0m");
+              totalIssues++;
+            }
+          }
+        } catch (e: any) {
+          console.log("  \x1b[33m\u26A0\x1b[0m " + file + " \x1b[2m(error: " + e.message + ")\x1b[0m");
+        }
+      }
+
+      // Gate 2: Hybrid harnesses
+      for (const file of files) {
+        if (!file.endsWith(".hybrid.json")) continue;
+        if (harnessFilter && !harnessFilter.includes(file)) continue;
+
+        const raw = await readFile(join(harnessDir, file), "utf-8");
+        try {
+          const parsed = JSON.parse(raw);
+          const domain = (parsed.domain || "logic") as import("../environment/hybrid-harness").HybridDomain;
+          const result = await executeHybridHarness(
+            parsed.extractionPromptAddendum || "",
+            parsed.verificationCode || "",
+            draft, context, domain
+          );
+          if (result.valid) {
+            console.log("  \x1b[32m\u2713\x1b[0m " + file + " \x1b[2m(" + domain + ")\x1b[0m");
+            totalPassed++;
+          } else {
+            console.log("  \x1b[31m\u2717\x1b[0m " + file + " \x1b[2m(" + domain + ")\x1b[0m");
+            for (const f of result.feedback) {
+              console.log("    \x1b[31m- " + f + "\x1b[0m");
+              totalIssues++;
+            }
+          }
+        } catch (e: any) {
+          console.log("  \x1b[33m\u26A0\x1b[0m " + file + " \x1b[2m(error: " + e.message + ")\x1b[0m");
+        }
+      }
+
+      // Gate 3: Prompt harnesses
+      for (const file of files) {
+        if (!file.endsWith(".prompt.txt")) continue;
+        if (harnessFilter && !harnessFilter.includes(file)) continue;
+
+        const promptText = await readFile(join(harnessDir, file), "utf-8");
+        try {
+          const result = await executeLlmHarness(promptText, draft, context);
+          if (result.valid) {
+            console.log("  \x1b[32m\u2713\x1b[0m " + file);
+            totalPassed++;
+          } else {
+            console.log("  \x1b[31m\u2717\x1b[0m " + file);
+            for (const f of result.feedback) {
+              console.log("    \x1b[31m- " + f + "\x1b[0m");
+              totalIssues++;
+            }
+          }
+        } catch (e: any) {
+          console.log("  \x1b[33m\u26A0\x1b[0m " + file + " \x1b[2m(error: " + e.message + ")\x1b[0m");
+        }
+      }
+
+      // Summary
+      console.log("\n\x1b[1m=== Summary ===\x1b[0m");
+      if (totalIssues === 0) {
+        console.log("  \x1b[32mAll checks passed!\x1b[0m (" + totalPassed + " harnesses)");
+      } else {
+        console.log("  \x1b[31m" + totalIssues + " issue(s) found\x1b[0m across " + totalPassed + " passed + failed harnesses");
+      }
+      break;
+    }
+    case "split": {
+      const promptInput = positionals[3];
+      if (!promptInput) {
+        console.error("Error: Must specify a prompt or .md/.txt file path to split.");
+        process.exit(1);
+      }
+
+      const prompt = await loadPrompt(promptInput);
+      const maxWordsPerSection = parseInt(values["max-words-per-section"] as string) || 1200;
+
+      console.log("\x1b[2mSplitting prompt into sections (target: ~" + maxWordsPerSection + " words each)...\x1b[0m");
+
+      const { StorySplitter } = await import("../runner/story-splitter");
+      const splitter = new StorySplitter({ maxWordsPerSection });
+      const sections = await splitter.split(prompt);
+
+      console.log("\n\x1b[1;36m=== Story Plan (" + sections.length + " sections) ===\x1b[0m\n");
+      for (let i = 0; i < sections.length; i++) {
+        const s = sections[i];
+        console.log("  \x1b[1m" + (i + 1) + ". " + s.title + "\x1b[0m \x1b[2m(~" + s.estimatedWords + " words)\x1b[0m");
+        console.log("     \x1b[2m" + s.prompt + "\x1b[0m");
+        console.log("");
+      }
+
+      // Save plan
+      const plansDir = "plans";
+      await mkdir(plansDir, { recursive: true });
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      const planFile = join(plansDir, "plan-" + timestamp + ".json");
+      const plan = {
+        originalPrompt: prompt,
+        maxWordsPerSection,
+        createdAt: new Date().toISOString(),
+        sections,
+      };
+      await writeFile(planFile, JSON.stringify(plan, null, 2), "utf-8");
+
+      console.log("\x1b[32m\u2713\x1b[0m Plan saved to: \x1b[1m" + planFile + "\x1b[0m");
+      console.log("  Review and edit the plan, then generate:");
+      console.log("  \x1b[36mbun run src/cli/index.ts generate --plan " + planFile + " --persona personas/your-persona.json\x1b[0m");
+      break;
+    }
+    case "create-persona": {
+      const readline = await import("readline");
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const ask = (q: string): Promise<string> =>
+        new Promise((resolve) => rl.question(q, resolve));
+
+      const selectOption = async (
+        label: string,
+        options: readonly string[],
+        suggested?: string,
+        reason?: string,
+      ): Promise<string> => {
+        console.log("\n" + label + ":");
+        options.forEach((opt, i) => {
+          const marker = (suggested && opt === suggested) ? " \x1b[32m<-- suggested\x1b[0m" : "";
+          console.log("  " + (i + 1) + ". " + opt + marker);
+        });
+        const customIdx = options.length + 1;
+        console.log("  " + customIdx + ". custom [type your own]");
+        if (suggested && reason) {
+          console.log("  \x1b[2mSuggested: " + suggested + " — " + reason + "\x1b[0m");
+        }
+        const defaultHint = suggested ? " [Enter = " + suggested + "]" : "";
+        const answer = await ask("Choose (number)" + defaultHint + ": ");
+
+        // Enter with no input → accept suggestion
+        if (answer.trim() === "" && suggested) {
+          return suggested;
+        }
+
+        const idx = parseInt(answer) - 1;
+        if (idx === options.length) {
+          const custom = await ask("Enter custom " + label.toLowerCase() + ": ");
+          const value = custom.trim().toLowerCase().replace(/\s+/g, "-");
+          if (!value) {
+            const fallbackVal = suggested || options[0];
+            console.log("Empty input, using: " + fallbackVal);
+            return fallbackVal;
+          }
+          return value;
+        }
+        if (idx >= 0 && idx < options.length) return options[idx];
+        const fallbackVal = suggested || options[0];
+        console.log("Invalid choice, using: " + fallbackVal);
+        return fallbackVal;
+      };
+
+      console.log("\x1b[1;36m=== Create Writer Persona ===\x1b[0m");
+      const name = positionals[3] || (await ask("Persona name: "));
+
+      // Ask LLM to suggest defaults based on persona name
+      const { suggestPersonaDefaults } = await import("../persona/suggest");
+      console.log("\n\x1b[2mAnalyzing persona name...\x1b[0m");
+      const suggestions = await suggestPersonaDefaults(name);
+      console.log("\x1b[32m✓\x1b[0m LLM suggestions ready.");
+
+      const genre = await selectOption("Genre", GENRES, suggestions.genre, suggestions.reasons.genre);
+      const tone = await selectOption("Tone", TONES, suggestions.tone, suggestions.reasons.tone);
+      const style = await selectOption("Style", STYLES, suggestions.style, suggestions.reasons.style);
+      const audienceAge = await selectOption("Target Audience", AUDIENCE_AGES, suggestions.audienceAge, suggestions.reasons.audienceAge);
+
+      const customPromptAnswer = await ask("\nCustom writing instruction (optional, press Enter to skip): ");
+
+      // Multi-select emphasis menu — sort suggestions to match menu order
+      const rawSuggested = suggestions.emphasis || [];
+      const suggestedEmphasis = [...rawSuggested].sort(
+        (a, b) => (EMPHASES as readonly string[]).indexOf(a) - (EMPHASES as readonly string[]).indexOf(b)
+      );
+      console.log("\nEmphasis priorities (what matters most for this persona):");
+      EMPHASES.forEach((e, i) => {
+        const marker = suggestedEmphasis.includes(e) ? " \x1b[32m<-- suggested\x1b[0m" : "";
+        console.log("  " + (i + 1) + ". " + e + marker);
+      });
+      if (suggestedEmphasis.length > 0 && suggestions.reasons.emphasis) {
+        console.log("  \x1b[2mSuggested: " + suggestedEmphasis.join(", ") + " — " + suggestions.reasons.emphasis + "\x1b[0m");
+      }
+      const suggestedNums = suggestedEmphasis
+        .map((e) => (EMPHASES as readonly string[]).indexOf(e) + 1)
+        .filter((n) => n > 0);
+      const defaultLabel = suggestedNums.length > 0
+        ? " [Enter = " + suggestedNums.join(",") + "]"
+        : "";
+      const emphasisAnswer = await ask("Choose numbers (e.g. 1,3,5)" + defaultLabel + ": ");
+
+      let selectedEmphasis: string[] | undefined;
+      if (emphasisAnswer.trim() === "") {
+        selectedEmphasis = suggestedEmphasis.length > 0 ? suggestedEmphasis : undefined;
+      } else {
+        const nums = emphasisAnswer.split(/[,\s]+/).map((s) => parseInt(s.trim()) - 1);
+        selectedEmphasis = nums
+          .filter((n) => n >= 0 && n < EMPHASES.length)
+          .map((n) => EMPHASES[n]);
+        if (selectedEmphasis.length === 0) selectedEmphasis = undefined;
+      }
+
+      // Resolve harnesses and checker config from genre
+      const { resolvePersonaConfig: resolveConfig } = await import("../persona/persona-config");
+      const tempPersona = createPersona({ name, genre, tone, style, audienceAge });
+      const enabled = getEnabledHarnesses(tempPersona);
+      const checkerConfig = resolveConfig(tempPersona);
+
+      const persona = createPersona({
+        name,
+        genre,
+        tone,
+        style,
+        audienceAge,
+        systemPrompt: customPromptAnswer.trim() || undefined,
+        emphasis: selectedEmphasis as any,
+        enabledHarnesses: enabled,
+        checkerConfig,
       });
 
+      // Show preview
+      const { getExcludedHarnesses } = await import("../persona/harness-map");
+      const { getExcludedCheckers, countEnabledRules } = await import("../persona/persona-config");
+      const excludedHarnesses = getExcludedHarnesses(tempPersona);
+      const excludedCheckers = getExcludedCheckers(tempPersona);
+      const ruleCounts = countEnabledRules(tempPersona);
+
+      console.log("\n\x1b[1;36m=== Persona Preview ===\x1b[0m");
+      console.log("  \x1b[2mName:\x1b[0m     \x1b[1m" + persona.name + "\x1b[0m");
+      console.log("  \x1b[2mGenre:\x1b[0m    \x1b[32m" + persona.genre + "\x1b[0m");
+      console.log("  \x1b[2mTone:\x1b[0m     \x1b[32m" + persona.tone + "\x1b[0m");
+      console.log("  \x1b[2mStyle:\x1b[0m    \x1b[32m" + persona.style + "\x1b[0m");
+      console.log("  \x1b[2mAudience:\x1b[0m \x1b[32m" + persona.audienceAge + "\x1b[0m");
+      if (persona.systemPrompt) console.log("  \x1b[2mCustom:\x1b[0m   " + persona.systemPrompt);
+      if (persona.emphasis) console.log("  \x1b[2mEmphasis:\x1b[0m \x1b[32m" + persona.emphasis.join(", ") + "\x1b[0m");
+
+      console.log("\n  \x1b[1mValidation Pipeline\x1b[0m");
+      console.log("  \x1b[2mHarnesses:\x1b[0m \x1b[33m" + enabled.length + "/10 enabled\x1b[0m");
+      console.log("  \x1b[2mRules:\x1b[0m     \x1b[33m" + ruleCounts.enabled + "/" + ruleCounts.total + " active\x1b[0m");
+
+      if (excludedHarnesses.length > 0) {
+        console.log("\n  \x1b[1mExcluded Harnesses\x1b[0m");
+        for (const h of excludedHarnesses) {
+          console.log("  \x1b[31m  ✗ " + h.file + "\x1b[0m");
+          console.log("  \x1b[2m    " + h.description + "\x1b[0m");
+          console.log("  \x1b[2m    Why: " + h.reason + "\x1b[0m");
+        }
+      }
+
+      if (excludedCheckers.length > 0) {
+        console.log("\n  \x1b[1mExcluded Checkers\x1b[0m");
+        for (const c of excludedCheckers) {
+          console.log("  \x1b[31m  ✗ " + c.checker + "\x1b[0m \x1b[2m(" + c.rules + " rules)\x1b[0m");
+          console.log("  \x1b[2m    " + c.description + "\x1b[0m");
+          console.log("  \x1b[2m    Why: " + c.reason + "\x1b[0m");
+        }
+      }
+
+      // Save — generate filename that preserves Unicode (CJK, etc.)
+      const personasDir = "personas";
+      await mkdir(personasDir, { recursive: true });
+      let slug = name.replace(/\s+/g, "-").replace(/[/\\:*?"<>|]/g, "");
+      if (!slug || slug === "-" || /^-+$/.test(slug)) {
+        slug = "persona-" + Date.now();
+      }
+      const filename = slug + ".json";
+      const filepath = join(personasDir, filename);
+      await writeFile(filepath, JSON.stringify(persona, null, 2), "utf-8");
+      console.log("\n\x1b[32m✓\x1b[0m Saved to: \x1b[1m" + filepath + "\x1b[0m");
+      console.log("  Run: \x1b[36mbun run src/cli/index.ts generate \"your prompt\" --persona " + filepath + "\x1b[0m");
+
+      rl.close();
+      break;
+    }
+    case "list-personas": {
+      const { readdir: readdirPersonas } = await import("fs/promises");
+      const personasDir = "personas";
       try {
-        const story = await runner.generateScene(prompt);
-        console.log("\n=== FINAL GENERATED STORY ===\n");
-        console.log(story);
-      } catch (e: any) {
-        console.error(`\nGeneration failed: ${e.message}`);
-        process.exit(1);
+        const files = await readdirPersonas(personasDir);
+        const jsonFiles = files.filter((f) => f.endsWith(".json"));
+        if (jsonFiles.length === 0) {
+          console.log("No personas found. Create one with: bun run src/cli/index.ts create-persona");
+          break;
+        }
+        console.log("Available personas:\n");
+        for (const file of jsonFiles) {
+          try {
+            const raw = await readFile(join(personasDir, file), "utf-8");
+            const p = JSON.parse(raw) as WriterPersona;
+            const enabled = getEnabledHarnesses(p);
+            console.log("  " + file);
+            console.log("    Name: " + p.name + " | Genre: " + p.genre + " | Tone: " + p.tone + " | Style: " + p.style);
+            console.log("    Harnesses: " + enabled.length + " enabled");
+            console.log("");
+          } catch {
+            console.log("  " + file + " (invalid JSON)");
+          }
+        }
+      } catch {
+        console.log("No personas/ directory found. Create one with: bun run src/cli/index.ts create-persona");
       }
       break;
     }

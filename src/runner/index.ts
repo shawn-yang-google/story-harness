@@ -32,6 +32,12 @@ export interface RunnerOptions {
   loreDb: Record<string, any>;
   targetAudience: string;
   logDirectory?: string;
+  /** If provided, only load harness files whose names are in this list. */
+  enabledHarnesses?: string[];
+  /** If provided, used as the system instruction for the generator LLM. */
+  systemPrompt?: string;
+  /** If provided, fine-grained checker flags and thresholds. */
+  personaConfig?: import("../persona/persona-config").PersonaConfig;
 }
 
 export interface LoadedHarnesses {
@@ -77,6 +83,7 @@ export class RejectionSamplingRunner {
       loreDb: this.options.loreDb,
       previousBeats: this.previousBeats,
       targetAudience: this.options.targetAudience,
+      personaConfig: this.options.personaConfig,
     };
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -101,7 +108,7 @@ export class RejectionSamplingRunner {
     ].join("\n");
 
     console.log(c.dim + "Generating initial draft..." + c.reset);
-    let currentDraft = await generateContent(MODELS.GENERATOR, initialPrompt);
+    let currentDraft = await generateContent(MODELS.GENERATOR, initialPrompt, this.options.systemPrompt);
     if (!currentDraft) {
       throw new Error("Generator LLM returned empty or undefined response.");
     }
@@ -701,7 +708,12 @@ export class RejectionSamplingRunner {
 
     try {
       const files = await readdir(this.options.harnessDirectory);
+      const allowlist = this.options.enabledHarnesses;
       for (const file of files) {
+        // If a persona-based allowlist is set, skip harnesses not in it
+        if (allowlist && !allowlist.includes(file)) {
+          continue;
+        }
         if (file.endsWith(".hybrid.json")) {
           const raw = await readFile(join(this.options.harnessDirectory, file), "utf-8");
           try {

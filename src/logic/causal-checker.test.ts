@@ -73,7 +73,7 @@ describe("CausalChecker", () => {
       ],
     });
     const context: HarnessContext = {
-      loreDb: { [CHARACTER_NAME_KAEL]: { weapon: "Frostblade" } },
+      loreDb: { "[CHARACTER_NAME_KAEL]": { weapon: "Frostblade" } },
       previousBeats: [],
       targetAudience: "general",
     };
@@ -95,7 +95,7 @@ describe("CausalChecker", () => {
       ],
     });
     const context: HarnessContext = {
-      loreDb: { [CHARACTER_NAME_KAEL]: { weapon: "Frostblade" } },
+      loreDb: { "[CHARACTER_NAME_KAEL]": { weapon: "Frostblade" } },
       previousBeats: [],
       targetAudience: "general",
     };

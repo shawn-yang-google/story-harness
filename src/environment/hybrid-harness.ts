@@ -3,19 +3,22 @@ import { buildExtractionPrompt as buildLogicPrompt } from "../logic/extraction-p
 import { buildDialogueExtractionPrompt } from "../dialogue/extraction-prompt";
 import { buildCharacterExtractionPrompt } from "../character/extraction-prompt";
 import { buildNarrativeExtractionPrompt } from "../narrative/extraction-prompt";
+import { buildReferenceExtractionPrompt } from "../reference/extraction-prompt";
 import { runAllCheckers as runLogicCheckers } from "../logic";
 import { checkDialogue } from "../dialogue";
 import { checkCharacter } from "../character";
 import { checkNarrative } from "../narrative";
+import { checkReferences } from "../reference/reference-checker";
 import type { HarnessContext, HarnessResult } from "../types";
 import { createEmptyLogicGraph } from "../types/logic-graph";
 import { createEmptyDialogueGraph } from "../types/dialogue-graph";
 import { createEmptyCharacterGraph } from "../types/character-graph";
 import { createEmptyNarrativeGraph } from "../types/narrative-graph";
+import { createEmptyReferenceGraph } from "../types/reference-graph";
 import type { CheckResult } from "../logic/types";
 import { buildValidationPrompt, applyGraphPatches } from "../logic/graph-validator";
 
-export type HybridDomain = "logic" | "dialogue" | "character" | "narrative";
+export type HybridDomain = "logic" | "dialogue" | "character" | "narrative" | "reference";
 
 /**
  * Executes a Tier 2 Hybrid Harness for any domain.
@@ -111,6 +114,8 @@ function buildPromptForDomain(
       return buildCharacterExtractionPrompt(draft, context);
     case "narrative":
       return buildNarrativeExtractionPrompt(draft, context);
+    case "reference":
+      return buildReferenceExtractionPrompt(draft, context);
   }
 }
 
@@ -123,22 +128,33 @@ function parseAndVerifyWithGraph(
   response: string,
   context: HarnessContext
 ): { results: CheckResult[]; graph: Record<string, unknown> } {
+  const flags = context.personaConfig?.enabledCheckers;
+
   switch (domain) {
     case "logic": {
       const graph = parseJsonResponse(response, createEmptyLogicGraph());
+      // Individual logic checker filtering is handled inside runLogicCheckers
       return { results: runLogicCheckers(graph, context), graph };
     }
     case "dialogue": {
       const graph = parseJsonResponse(response, createEmptyDialogueGraph());
+      if (flags && !flags.dialogue) return { results: [], graph };
       return { results: checkDialogue(graph), graph };
     }
     case "character": {
       const graph = parseJsonResponse(response, createEmptyCharacterGraph());
+      if (flags && !flags.character) return { results: [], graph };
       return { results: checkCharacter(graph), graph };
     }
     case "narrative": {
       const graph = parseJsonResponse(response, createEmptyNarrativeGraph());
+      if (flags && !flags.narrative) return { results: [], graph };
       return { results: checkNarrative(graph), graph };
+    }
+    case "reference": {
+      const graph = parseJsonResponse(response, createEmptyReferenceGraph());
+      if (flags && !flags.reference) return { results: [], graph };
+      return { results: checkReferences(graph, context), graph };
     }
   }
 }

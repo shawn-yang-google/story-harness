@@ -1,3 +1,6 @@
+// TODO: Add compressed_resolution rule — detect plot-critical events in <1 paragraph
+// TODO: Add section_continuity checker for multi-section stories (names, timeline, tone)
+// TODO: Support rule-level toggles in PersonaConfig (not just checker-level)
 import type { NarrativeGraph } from "../types/narrative-graph";
 import type { CheckResult } from "../logic/types";
 
@@ -16,6 +19,7 @@ import type { CheckResult } from "../logic/types";
  * 9. no_catharsis — Story lacks emotional release
  * 10. thematic_revelation_missing — No universal insight beyond personal arc
  * 11. journey_stages_missing — Insufficient Hero's Journey structural stages
+ * 12. editorializing_ending — Final paragraph summarizes theme instead of ending on imagery/action
  */
 export function checkNarrative(graph: NarrativeGraph): CheckResult[] {
   const results: CheckResult[] = [];
@@ -30,6 +34,7 @@ export function checkNarrative(graph: NarrativeGraph): CheckResult[] {
   results.push(...checkCatharsis(graph));
   results.push(...checkThematicRevelation(graph));
   results.push(...checkJourneyStages(graph));
+  results.push(...checkEditorialization(graph));
 
   return results;
 }
@@ -283,6 +288,47 @@ function checkJourneyStages(graph: NarrativeGraph): CheckResult[] {
         `threshold, ordeal, and return with elixir ` +
         `([MASTER_THEORIST]: the-writers-journey-process).`,
       evidence: graph.journeyStages.map(s => s.stage),
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Check 12: Editorializing Ending
+ *
+ * A story that ends with the author summarizing the theme or intruding
+ * with commentary violates the "show don't tell" principle at its most
+ * critical moment — the final impression. Great endings land on concrete
+ * imagery or action, letting the reader draw their own conclusions.
+ */
+function checkEditorialization(graph: NarrativeGraph): CheckResult[] {
+  const results: CheckResult[] = [];
+
+  if (!graph.endingAnalysis) {
+    return results; // No data — skip gracefully
+  }
+
+  const ending = graph.endingAnalysis;
+
+  // Flag if the ending summarizes theme OR has author intrusion,
+  // AND doesn't end on concrete imagery or action
+  if (
+    (ending.summarizesTheme || ending.authorIntrusion) &&
+    !ending.endsOnConcreteImagery &&
+    !ending.endsOnAction
+  ) {
+    results.push({
+      checker: "NarrativeChecker",
+      rule: "editorializing_ending",
+      severity: "warning",
+      message:
+        "The final paragraph editorializes by summarizing the story's theme " +
+        "rather than ending on concrete imagery or character action. " +
+        "Strong endings trust the reader to draw meaning from what has been shown. " +
+        "Consider cutting the summary and ending on the last concrete image or action " +
+        "([MASTER_THEORIST]: show-dont-tell-in-endings).",
+      evidence: [ending.finalParagraph.slice(0, 100)],
     });
   }
 

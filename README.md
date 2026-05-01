@@ -25,7 +25,7 @@ Prompt ──► LLM Draft ──► Gate 1 (Code) ──► Gate 2 (Hybrid) ─
 | Tier | What | Speed | Cost | Used | Origin |
 |------|------|-------|------|------|--------|
 | **Tier 1** | Deterministic TypeScript code | <5ms | Free | Inference | **Synthesized** — tree-search + Thompson sampling, trained against Tier 4 labels |
-| **Tier 2** | LLM extract + code verify | ~300ms | ~$0.0002 | Inference | **Expert-crafted** — hand-written extraction prompts and 48 deterministic checkers |
+| **Tier 2** | LLM extract + code verify | ~300ms | ~$0.0002 | Inference | **Expert-crafted** — hand-written extraction prompts and 66 deterministic checkers |
 | **Tier 3** | LLM prompt evaluation | ~500ms | ~$0.0002 | Inference (subjective only) | **Synthesized** — prompt text refined by Gemini 2.5 Flash, trained against Tier 4 labels |
 | **Tier 4** | Gemini 2.5 Pro LLM-as-Judge | Slow | Expensive | Training only | N/A — the oracle judge itself |
 
@@ -67,13 +67,81 @@ bun run src/cli/index.ts train LogicHarness --mode prompt --auto
 ### Generate a Story
 
 ```bash
+# Simple generation (single scene)
 bun run src/cli/index.ts generate "A detective arrives at a crime scene"
+
+# Generate from a .md file
+bun run src/cli/index.ts generate story-prompt.md
+```
+
+### Writer Personas
+
+Create a **writer persona** to customize the LLM's voice and control which harnesses/checkers are active:
+
+```bash
+# Interactive persona builder (LLM suggests defaults based on the name)
+bun run src/cli/index.ts create-persona "noir detective writer"
+
+# List available personas
+bun run src/cli/index.ts list-personas
+
+# Generate with a persona
+bun run src/cli/index.ts generate "A body is found in the study" \
+  --persona personas/noir-detective-writer.json
+```
+
+Each persona JSON includes genre, tone, style, audience, enabled harnesses, checker flags, and tunable thresholds — all editable:
+
+```json
+{
+  "name": "noir detective writer",
+  "genre": "mystery",
+  "tone": "dark",
+  "style": "minimalist",
+  "enabledHarnesses": ["StyleHarness.ts", "StructureHarness.ts", ...],
+  "checkerConfig": {
+    "enabledCheckers": { "propositional": true, "soundness": true, ... },
+    "thresholds": { "maxExclamationMarks": 2, "minWords": 500, ... }
+  }
+}
+```
+
+### Multi-Section Stories
+
+For longer stories, split the prompt into sections and generate each one sequentially:
+
+```bash
+# Auto-split and generate
+bun run src/cli/index.ts generate story-prompt.md \
+  --persona personas/literary-fiction.json \
+  --multi-section --max-words-per-section 800
+
+# Or: split first, review the plan, then generate
+bun run src/cli/index.ts split story-prompt.md --max-words-per-section 800
+# Edit plans/plan-*.json to adjust sections...
+bun run src/cli/index.ts generate --plan plans/plan-2026-04-30.json \
+  --persona personas/literary-fiction.json
+```
+
+### Check a Draft
+
+Run harnesses against an existing draft without correction — just diagnosis:
+
+```bash
+# Check with all harnesses
+bun run src/cli/index.ts check draft.md
+
+# Check with a persona (only relevant harnesses + checkers)
+bun run src/cli/index.ts check draft.md --persona personas/noir-detective.json
+
+# Check with specific harnesses only
+bun run src/cli/index.ts check draft.md --harness Style,Logic,Character
 ```
 
 ### Run Tests
 
 ```bash
-bun test
+bun test    # 317 tests across 40 files
 ```
 
 ## Documentation
@@ -103,17 +171,30 @@ Detailed documentation lives in the [`docs/`](docs/) directory:
 ```
 storyharness/
 ├── src/
-│   ├── cli/              # CLI entrypoints (train, generate)
+│   ├── cli/              # CLI entrypoints (train, generate, split, check, create-persona)
+│   │   ├── prompt-loader.ts  # Load prompts from .md/.txt files
+│   │   └── index.ts          # Main CLI dispatcher
+│   ├── persona/          # Writer persona system
+│   │   ├── index.ts          # WriterPersona type, GENRES/TONES/STYLES/EMPHASES
+│   │   ├── harness-map.ts    # Genre→harness mapping + exclusion reasons
+│   │   ├── persona-config.ts # Checker flags + thresholds per genre (66 rules)
+│   │   ├── prompt-builder.ts # LLM system prompt from persona
+│   │   └── suggest.ts        # LLM-based default suggestions for persona creation
+│   ├── runner/           # Rejection sampling inference loop
+│   │   ├── story-splitter.ts # LLM-based story section splitting
+│   │   └── multi-section.ts  # Sequential multi-section generation
 │   ├── environment/      # Trajectory loader, sandbox, critics, LLM harness
 │   ├── llm/              # Gemini API client & model configuration
-│   ├── runner/           # Rejection sampling inference loop
 │   ├── synthesizer/      # Tree-search, Thompson sampling, code/prompt synthesis
 │   ├── types/            # Core interfaces (LogicGraph, DialogueGraph, etc.)
-│   ├── logic/            # 6 logic checker modules (27 checks)
-│   ├── dialogue/         # Dialogue checker (8 checks)
-│   ├── character/        # Character checker (6 checks)
-│   └── narrative/        # Narrative checker (7 checks)
+│   ├── logic/            # 9 logic checker modules (30 rules)
+│   ├── dialogue/         # Dialogue checker (8 rules)
+│   ├── character/        # Character checker (11 rules)
+│   └── narrative/        # Narrative checker (12 rules, incl. editorializing ending)
 ├── harnesses/            # Generated harnesses (.ts, .hybrid.json, .prompt.txt)
+├── personas/             # Writer persona JSON files
+├── plans/                # Story split plans (from 'split' command)
+├── output/               # Generated story output (.md files)
 ├── datasets/             # Training trajectories (.json)
 ├── docs/                 # Documentation (architecture, tiers, domains)
 └── arxiv.md              # AutoHarness paper reference

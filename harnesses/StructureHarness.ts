@@ -1,3 +1,6 @@
+// TODO: Read minWords, minLength from context.personaConfig.thresholds (children: 200, default: 500)
+// TODO: Add compressed-resolution checker — detect when plot-critical events get <1 paragraph
+// TODO: Add passive-protagonist checker — detect characters losing agency mid-story
 /**
  * @typedef {object} HarnessContext
  * @property {number} [minLength=100] - Minimum required length of the draft in characters. Defaults to 100.
@@ -35,8 +38,12 @@ async function evaluate(draft, context) {
     }
 
     // 1b. Check word count (scenes should be substantial)
+    // CJK-aware: each CJK character counts as ~1 word, Latin words split by whitespace
     const minWords = context.minWords ?? 500;
-    const wordCount = draft.split(/\s+/).filter(w => w.length > 0).length;
+    const cjkChars = (draft.match(/[\u4e00-\u9fff\u3400-\u4dbf\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/g) || []).length;
+    const nonCjkText = draft.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uF900-\uFAFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/g, ' ');
+    const latinWords = nonCjkText.split(/\s+/).filter(w => w.length > 0 && /[a-zA-Z0-9]/.test(w)).length;
+    const wordCount = cjkChars + latinWords;
     if (wordCount < minWords) {
         feedback.push(`Draft is only ${wordCount} words. A complete scene should be at least ${minWords} words. Expand the narrative with more detail, dialogue, and action.`);
         valid = false;
@@ -46,7 +53,7 @@ async function evaluate(draft, context) {
     const trimmedDraft = draft.trim();
     if (trimmedDraft.length > 0) {
         const lastChar = trimmedDraft[trimmedDraft.length - 1];
-        if (!['.', '!', '?', '"', "'", '…', '—'].includes(lastChar)) {
+        if (!['.', '!', '?', '"', "'", '…', '—', '。', '！', '？', '"', '」', '）'].includes(lastChar)) {
             feedback.push("Draft appears to end mid-sentence. Ensure the scene reaches a complete ending.");
             valid = false;
         }
@@ -100,7 +107,7 @@ async function evaluate(draft, context) {
                 feedback.push(`The first non-empty line appears too short to be a proper title (expected at least ${config.minTitleLength} characters).`);
                 valid = false;
             }
-            if (!/[A-Za-z]/.test(firstNonEmptyLine)) {
+            if (!/[A-Za-z\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/.test(firstNonEmptyLine)) {
                 feedback.push("The first non-empty line does not contain any letters, suggesting it might not be a proper title.");
                 valid = false;
             }

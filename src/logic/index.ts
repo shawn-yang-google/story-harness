@@ -30,7 +30,10 @@ import { checkWorldKnowledge } from "./world-knowledge-checker";
 import { checkJustification } from "./justification-checker";
 
 /**
- * Runs all 9 logic checker modules against a LogicGraph.
+ * Runs logic checker modules against a LogicGraph.
+ *
+ * If context.personaConfig is set, only runs checkers that are enabled
+ * in personaConfig.enabledCheckers. Otherwise runs all 9 checkers.
  *
  * Returns the combined array of all CheckResults (errors + warnings).
  * The caller can filter by severity to determine pass/fail.
@@ -39,15 +42,18 @@ export function runAllCheckers(
   graph: LogicGraph,
   context: HarnessContext
 ): CheckResult[] {
-  return [
-    ...checkPropositional(graph),
-    ...checkTemporal(graph),
-    ...checkEpistemic(graph),
-    ...checkDeontic(graph),
-    ...checkEntity(graph),
-    ...checkCausal(graph, context),
-    ...checkSoundness(graph),
-    ...checkWorldKnowledge(graph),
-    ...checkJustification(graph),
-  ];
+  const flags = context.personaConfig?.enabledCheckers;
+  const results: CheckResult[] = [];
+
+  if (!flags || flags.propositional) results.push(...checkPropositional(graph));
+  if (!flags || flags.temporal)      results.push(...checkTemporal(graph));
+  if (!flags || flags.epistemic)     results.push(...checkEpistemic(graph));
+  if (!flags || flags.deontic)       results.push(...checkDeontic(graph));
+  if (!flags || flags.entity)        results.push(...checkEntity(graph));
+  if (!flags || flags.causal)        results.push(...checkCausal(graph, context));
+  if (!flags || flags.soundness)     results.push(...checkSoundness(graph));
+  if (!flags || flags.worldKnowledge) results.push(...checkWorldKnowledge(graph));
+  if (!flags || flags.justification) results.push(...checkJustification(graph));
+
+  return results;
 }

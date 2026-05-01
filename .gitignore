@@ -1,5 +1,10 @@
 node_modules/
 .env
+.own
+plans/
+personas/
+output/
+logs/
 dist/
 tree_state.json
 harnesses/**/*.js
