@@ -254,3 +254,68 @@ export function extractVerifiedFacts(
 
   return facts;
 }
+
+/**
+ * Result of merging resolved research into an existing loreDb.
+ */
+export interface ResolveMergeResult {
+  /** A new loreDb object with verified facts merged under `references`. */
+  updatedLore: Record<string, any>;
+  /** Number of items added (had a resolution and addToLoreDb=true). */
+  addedCount: number;
+  /** Number of items skipped (no resolution OR addToLoreDb=false). */
+  skippedCount: number;
+}
+
+/**
+ * Engine for the `resolve-research` CLI command.
+ *
+ * Merges verified facts from a resolved NeedsResearchOutput into an existing
+ * loreDb object. Entries are placed under the top-level `references` key
+ * (one of the SourceChecker's recognized loreKeys, so they load automatically
+ * on the next run). Each entry retains full provenance so an author can audit
+ * later.
+ *
+ * Pure function — no I/O. The CLI handles file reads/writes.
+ *
+ * @param resolved - Parsed needs-research.json after the author filled in
+ *                   `resolution` fields.
+ * @param existingLore - Current loreDb (parsed JSON). Pass {} for a new file.
+ * @returns The updated lore plus counts for reporting.
+ */
+export function mergeResolvedIntoLore(
+  resolved: NeedsResearchOutput,
+  existingLore: Record<string, any>
+): ResolveMergeResult {
+  // Deep-clone the input so callers can rely on immutability.
+  const updatedLore: Record<string, any> = JSON.parse(JSON.stringify(existingLore));
+  if (!updatedLore.references || typeof updatedLore.references !== "object") {
+    updatedLore.references = {};
+  }
+
+  let addedCount = 0;
+  let skippedCount = 0;
+  const addedAt = new Date().toISOString();
+
+  for (const item of resolved.items) {
+    if (!item.resolution || !item.resolution.addToLoreDb) {
+      skippedCount++;
+      continue;
+    }
+
+    // Same key shape as extractVerifiedFacts so re-resolving the same claim
+    // overwrites rather than duplicates.
+    const key = `${item.category}:${item.claim.slice(0, 50).replace(/\s+/g, "_").toLowerCase()}`;
+
+    updatedLore.references[key] = {
+      fact: item.resolution.verifiedFact,
+      source: item.resolution.source,
+      addedAt,
+      originalClaim: item.claim,
+      originalLocation: item.location,
+    };
+    addedCount++;
+  }
+
+  return { updatedLore, addedCount, skippedCount };
+}

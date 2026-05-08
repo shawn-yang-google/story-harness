@@ -63,6 +63,9 @@ const { values, positionals } = parseArgs({
     harness: {
       type: "string",
     },
+    lore: {
+      type: "string",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -83,6 +86,9 @@ Commands:
   create-persona [name]       Interactively create a writer persona (saved as JSON)
   list-personas               List available personas in personas/ directory
   watch [session-dir]         Watch a running generation session (default: latest)
+  resolve-research <path>     Merge a resolved needs-research.json back into the loreDb
+                              <path> may be a session dir OR a direct file path.
+                              Use --lore <path> to override the default target.
 
 Options (train/generate):
   --mode <code|prompt>    Synthesis mode (default: code)
@@ -805,6 +811,59 @@ Video generation has been moved to the 'videoharness' project.
       await poll(); // Initial check
       // Keep alive until process exits via poll callbacks
       await new Promise(() => {}); // Block forever (poll exits via process.exit)
+      break;
+    }
+    case "resolve-research": {
+      const inputPath = positionals[3];
+      if (!inputPath) {
+        console.error("Error: must specify a session directory OR a needs-research.json file path.");
+        console.error("  Example: bun run src/cli/index.ts resolve-research logs/generate-2026-05-01T06-08-47");
+        console.error("           bun run src/cli/index.ts resolve-research path/to/needs-research.json");
+        process.exit(1);
+      }
+
+      const { stat } = await import("fs/promises");
+      const { mergeResolvedIntoLore } = await import("../reference/needs-research");
+
+      // Resolve the path: dir → look for needs-research.json inside; else use as file path.
+      let researchFile: string;
+      try {
+        const info = await stat(inputPath);
+        researchFile = info.isDirectory() ? join(inputPath, "needs-research.json") : inputPath;
+      } catch {
+        console.error("Error: path not found: " + inputPath);
+        process.exit(1);
+      }
+
+      let resolved: import("../reference/needs-research").NeedsResearchOutput;
+      try {
+        const raw = await readFile(researchFile, "utf-8");
+        resolved = JSON.parse(raw);
+      } catch (e: any) {
+        console.error("Error reading " + researchFile + ": " + e.message);
+        process.exit(1);
+      }
+
+      const lorePath = (values.lore as string | undefined) || "datasets/lore.json";
+      let existingLore: Record<string, any> = {};
+      try {
+        const loreRaw = await readFile(lorePath, "utf-8");
+        existingLore = JSON.parse(loreRaw);
+      } catch {
+        console.log("\x1b[2m(no existing " + lorePath + " — creating new file)\x1b[0m");
+      }
+
+      const { updatedLore, addedCount, skippedCount } = mergeResolvedIntoLore(resolved, existingLore);
+
+      await writeFile(lorePath, JSON.stringify(updatedLore, null, 2) + "\n", "utf-8");
+
+      console.log("\n\x1b[1;36m=== Resolve Research ===\x1b[0m");
+      console.log("  \x1b[2mSource:\x1b[0m " + researchFile);
+      console.log("  \x1b[2mTarget:\x1b[0m " + lorePath);
+      console.log("  \x1b[32m✓ Added " + addedCount + " verified fact(s)\x1b[0m under `references`");
+      if (skippedCount > 0) {
+        console.log("  \x1b[33m• Skipped " + skippedCount + " item(s)\x1b[0m (no resolution OR addToLoreDb=false)");
+      }
       break;
     }
     default: {

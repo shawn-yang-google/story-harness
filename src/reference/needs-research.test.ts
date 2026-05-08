@@ -2,6 +2,7 @@ import { describe, it, expect } from "bun:test";
 import {
   generateNeedsResearch,
   extractVerifiedFacts,
+  mergeResolvedIntoLore,
 } from "./needs-research";
 import type { NeedsResearchOutput, ResearchResolution } from "./needs-research";
 import type { ReferenceGraph } from "../types/reference-graph";
@@ -281,6 +282,142 @@ describe("NeedsResearch", () => {
 
       const facts = extractVerifiedFacts(output);
       expect(Object.keys(facts).length).toBe(0);
+    });
+  });
+
+  describe("mergeResolvedIntoLore", () => {
+    function makeOutput(items: NeedsResearchOutput["items"]): NeedsResearchOutput {
+      return {
+        generatedAt: "2024-01-01T00:00:00Z",
+        summary: {
+          totalClaims: items.length,
+          verifiedClaims: 0,
+          needsResearchClaims: items.length,
+          inaccurateClaims: 0,
+          byCategory: {} as any,
+        },
+        instructions: "",
+        items,
+      };
+    }
+
+    function resolvedItem(
+      id: string,
+      claim: string,
+      resolution: ResearchResolution | null,
+    ) {
+      return {
+        id,
+        category: "historical" as const,
+        priority: "medium" as const,
+        claim,
+        excerpt: claim,
+        location: "paragraph 1",
+        reason: "",
+        modelAssessment: "",
+        suggestedSources: [],
+        resolution,
+      };
+    }
+
+    //#given a resolved item with addToLoreDb=true and an existing loreDb
+    //#when we merge
+    //#then the new fact lands under `references` and existing keys survive
+    it("adds verified facts under `references` while preserving existing lore", () => {
+      const resolved = makeOutput([
+        resolvedItem("ref1", "1999 university expansion increased admissions 47%", {
+          accurate: true,
+          verifiedFact: "MoE: undergraduate admissions rose from 1.08M (1998) to 1.59M (1999).",
+          source: "PRC Ministry of Education statistical bulletin 1999",
+          addToLoreDb: true,
+        }),
+      ]);
+      const existing = { history: { existing_entry: { fact: "stays put", source: "x" } } };
+
+      const { updatedLore, addedCount, skippedCount } = mergeResolvedIntoLore(resolved, existing);
+
+      expect(addedCount).toBe(1);
+      expect(skippedCount).toBe(0);
+      expect(updatedLore.history.existing_entry.fact).toBe("stays put");
+      const refs = updatedLore.references as Record<string, any>;
+      const keys = Object.keys(refs);
+      expect(keys.length).toBe(1);
+      expect(refs[keys[0]].fact).toContain("undergraduate admissions");
+      expect(refs[keys[0]].source).toContain("Ministry of Education");
+      expect(refs[keys[0]].originalClaim).toContain("1999 university expansion");
+    });
+
+    //#given items with no resolution OR addToLoreDb=false
+    //#when we merge
+    //#then they are skipped and counted
+    it("skips items without resolution or with addToLoreDb=false", () => {
+      const resolved = makeOutput([
+        resolvedItem("a", "unresolved claim", null),
+        resolvedItem("b", "resolved but not promoted", {
+          accurate: false,
+          verifiedFact: "actually wrong",
+          source: "x",
+          addToLoreDb: false,
+        }),
+        resolvedItem("c", "resolved and promoted", {
+          accurate: true,
+          verifiedFact: "fact c",
+          source: "src c",
+          addToLoreDb: true,
+        }),
+      ]);
+
+      const { updatedLore, addedCount, skippedCount } = mergeResolvedIntoLore(resolved, {});
+
+      expect(addedCount).toBe(1);
+      expect(skippedCount).toBe(2);
+      expect(Object.keys(updatedLore.references).length).toBe(1);
+    });
+
+    //#given an existing loreDb passed by reference
+    //#when we merge
+    //#then the input is not mutated
+    it("does not mutate the input loreDb", () => {
+      const existing = { history: { keep: { fact: "A", source: "B" } } };
+      const before = JSON.stringify(existing);
+
+      mergeResolvedIntoLore(
+        makeOutput([
+          resolvedItem("a", "x", {
+            accurate: true,
+            verifiedFact: "y",
+            source: "z",
+            addToLoreDb: true,
+          }),
+        ]),
+        existing,
+      );
+
+      expect(JSON.stringify(existing)).toBe(before);
+    });
+
+    //#given an existing loreDb that already has a `references` object
+    //#when we merge new items
+    //#then existing reference entries survive and new ones are added
+    it("preserves existing entries under `references`", () => {
+      const existing = {
+        references: {
+          "historical:earlier_one": { fact: "old", source: "old src" },
+        },
+      };
+      const resolved = makeOutput([
+        resolvedItem("a", "new claim", {
+          accurate: true,
+          verifiedFact: "new fact",
+          source: "new src",
+          addToLoreDb: true,
+        }),
+      ]);
+
+      const { updatedLore } = mergeResolvedIntoLore(resolved, existing);
+
+      expect(updatedLore.references["historical:earlier_one"].fact).toBe("old");
+      expect(Object.keys(updatedLore.references).length).toBe(2);
     });
   });
 });
