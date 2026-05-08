@@ -80,24 +80,27 @@
   "references": {
     "scientific:blunt_force_trauma_through_a_phonebook_prevents_su": {
       "fact": "The idea that beating someone through a phonebook leaves no surface bruising is a forensic myth. While the book distributes the force over a larger area—preventing a distinct weapon pattern and reducing immediate localized skin damage—blunt force severe enough to cause massive internal injuries will still crush soft tissues. This results in deep tissue contusions, and diffuse surface bruising typically appears later as blood tracks to the skin.",
-      "source": "Medscape: Forensic Autopsy of Blunt Force Trauma; EBSCO Research Starters: Blunt Force Trauma.",
+      "source": "Medscape eMedicine, \"Forensic Autopsy of Blunt Force Trauma\" (https://emedicine.medscape.com/article/1680107-overview, verified 2026-05); NCBI Bookshelf NBK448153 \"Blunt Force Trauma\".",
       "addedAt": "2026-05-08T05:24:54.260Z",
       "originalClaim": "Blunt force trauma through a phonebook prevents surface bruising.",
-      "originalLocation": "paragraph 11, sentence 3"
+      "originalLocation": "paragraph 11, sentence 3",
+      "verifiedAt": "2026-05-08"
     },
     "historical:university_administrative_appointments_in_2002_wer": {
       "fact": "In China's higher education system, senior leadership appointments (such as President or Vice President) at provincial-level universities (省属高校) are subject to provincial-level oversight. These officials are classified as provincial-managed cadres (省管干部) and are appointed and removed by the provincial government and the provincial party committee's organization department. This cadre management structure was firmly in place in 2002.",
-      "source": "Higher Education Law of the People's Republic of China (1998), Article 40; CCP Cadre Management Authority Regulations",
+      "source": "中华人民共和国高等教育法 (1998), 第四十条 — verbatim: 「高等学校的校长，由符合教育法规定的任职条件的公民担任。高等学校的校长、副校长按照国家有关规定任免。」 Source: National People's Congress (npc.gov.cn) full law text, verified 2026-05. Cadre management authority is established by the CCP Central Committee's 1990 《党政领导干部选拔任用工作条例》 (later versions in 2002, 2014, 2019).",
       "addedAt": "2026-05-08T05:24:54.260Z",
       "originalClaim": "University administrative appointments in 2002 were subject to provincial-level oversight.",
-      "originalLocation": "paragraph 2, sentence 1"
+      "originalLocation": "paragraph 2, sentence 1",
+      "verifiedAt": "2026-05-08"
     },
     "scientific:stage_iii_breast_cancer_prognosis_in_the_early_200": {
       "fact": "In the early 2000s, a 2-year life expectancy (median survival of ~24 months) was typical for Stage IV (distant metastatic) breast cancer, not Stage III. Stage III breast cancer (which involves regional lymph node metastasis but no distant spread) had a 5-year survival rate of roughly 50-70% during that period, meaning the median life expectancy was well over 5 years.",
-      "source": "Bhoo-Pathy N, et al. 'Breast cancer survival in a multi-ethnic Asian setting' (2011); Andre F, et al. 'Breast Cancer With Synchronous Metastases: Trends in Survival During a 14-Year Period' (JCO, 2004)",
+      "source": "Andre F, Slimane K, Bachelot T, Dunant A, Namer M et al. \"Breast cancer with synchronous metastases: trends in survival during a 14-year period\" J Clin Oncol 22(16):3302-3308 (2004 Aug 15), PubMed PMID 15310773 — verified 2026-05. (Note: an earlier auto-research draft cited a 2011 Bhoo-Pathy paper that could not be verified on PubMed and has been removed.)",
       "addedAt": "2026-05-08T05:24:54.260Z",
       "originalClaim": "Stage III breast cancer prognosis in the early 2000s.",
-      "originalLocation": "paragraph 13, sentence 2"
+      "originalLocation": "paragraph 13, sentence 2",
+      "verifiedAt": "2026-05-08"
     }
   }
 }
