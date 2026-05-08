@@ -109,7 +109,7 @@ The reference domain is the only domain with a tunable **enforcement level** (1-
 | **1** | Scan | Skip linguistic/cultural; only obvious errors | Errors only (warnings suppressed) | `CheckResult[]` |
 | **2** | Validate | All categories, standard assessment | All results unchanged | `CheckResult[]` + `needs-research.json` |
 | **3** | Scrutinize *(default)* | Force explicit reasoning; challenge "high" confidence | `unsourced_critical` → error | Full output |
-| **4** | Investigate | Extract implicit claims; suggest enrichment | Also `vague_history` + `lore_coverage` → error | + `enrichmentSuggestions[]` |
+| **4** | Investigate | Extract implicit claims; suggest enrichment | Also `vague_history` → error | + `enrichmentSuggestions[]` |
 | **5** | Research | Research consultant mode; treat all as `needs_research` | Same as level 4 | + `researchQuestions[]` |
 
 ### Genre Defaults

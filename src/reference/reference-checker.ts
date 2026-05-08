@@ -60,7 +60,12 @@ export function checkReferences(
  * Level 1: Only errors (suppress warnings)
  * Level 2: All results unchanged
  * Level 3: Promote unsourced_critical to error
- * Level 4-5: Also promote vague_history and lore_coverage to error
+ * Level 4-5: Also promote vague_history to error
+ *
+ * Note: `lore_coverage` is intentionally NOT promoted at any level. It is an
+ * author-side recommendation ("seed the loreDb"), not something the LLM
+ * generator can fix by rewriting a draft. Promoting it to error created an
+ * unresolvable gate on every run with an empty loreDb (the default).
  */
 export function applyReferenceLevel(
   results: CheckResult[],
@@ -81,7 +86,7 @@ export function applyReferenceLevel(
     case 4:
     case 5:
       return results.map(r => {
-        if (r.rule === "unsourced_critical" || r.rule === "vague_history" || r.rule === "lore_coverage") {
+        if (r.rule === "unsourced_critical" || r.rule === "vague_history") {
           return { ...r, severity: "error" as const };
         }
         return r;
