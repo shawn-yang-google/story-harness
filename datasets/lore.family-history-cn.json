@@ -76,5 +76,28 @@
     "extending": "Add new categories under history, science, culture, or facts. The source-checker walks these top-level keys and extracts each entry fact for fuzzy matching against extracted claims.",
     "consuming": "In code: JSON.parse(await Bun.file(path).text()) then pass the parsed object as loreDb in HarnessContext. The _meta and _usage_notes keys are ignored by the source-checker (they are not in the recognized loreKeys list).",
     "next_seeds": "Suggested future additions: 工伤认定标准 (workplace injury determination), 集体土地征收 (collective land expropriation), 高考志愿填报 (college application timing), 公费医疗 vs 医保改革 (medical insurance reform 1998-2003)."
+  },
+  "references": {
+    "scientific:blunt_force_trauma_through_a_phonebook_prevents_su": {
+      "fact": "The idea that beating someone through a phonebook leaves no surface bruising is a forensic myth. While the book distributes the force over a larger area—preventing a distinct weapon pattern and reducing immediate localized skin damage—blunt force severe enough to cause massive internal injuries will still crush soft tissues. This results in deep tissue contusions, and diffuse surface bruising typically appears later as blood tracks to the skin.",
+      "source": "Medscape: Forensic Autopsy of Blunt Force Trauma; EBSCO Research Starters: Blunt Force Trauma.",
+      "addedAt": "2026-05-08T05:24:54.260Z",
+      "originalClaim": "Blunt force trauma through a phonebook prevents surface bruising.",
+      "originalLocation": "paragraph 11, sentence 3"
+    },
+    "historical:university_administrative_appointments_in_2002_wer": {
+      "fact": "In China's higher education system, senior leadership appointments (such as President or Vice President) at provincial-level universities (省属高校) are subject to provincial-level oversight. These officials are classified as provincial-managed cadres (省管干部) and are appointed and removed by the provincial government and the provincial party committee's organization department. This cadre management structure was firmly in place in 2002.",
+      "source": "Higher Education Law of the People's Republic of China (1998), Article 40; CCP Cadre Management Authority Regulations",
+      "addedAt": "2026-05-08T05:24:54.260Z",
+      "originalClaim": "University administrative appointments in 2002 were subject to provincial-level oversight.",
+      "originalLocation": "paragraph 2, sentence 1"
+    },
+    "scientific:stage_iii_breast_cancer_prognosis_in_the_early_200": {
+      "fact": "In the early 2000s, a 2-year life expectancy (median survival of ~24 months) was typical for Stage IV (distant metastatic) breast cancer, not Stage III. Stage III breast cancer (which involves regional lymph node metastasis but no distant spread) had a 5-year survival rate of roughly 50-70% during that period, meaning the median life expectancy was well over 5 years.",
+      "source": "Bhoo-Pathy N, et al. 'Breast cancer survival in a multi-ethnic Asian setting' (2011); Andre F, et al. 'Breast Cancer With Synchronous Metastases: Trends in Survival During a 14-Year Period' (JCO, 2004)",
+      "addedAt": "2026-05-08T05:24:54.260Z",
+      "originalClaim": "Stage III breast cancer prognosis in the early 2000s.",
+      "originalLocation": "paragraph 13, sentence 2"
+    }
   }
 }

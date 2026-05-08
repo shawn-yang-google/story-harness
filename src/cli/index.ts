@@ -66,6 +66,15 @@ const { values, positionals } = parseArgs({
     lore: {
       type: "string",
     },
+    merge: {
+      type: "boolean",
+    },
+    continue: {
+      type: "boolean",
+    },
+    out: {
+      type: "string",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -86,6 +95,11 @@ Commands:
   create-persona [name]       Interactively create a writer persona (saved as JSON)
   list-personas               List available personas in personas/ directory
   watch [session-dir]         Watch a running generation session (default: latest)
+  do-research <path>          Auto-fill resolutions in a needs-research.json using an
+                              LLM with Google Search grounding. Writes
+                              <path>/needs-research-resolved.json (or --out).
+                              Add --merge to also merge into the loreDb,
+                              --continue to also re-run 'generate' afterward.
   resolve-research <path>     Merge a resolved needs-research.json back into the loreDb
                               <path> may be a session dir OR a direct file path.
                               Use --lore <path> to override the default target.
@@ -105,6 +119,12 @@ Options (generate/split/check):
   --harness <names>           Run specific harnesses only (comma-separated, e.g. Style,Logic,Character)
   --lore <path>               Path to a loreDb JSON (default: datasets/lore.json).
                               Also used by resolve-research as the merge target.
+
+Options (do-research):
+  --merge                     After auto-research, also merge accepted facts into the loreDb.
+  --continue                  After --merge, also re-run 'generate' on the original prompt.
+  --out <path>                Where to write the resolved file (default: <session>/needs-research-resolved.json).
+
   --help, -h              Show this help message
 
 Video generation has been moved to the 'videoharness' project.
@@ -820,6 +840,132 @@ Video generation has been moved to the 'videoharness' project.
       await poll(); // Initial check
       // Keep alive until process exits via poll callbacks
       await new Promise(() => {}); // Block forever (poll exits via process.exit)
+      break;
+    }
+    case "do-research": {
+      const inputPath = positionals[3];
+      if (!inputPath) {
+        console.error("Error: must specify a session directory OR a needs-research.json file path.");
+        console.error("  Example: bun run src/cli/index.ts do-research logs/generate-2026-05-08T04-52-40-187Z --merge --continue --persona personas/your.json");
+        process.exit(1);
+      }
+
+      const { stat } = await import("fs/promises");
+      const { dirname } = await import("path");
+      const { autoResearch } = await import("../reference/auto-research");
+      const { mergeResolvedIntoLore } = await import("../reference/needs-research");
+
+      // Resolve to a needs-research.json file path + carry the surrounding dir.
+      let researchFile: string;
+      let sessionDir: string;
+      try {
+        const info = await stat(inputPath);
+        if (info.isDirectory()) {
+          researchFile = join(inputPath, "needs-research.json");
+          sessionDir = inputPath;
+        } else {
+          researchFile = inputPath;
+          sessionDir = dirname(inputPath);
+        }
+      } catch {
+        console.error("Error: path not found: " + inputPath);
+        process.exit(1);
+      }
+
+      let needsResearch: import("../reference/needs-research").NeedsResearchOutput;
+      try {
+        const raw = await readFile(researchFile, "utf-8");
+        needsResearch = JSON.parse(raw);
+      } catch (e: any) {
+        console.error("Error reading " + researchFile + ": " + e.message);
+        process.exit(1);
+      }
+
+      const total = needsResearch.items.length;
+      const unresolved = needsResearch.items.filter((it) => !it.resolution).length;
+      console.log("\n\x1b[1;36m=== Auto-Research ===\x1b[0m");
+      console.log("  Source:     " + researchFile);
+      console.log("  Total:      " + total + " item(s)");
+      console.log("  To resolve: " + unresolved + " item(s)");
+      console.log("");
+
+      const resolved = await autoResearch(needsResearch, {
+        onProgress: (item, i, n) => {
+          const trunc = item.claim.length > 80 ? item.claim.slice(0, 77) + "..." : item.claim;
+          const upcoming = i + 1;
+          // Only count unresolved; pre-resolved items are skipped silently.
+          console.log("  \x1b[2m[" + upcoming + "/" + n + "]\x1b[0m researching: " + trunc);
+        },
+      });
+
+      const outPath = (values.out as string | undefined) || join(sessionDir, "needs-research-resolved.json");
+      await writeFile(outPath, JSON.stringify(resolved, null, 2) + "\n", "utf-8");
+
+      const acceptedCount = resolved.items.filter((it) => it.resolution?.addToLoreDb === true).length;
+      const rejectedCount = resolved.items.filter((it) => it.resolution && !it.resolution.addToLoreDb).length;
+      console.log("\n  \x1b[32m✓ Wrote " + outPath + "\x1b[0m");
+      console.log("  \x1b[32m  " + acceptedCount + " item(s)\x1b[0m marked addToLoreDb=true");
+      if (rejectedCount > 0) {
+        console.log("  \x1b[33m  " + rejectedCount + " item(s)\x1b[0m skipped (LLM judged not reusable or parse failed)");
+      }
+
+      // --- Optional: --merge step ---
+      if (values.merge) {
+        const lorePath = (values.lore as string | undefined) || "datasets/lore.json";
+        let existingLore: Record<string, any> = {};
+        try {
+          existingLore = JSON.parse(await readFile(lorePath, "utf-8"));
+        } catch {
+          console.log("  \x1b[2m(no existing " + lorePath + " — creating new file)\x1b[0m");
+        }
+        const { updatedLore, addedCount, skippedCount } = mergeResolvedIntoLore(resolved, existingLore);
+        await writeFile(lorePath, JSON.stringify(updatedLore, null, 2) + "\n", "utf-8");
+        console.log("\n\x1b[1;36m=== Merge ===\x1b[0m");
+        console.log("  Target: " + lorePath);
+        console.log("  \x1b[32m✓ Added " + addedCount + " fact(s)\x1b[0m to references");
+        if (skippedCount > 0) {
+          console.log("  \x1b[2m  Skipped " + skippedCount + " (no resolution OR addToLoreDb=false)\x1b[0m");
+        }
+      }
+
+      // --- Optional: --continue step ---
+      if (values.continue) {
+        if (!values.merge) {
+          console.warn("\n\x1b[33m--continue without --merge: re-running generate without the new facts.\x1b[0m");
+        }
+        const promptPath = join(sessionDir, "prompt.md");
+        try {
+          await stat(promptPath);
+        } catch {
+          console.error("\nError: --continue requires a prompt.md in " + sessionDir + " (none found).");
+          process.exit(1);
+        }
+        if (!values.persona) {
+          console.error("\nError: --continue requires --persona <path> so we know how to re-generate.");
+          process.exit(1);
+        }
+
+        console.log("\n\x1b[1;36m=== Continuing: re-running generate ===\x1b[0m");
+        const args = [
+          "run", "src/cli/index.ts",
+          "generate", promptPath,
+          "--persona", values.persona as string,
+          "--lore", (values.lore as string | undefined) || "datasets/lore.json",
+        ];
+        if (values["max-retries"]) {
+          args.push("--max-retries", values["max-retries"] as string);
+        }
+        if (values["multi-section"]) {
+          args.push("--multi-section");
+        }
+        console.log("  $ bun " + args.join(" "));
+        const proc = Bun.spawn(["bun", ...args], { stdout: "inherit", stderr: "inherit" });
+        const exitCode = await proc.exited;
+        if (exitCode !== 0) {
+          console.error("\nGenerate exited with code " + exitCode);
+          process.exit(exitCode);
+        }
+      }
       break;
     }
     case "resolve-research": {

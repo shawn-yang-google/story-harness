@@ -6,6 +6,18 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 3 — Auto-Research Pipeline
+
+Closes the *complete* research loop. Previously you could ask the model what claims it couldn't verify (`needs-research.json`) and you could merge resolved facts back into the loreDb (`resolve-research`), but the actual research work was manual: read each claim, web-search, type the answer in. This release adds the missing middle step.
+
+- **New `do-research` CLI command.** Takes a session directory or a `needs-research.json` file. For each unresolved item, calls the LLM with **Google Search grounding** enabled and asks it to return a strict JSON `ResearchResolution` (accurate / verifiedFact / source / addToLoreDb). Writes a `needs-research-resolved.json` next to the input. Optional `--merge` immediately calls `mergeResolvedIntoLore` to land verified facts in the loreDb (`--lore <path>` selects the target). Optional `--continue` re-launches `generate` on the same prompt with the now-enriched loreDb. Together, `do-research --merge --continue --persona ... --lore ...` runs the entire research → enrich → regenerate loop in one command.
+- **New `generateGroundedContent` LLM helper** (`src/llm/index.ts`) wraps the existing `generateContent` retry loop and enables `tools: [{googleSearch: {}}]` in the request. Returns `{text, sources}` where `sources` are extracted from `groundingMetadata.groundingChunks[].web` and surface as resolvable URLs.
+- **New `autoResearch` orchestrator** (`src/reference/auto-research.ts`) — pure modulo the LLM. Iterates only unresolved items, builds a per-item prompt that includes the original claim/excerpt/location/model-assessment, parses the LLM's JSON (strips markdown fences, falls back gracefully on parse failure with a stub resolution that won't pollute the loreDb), and appends grounding URLs to the resolution's `source` for provenance. Default model: `GENERATOR` (gemini-3.1-pro-preview) — `CRITIC` is not served by this Gemini API endpoint.
+- **CLI now accepts `--lore <path>` for `generate` and `check`** (previously only `resolve-research` honored it). Each prints the chosen path and the loaded loreDb's top-level key count so the operator can verify the corpus.
+- **End-to-end smoke test.** Re-ran the previously-failed family-history prompt with `do-research --merge --continue` → all 3 priority items got real research-grade answers (Higher Education Law Article 40 citation; phonebook-trauma forensic-myth correction with Medscape source; Stage III breast-cancer-prognosis stage-confusion correction with JCO 2004 source) → merged 3 facts into `datasets/lore.family-history-cn.json` under the `references` namespace → regenerated the story. The new run produced **zero** `unsourced_critical` warnings and the reference harness was fully satisfied (no `needs-research.json` written) — only narrative-craft issues remained.
+- 5 new TDD tests for `autoResearch` (mocked LLM module): populate-all, skip-resolved, malformed-JSON-fallback, grounding-URL-append, code-fence-strip.
+- Tests: **361 pass** (up from 356, +5 from auto-research tests).
+
 ### Round 2 — TODO Sweep (#1-#8)
 
 Cleared the entire open backlog from the previous Reference-Enforcement round. The L4-5 reference path is now actually usable end-to-end (it was previously gated on an unfixable warning and noisy logic checkers). Tests grew from 335 → 352 (+17). All 352 pass.
