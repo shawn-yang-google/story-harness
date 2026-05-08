@@ -143,4 +143,60 @@ describe("resolvePersonaConfig", () => {
       expect(typeof (config.enabledCheckers as any)[key]).toBe("boolean");
     }
   });
+
+  //#given a historical persona
+  //#then referenceLevel defaults to 4 (investigate)
+  it("historical genre defaults to referenceLevel 4", () => {
+    const persona = createPersona({
+      name: "Historian",
+      genre: "historical",
+      tone: "serious",
+      style: "journalistic",
+      audienceAge: "adult",
+    });
+    const config = resolvePersonaConfig(persona);
+    expect(config.referenceLevel).toBe(4);
+  });
+
+  //#given a comedy persona
+  //#then referenceLevel defaults to 1 (scan)
+  it("comedy genre defaults to referenceLevel 1", () => {
+    const persona = createPersona({
+      name: "Comedian",
+      genre: "comedy",
+      tone: "humorous",
+      style: "conversational",
+      audienceAge: "adult",
+    });
+    const config = resolvePersonaConfig(persona);
+    expect(config.referenceLevel).toBe(1);
+  });
+
+  //#given a literary-fiction persona
+  //#then referenceLevel defaults to 3 (scrutinize)
+  it("literary-fiction genre defaults to referenceLevel 3", () => {
+    const persona = createPersona({
+      name: "Literati",
+      genre: "literary-fiction",
+      tone: "lyrical",
+      style: "ornate",
+      audienceAge: "adult",
+    });
+    const config = resolvePersonaConfig(persona);
+    expect(config.referenceLevel).toBe(3);
+  });
+
+  //#given an unknown/custom genre persona
+  //#then referenceLevel falls back to 3 (scrutinize)
+  it("custom genre falls back to referenceLevel 3", () => {
+    const persona = createPersona({
+      name: "Custom Writer",
+      genre: "family-history",
+      tone: "nostalgic",
+      style: "journalistic",
+      audienceAge: "adult",
+    });
+    const config = resolvePersonaConfig(persona);
+    expect(config.referenceLevel).toBe(3);
+  });
 });

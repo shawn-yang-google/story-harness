@@ -6,6 +6,8 @@ import { executeLlmHarness } from "../environment/llm-harness";
 import { executeHybridHarness } from "../environment/hybrid-harness";
 import type { HybridDomain } from "../environment/hybrid-harness";
 import type { HarnessContext } from "../types";
+import type { ReferenceGraph } from "../types/reference-graph";
+import { generateNeedsResearch, writeNeedsResearchFile } from "../reference/needs-research";
 
 // ANSI color codes for terminal output
 const c = {
@@ -685,6 +687,34 @@ export class RejectionSamplingRunner {
     const logData = { prompt, attempts, generatedAt: new Date().toISOString() };
     await writeFile(join(sessionDir, "summary.json"), JSON.stringify(logData, null, 2), "utf-8");
 
+    // Generate needs-research.json from the most recent reference graph.
+    // Patch-level attempts don't include graphs, so we must search backwards
+    // for the most recent gate-level attempt that has a reference graph.
+    // This runs on both success and failure, so authors get research
+    // checklists even when drafts are rejected.
+    const attemptWithRefGraph = [...attempts].reverse().find(
+      (a) => a.graphs && a.graphs.reference
+    );
+    if (attemptWithRefGraph?.graphs?.reference) {
+      try {
+        const refGraph = attemptWithRefGraph.graphs.reference as ReferenceGraph;
+        const researchOutput = generateNeedsResearch(refGraph);
+        if (researchOutput.items.length > 0) {
+          await writeNeedsResearchFile(
+            researchOutput,
+            join(sessionDir, "needs-research.json")
+          );
+          console.log(
+            c.yellow +
+              `  📋 ${researchOutput.items.length} claim(s) need research → needs-research.json` +
+              c.reset
+          );
+        }
+      } catch (e: any) {
+        console.warn("Warning: Failed to generate needs-research.json: " + e.message);
+      }
+    }
+
     // Write status.json — a live cursor for external agents to poll
     const lastAttemptForStatus = attempts[attempts.length - 1];
     const status: Record<string, unknown> = {
@@ -758,6 +788,7 @@ function inferDomainFromFilename(filename: string): HybridDomain {
   if (lower.includes("dialogue")) return "dialogue";
   if (lower.includes("character")) return "character";
   if (lower.includes("narrative") || lower.includes("story")) return "narrative";
+  if (lower.includes("reference")) return "reference";
   return "logic";
 }
 

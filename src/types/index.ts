@@ -53,6 +53,8 @@ export type {
   LinguisticReference,
   AnachronismEntry,
   CrossReference,
+  EnrichmentSuggestion,
+  ResearchQuestion,
 } from "./reference-graph";
 export { createEmptyReferenceGraph } from "./reference-graph";
 

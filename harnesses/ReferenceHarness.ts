@@ -180,7 +180,7 @@ async function evaluate(draft, context) {
     },
     {
       pattern: /\bnapole(?:o|ó)n\s+(?:was\s+)?(?:very\s+)?short/gi,
-      correction: "Napoleon was approximately average height for his era (~5'7"). The 'short' myth is largely British propaganda.",
+      correction: "Napoleon was approximately average height for his era (~5'7\"). The 'short' myth is largely British propaganda.",
     },
     {
       pattern: /\bviking(?:s)?\s+(?:wore\s+)?horned\s+helmets?/gi,

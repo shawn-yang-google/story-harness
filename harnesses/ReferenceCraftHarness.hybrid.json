@@ -1,31 +1,5 @@
 {
   "domain": "reference",
-  "extractionPromptAddendum": "### Additional Extraction Requirements for Reference/Fact Verification
-
-#### Historical Accuracy
-- For EVERY mention of a real historical event, extract the claimed date/period and verify it.
-- For historical figures, verify their actual role, title, and timeline.
-- Pay special attention to the sequence of historical events — did X really happen before Y?
-
-#### Geographic & Environmental Authenticity
-- For real places, verify physical descriptions (terrain, climate, architecture).
-- For celestial bodies, verify scientific properties (distance, type, composition).
-- For natural phenomena, verify the claimed behavior matches real physics.
-
-#### Cultural Grounding
-- For customs and social norms, verify they match the claimed region AND time period.
-- A custom that exists today may not have existed in the story's time period.
-- Pay attention to food, clothing, and art that may be anachronistic.
-
-#### Scientific Claims
-- Distinguish between speculative fiction science and claims asserted as real-world fact.
-- Only flag speculative science if the story also makes incorrect real-science claims.
-- For medical/biological claims, verify they align with current scientific understanding.
-
-#### Linguistic Authenticity
-- Check if dialogue patterns match the claimed region and era.
-- Flag modern slang or idioms in historical settings.
-- Verify that character names are culturally appropriate for their stated background.
-- Check forms of address, honorifics, and social registers.",
+  "extractionPromptAddendum": "### Additional Extraction Requirements for Reference/Fact Verification\n\n#### Historical Accuracy\n- For EVERY mention of a real historical event, extract the claimed date/period and verify it.\n- For historical figures, verify their actual role, title, and timeline.\n- Pay special attention to the sequence of historical events — did X really happen before Y?\n\n#### Geographic & Environmental Authenticity\n- For real places, verify physical descriptions (terrain, climate, architecture).\n- For celestial bodies, verify scientific properties (distance, type, composition).\n- For natural phenomena, verify the claimed behavior matches real physics.\n\n#### Cultural Grounding\n- For customs and social norms, verify they match the claimed region AND time period.\n- A custom that exists today may not have existed in the story’s time period.\n- Pay attention to food, clothing, and art that may be anachronistic.\n\n#### Scientific Claims\n- Distinguish between speculative fiction science and claims asserted as real-world fact.\n- Only flag speculative science if the story also makes incorrect real-science claims.\n- For medical/biological claims, verify they align with current scientific understanding.\n\n#### Linguistic Authenticity\n- Check if dialogue patterns match the claimed region and era.\n- Flag modern slang or idioms in historical settings.\n- Verify that character names are culturally appropriate for their stated background.\n- Check forms of address, honorifics, and social registers.",
   "verificationCode": ""
 }

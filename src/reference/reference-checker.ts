@@ -18,6 +18,7 @@
 import type { ReferenceGraph, FactualClaim } from "../types/reference-graph";
 import type { HarnessContext } from "../types";
 import type { CheckResult } from "../logic/types";
+import type { ReferenceLevel } from "./reference-level";
 import { checkHistorical } from "./historical-checker";
 import { checkGeographic } from "./geographic-checker";
 import { checkCultural } from "./cultural-checker";
@@ -28,7 +29,8 @@ import { checkConsistency } from "./consistency-checker";
 import { checkSources } from "./source-checker";
 
 /**
- * Runs all 8 reference checker modules against a ReferenceGraph.
+ * Runs all 8 reference checker modules against a ReferenceGraph,
+ * then applies level-based severity filtering.
  *
  * Returns the combined array of all CheckResults (errors + warnings).
  * The caller can filter by severity to determine pass/fail.
@@ -48,7 +50,43 @@ export function checkReferences(
   results.push(...checkConsistency(graph));
   results.push(...checkSources(graph, context));
 
-  return results;
+  const level = (context.personaConfig?.referenceLevel ?? 3) as ReferenceLevel;
+  return applyReferenceLevel(results, level);
+}
+
+/**
+ * Filters and adjusts check results based on reference enforcement level.
+ *
+ * Level 1: Only errors (suppress warnings)
+ * Level 2: All results unchanged
+ * Level 3: Promote unsourced_critical to error
+ * Level 4-5: Also promote vague_history and lore_coverage to error
+ */
+export function applyReferenceLevel(
+  results: CheckResult[],
+  level: ReferenceLevel
+): CheckResult[] {
+  switch (level) {
+    case 1:
+      return results.filter(r => r.severity === "error");
+    case 2:
+      return results;
+    case 3:
+      return results.map(r => {
+        if (r.rule === "unsourced_critical") {
+          return { ...r, severity: "error" as const };
+        }
+        return r;
+      });
+    case 4:
+    case 5:
+      return results.map(r => {
+        if (r.rule === "unsourced_critical" || r.rule === "vague_history" || r.rule === "lore_coverage") {
+          return { ...r, severity: "error" as const };
+        }
+        return r;
+      });
+  }
 }
 
 /**

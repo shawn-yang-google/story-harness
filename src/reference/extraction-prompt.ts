@@ -8,6 +8,8 @@
  */
 
 import type { HarnessContext } from "../types";
+import { getReferenceLevelConfig } from "./reference-level";
+import type { ReferenceLevel } from "./reference-level";
 
 const FENCE = "```";
 
@@ -15,6 +17,9 @@ export function buildReferenceExtractionPrompt(
   draft: string,
   context: HarnessContext
 ): string {
+  const level = (context.personaConfig?.referenceLevel ?? 3) as ReferenceLevel;
+  const levelConfig = getReferenceLevelConfig(level);
+
   const loreContext =
     Object.keys(context.loreDb).length > 0
       ? [
@@ -26,7 +31,7 @@ export function buildReferenceExtractionPrompt(
         ].join("\n")
       : "";
 
-  const jsonExample = [
+  const jsonExampleLines = [
     "{",
     '  "claims": [',
     "    {",
@@ -124,8 +129,41 @@ export function buildReferenceExtractionPrompt(
     '      "inconsistency": "Draft says the event happened in 1958 but also says it was during the Cultural Revolution which started in 1966"',
     "    }",
     "  ]",
-    "}",
-  ].join("\n");
+  ];
+
+  if (levelConfig.enableEnrichment) {
+    // Remove the trailing "]" from crossReferences to add a comma separator
+    jsonExampleLines.push(",");
+    jsonExampleLines.push(
+      '  "enrichmentSuggestions": [',
+      "    {",
+      '      "claimId": "ref1",',
+      '      "category": "historical",',
+      '      "suggestion": "The castle was specifically built in the Manueline style, characterized by maritime motifs",',
+      '      "rationale": "Adding architectural style would ground the scene in specific Portuguese history",',
+      '      "confidence": "medium"',
+      "    }",
+      "  ]",
+    );
+  }
+
+  if (levelConfig.enableResearchQuestions) {
+    jsonExampleLines.push(",");
+    jsonExampleLines.push(
+      '  "researchQuestions": [',
+      "    {",
+      '      "claimIds": ["ref1", "hist1"],',
+      '      "question": "What was daily life like for servants in this specific castle during this period?",',
+      '      "impact": "Would add authentic texture to the domestic scenes",',
+      '      "suggestedSources": ["Local historical archives", "Period diaries"]',
+      "    }",
+      "  ]",
+    );
+  }
+
+  jsonExampleLines.push("}");
+
+  const jsonExample = jsonExampleLines.join("\n");
 
   return [
     "You are an expert fact-checker and research analyst for fiction. Your task is to extract ALL real-world factual claims from the following narrative draft and assess their accuracy.",
@@ -173,6 +211,8 @@ export function buildReferenceExtractionPrompt(
     "- **medium**: Facts you believe are correct but have some uncertainty (specific dates, niche cultural details)",
     "- **low**: Facts you have limited knowledge about and cannot fully verify (regional dialects, obscure historical details)",
     '- **unverifiable**: Claims about very specific or obscure facts that require specialized research (local customs of a small village, exact dialogue patterns of a specific profession in a specific decade)',
+    "",
+    levelConfig.promptPreamble,
     "",
     "## Critical Rules",
     "",

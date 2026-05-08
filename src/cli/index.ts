@@ -611,9 +611,29 @@ Video generation has been moved to the 'videoharness' project.
 
       // Resolve harnesses and checker config from genre
       const { resolvePersonaConfig: resolveConfig } = await import("../persona/persona-config");
+      const { getReferenceLevelConfig } = await import("../reference/reference-level");
       const tempPersona = createPersona({ name, genre, tone, style, audienceAge });
       const enabled = getEnabledHarnesses(tempPersona);
       const checkerConfig = resolveConfig(tempPersona);
+
+      // Reference level selection
+      const REFERENCE_LEVELS = [
+        { level: 1, name: "scan", desc: "catch obvious errors only" },
+        { level: 2, name: "validate", desc: "standard assessment" },
+        { level: 3, name: "scrutinize", desc: "skeptical, explicit reasoning" },
+        { level: 4, name: "investigate", desc: "implicit claims + enrichment suggestions" },
+        { level: 5, name: "research", desc: "full research consultant mode" },
+      ] as const;
+      const suggestedLevel = checkerConfig.referenceLevel;
+      console.log("\nReference checking depth:");
+      for (const rl of REFERENCE_LEVELS) {
+        const marker = rl.level === suggestedLevel ? " \x1b[32m<-- suggested\x1b[0m" : "";
+        console.log("  " + rl.level + ". " + rl.name + " (" + rl.desc + ")" + marker);
+      }
+      const refLevelAnswer = await ask("Choose (1-5) [Enter = " + suggestedLevel + "]: ");
+      const parsedRefLevel = parseInt(refLevelAnswer.trim());
+      const selectedRefLevel = (parsedRefLevel >= 1 && parsedRefLevel <= 5) ? parsedRefLevel : suggestedLevel;
+      checkerConfig.referenceLevel = selectedRefLevel as import("../reference/reference-level").ReferenceLevel;
 
       const persona = createPersona({
         name,
@@ -643,9 +663,11 @@ Video generation has been moved to the 'videoharness' project.
       if (persona.systemPrompt) console.log("  \x1b[2mCustom:\x1b[0m   " + persona.systemPrompt);
       if (persona.emphasis) console.log("  \x1b[2mEmphasis:\x1b[0m \x1b[32m" + persona.emphasis.join(", ") + "\x1b[0m");
 
+      const refLevelInfo = getReferenceLevelConfig(checkerConfig.referenceLevel);
       console.log("\n  \x1b[1mValidation Pipeline\x1b[0m");
-      console.log("  \x1b[2mHarnesses:\x1b[0m \x1b[33m" + enabled.length + "/10 enabled\x1b[0m");
-      console.log("  \x1b[2mRules:\x1b[0m     \x1b[33m" + ruleCounts.enabled + "/" + ruleCounts.total + " active\x1b[0m");
+      console.log("  \x1b[2mHarnesses:\x1b[0m  \x1b[33m" + enabled.length + "/10 enabled\x1b[0m");
+      console.log("  \x1b[2mRules:\x1b[0m      \x1b[33m" + ruleCounts.enabled + "/" + ruleCounts.total + " active\x1b[0m");
+      console.log("  \x1b[2mRef Level:\x1b[0m  \x1b[33m" + checkerConfig.referenceLevel + "/5 " + refLevelInfo.name + "\x1b[0m");
 
       if (excludedHarnesses.length > 0) {
         console.log("\n  \x1b[1mExcluded Harnesses\x1b[0m");

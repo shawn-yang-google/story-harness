@@ -172,6 +172,34 @@ export interface CrossReference {
   inconsistency: string;
 }
 
+// === Enrichment & Research (Level 4+) ===
+
+/** Suggested enrichment detail for deepening story authenticity (Level 4+). */
+export interface EnrichmentSuggestion {
+  /** The claim this enrichment relates to */
+  claimId: string;
+  /** Category of enrichment */
+  category: ClaimCategory;
+  /** The specific enrichment detail */
+  suggestion: string;
+  /** How this would improve the story */
+  rationale: string;
+  /** Confidence that this detail is accurate */
+  confidence: ConfidenceLevel;
+}
+
+/** Open-ended research question for the author (Level 5). */
+export interface ResearchQuestion {
+  /** Related claim ID(s) */
+  claimIds: string[];
+  /** The question */
+  question: string;
+  /** Why answering this would improve the story */
+  impact: string;
+  /** Suggested starting points for research */
+  suggestedSources: string[];
+}
+
 // === Full Reference Graph ===
 
 export interface ReferenceGraph {
@@ -191,6 +219,10 @@ export interface ReferenceGraph {
   anachronisms: AnachronismEntry[];
   /** Internal cross-reference inconsistencies */
   crossReferences: CrossReference[];
+  /** Level 4+: Enrichment suggestions for deepening authenticity */
+  enrichmentSuggestions: EnrichmentSuggestion[];
+  /** Level 5: Research questions for the author */
+  researchQuestions: ResearchQuestion[];
 }
 
 export function createEmptyReferenceGraph(): ReferenceGraph {
@@ -203,5 +235,7 @@ export function createEmptyReferenceGraph(): ReferenceGraph {
     linguistic: [],
     anachronisms: [],
     crossReferences: [],
+    enrichmentSuggestions: [],
+    researchQuestions: [],
   };
 }

@@ -2,6 +2,7 @@
 // TODO: Add tone/style-specific threshold adjustments (not just genre)
 // TODO: Add 'edit-persona' CLI command for interactive editing of existing persona files
 import type { WriterPersona } from "./index";
+import type { ReferenceLevel } from "../reference/reference-level";
 
 /**
  * Fine-grained checker and threshold configuration derived from a WriterPersona.
@@ -15,6 +16,8 @@ export interface PersonaConfig {
   enabledCheckers: CheckerFlags;
   /** Tunable thresholds for code harnesses and checkers. */
   thresholds: ThresholdConfig;
+  /** Reference enforcement depth: 1 (scan) to 5 (research). Default: 3. */
+  referenceLevel: ReferenceLevel;
 }
 
 /** Individual checker toggle flags. */
@@ -92,6 +95,7 @@ const STRICT_THRESHOLDS: ThresholdConfig = {
 type GenrePreset = {
   checkers: Partial<CheckerFlags>;
   thresholds: Partial<ThresholdConfig>;
+  referenceLevel?: ReferenceLevel;
 };
 
 /**
@@ -136,6 +140,7 @@ const GENRE_PRESETS: Record<string, GenrePreset> = {
       minTensionKeywords: 0,
       maxChitchatRatio: 0.5,
     },
+    referenceLevel: 1,
   },
   romance: {
     checkers: {
@@ -162,6 +167,7 @@ const GENRE_PRESETS: Record<string, GenrePreset> = {
       maxExclamationMarks: 4,
       minDetectedKeywords: 1,
     },
+    referenceLevel: 2,
   },
   children: {
     checkers: {
@@ -183,12 +189,14 @@ const GENRE_PRESETS: Record<string, GenrePreset> = {
       maxChitchatRatio: 0.5,
       minJourneyStages: 2,
     },
+    referenceLevel: 1,
   },
   historical: {
     checkers: {},
     thresholds: {
       minTensionKeywords: 1,
     },
+    referenceLevel: 4,
   },
   drama: {
     checkers: {},
@@ -219,6 +227,7 @@ export function resolvePersonaConfig(persona: WriterPersona): PersonaConfig {
       ...STRICT_THRESHOLDS,
       ...preset.thresholds,
     },
+    referenceLevel: preset.referenceLevel ?? 3,
   };
 }
 
