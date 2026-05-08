@@ -153,4 +153,26 @@ describe("CausalChecker", () => {
     const warnings = results.filter(r => r.rule === "necessary_precondition_missing");
     expect(warnings).toEqual([]);
   });
+
+  //#given an LLM-emitted source variant ("common_sense_physics", "common-sense", "Common_Sense")
+  //#when checking causal logic
+  //#then the suppression still kicks in (model variance must not defeat the convention)
+  it.each([
+    "common_sense_physics",
+    "common_sense_biology",
+    "common-sense",
+    "Common_Sense",
+  ])("accepts source variant %s as common-sense", (sourceVariant) => {
+    const graph = graphWith({
+      worldRules: [
+        { rule: "Physical trauma causes lasting impairment", type: "necessary", source: sourceVariant },
+      ],
+      events: [
+        { id: "e1", description: "She walked with a permanent limp from the trauma", agent: "Mira", order: 1, location: "para 4" },
+      ],
+    });
+    const results = checkCausal(graph, emptyContext());
+    const warnings = results.filter(r => r.rule === "necessary_precondition_missing");
+    expect(warnings).toEqual([]);
+  });
 });

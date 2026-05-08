@@ -103,6 +103,8 @@ Options (generate/split/check):
   --plan <plan.json>          Generate from a reviewed split plan (from 'split' command)
   --max-words-per-section <n> Max words per section (default: 1200)
   --harness <names>           Run specific harnesses only (comma-separated, e.g. Style,Logic,Character)
+  --lore <path>               Path to a loreDb JSON (default: datasets/lore.json).
+                              Also used by resolve-research as the merge target.
   --help, -h              Show this help message
 
 Video generation has been moved to the 'videoharness' project.
@@ -210,12 +212,14 @@ Video generation has been moved to the 'videoharness' project.
         }
       }
       
+      const lorePathForGen = (values.lore as string | undefined) || "datasets/lore.json";
       let loreDb = {};
       try {
-        const loreRaw = await readFile("datasets/lore.json", "utf-8");
+        const loreRaw = await readFile(lorePathForGen, "utf-8");
         loreDb = JSON.parse(loreRaw);
+        console.log(`Loaded loreDb: ${lorePathForGen} (${Object.keys(loreDb).length} top-level keys)`);
       } catch (e) {
-        console.warn("Could not load datasets/lore.json. Continuing with empty lore.");
+        console.warn(`Could not load ${lorePathForGen}. Continuing with empty lore.`);
       }
 
       const maxRetries = parseInt(values["max-retries"] as string) || 5;
@@ -364,9 +368,10 @@ Video generation has been moved to the 'videoharness' project.
       }
 
       // Build context
+      const lorePathForCheck = (values.lore as string | undefined) || "datasets/lore.json";
       let loreDb = {};
       try {
-        const loreRaw = await readFile("datasets/lore.json", "utf-8");
+        const loreRaw = await readFile(lorePathForCheck, "utf-8");
         loreDb = JSON.parse(loreRaw);
       } catch { /* no lore */ }
 

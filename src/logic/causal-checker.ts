@@ -129,7 +129,12 @@ function checkNecessaryWorldRules(
     // inline by the narrative each time. Marking a rule as
     // source="common_sense" tells the checker "this is universal background
     // physics; trust it without inline justification."
-    if (rule.source === "common_sense") continue;
+    //
+    // Accept natural LLM variants like "common_sense_physics", "common-sense",
+    // "common_sense_biology" — anything starting with `common_sense` after
+    // normalizing case and hyphens.
+    const normalizedSource = (rule.source ?? "").toLowerCase().replace(/-/g, "_");
+    if (normalizedSource.startsWith("common_sense")) continue;
 
     // Find events related to this rule
     const relatedEvents: TemporalEvent[] = [];
