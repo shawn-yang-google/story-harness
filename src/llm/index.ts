@@ -13,9 +13,31 @@ export const ai = new GoogleGenAI({
   },
 });
 
+/**
+ * Semantic model roles. The string values must be model ids that this
+ * Gemini API endpoint actually serves.
+ *
+ * Endpoint reachability snapshot (2026-05-08, verified by probing every
+ * candidate id):
+ *   ✓ gemini-3.1-pro-preview         — strong, used for GENERATOR & CRITIC
+ *   ✓ gemini-3.1-flash-lite-preview  — fast, used for EVALUATOR & REFINER
+ *   ✗ gemini-2.5-{flash,pro}         — 404
+ *   ✗ gemini-{2.0,1.5,3.0}-*         — 404
+ *
+ * REFINER and CRITIC both used to point at gemini-2.5 ids, which silently
+ * failed in production (every critic invocation across logic-critic /
+ * story-critic / character-critic / dialogue-critic / critic and every
+ * synthesizer iteration would HTTP 404). They now share ids with
+ * EVALUATOR / GENERATOR respectively until additional model deployments
+ * become reachable on this endpoint. The semantic separation is preserved
+ * so callers don't need to change.
+ *
+ * When new ids become available, repoint here only — no callsite changes
+ * needed.
+ */
 export const MODELS = {
-  REFINER: "gemini-2.5-flash",
-  CRITIC: "gemini-2.5-pro",
+  REFINER: "gemini-3.1-flash-lite-preview",
+  CRITIC: "gemini-3.1-pro-preview",
   GENERATOR: "gemini-3.1-pro-preview",
   EVALUATOR: "gemini-3.1-flash-lite-preview",
 } as const;

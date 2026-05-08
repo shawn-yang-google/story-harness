@@ -82,6 +82,11 @@ const { values, positionals } = parseArgs({
       // "pro" maps to MODELS.GENERATOR; "flash" maps to MODELS.EVALUATOR.
       default: "pro",
     },
+    "no-verify": {
+      type: "boolean",
+      // Skip the automatic verify-citations pass that normally runs after
+      // `do-research --merge`. Useful when offline or PubMed is slow.
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -147,8 +152,13 @@ Options (generate/split/check):
                               Also used by resolve-research as the merge target.
 
 Options (do-research):
-  --merge                     After auto-research, also merge accepted facts into the loreDb.
+  --merge                     After auto-research, also merge accepted facts into the loreDb,
+                              then automatically run verify-citations on the result (warning-
+                              only — does not abort).
   --continue                  After --merge, also re-run 'generate' on the original prompt.
+                              The --generator-model flag, if set, is forwarded to the inner
+                              generate invocation.
+  --no-verify                 Skip the auto-verify-citations step after --merge (offline mode).
   --out <path>                Where to write the resolved file (default: <session>/needs-research-resolved.json).
 
   --help, -h              Show this help message
@@ -959,6 +969,25 @@ Video generation has been moved to the 'videoharness' project.
         if (skippedCount > 0) {
           console.log("  \x1b[2m  Skipped " + skippedCount + " (no resolution OR addToLoreDb=false)\x1b[0m");
         }
+
+        // --- Auto-verify newly merged citations ---
+        const refsAfter = (updatedLore as { references?: Record<string, unknown> }).references ?? {};
+        if (values["no-verify"]) {
+          console.log("  \x1b[2m(skipping citation audit: --no-verify set)\x1b[0m");
+        } else if (addedCount === 0 || Object.keys(refsAfter).length === 0) {
+          // Nothing to verify (likely all skipped or no references namespace).
+        } else {
+          console.log("\n\x1b[1;36m=== Auto-Verify Citations ===\x1b[0m");
+          const { verifyCitations, formatReport } = await import("../reference/verify-citations");
+          const report = await verifyCitations({ loreDb: updatedLore });
+          console.log(formatReport(report));
+          if (report.summary.broken > 0 || report.summary.partial > 0) {
+            console.log("\n\x1b[33m⚠ " + report.summary.broken + " broken / " + report.summary.partial +
+              " partial reference(s) detected.\x1b[0m");
+            console.log("\x1b[2m  The merge is preserved; review the JSON report and edit " + lorePath + " manually,\x1b[0m");
+            console.log("\x1b[2m  or re-run with --no-verify to bypass this check next time.\x1b[0m");
+          }
+        }
       }
 
       // --- Optional: --continue step ---
@@ -990,6 +1019,9 @@ Video generation has been moved to the 'videoharness' project.
         }
         if (values["multi-section"]) {
           args.push("--multi-section");
+        }
+        if (values["generator-model"] && values["generator-model"] !== "pro") {
+          args.push("--generator-model", values["generator-model"] as string);
         }
         console.log("  $ bun " + args.join(" "));
         const proc = Bun.spawn(["bun", ...args], { stdout: "inherit", stderr: "inherit" });

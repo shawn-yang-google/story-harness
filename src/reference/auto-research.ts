@@ -23,9 +23,12 @@ import type {
 
 export interface AutoResearchOptions {
   /**
-   * Which LLM to use. Defaults to GENERATOR (gemini-3.1-pro-preview) — the
-   * same flagship model used for story generation. CRITIC (gemini-2.5-pro)
-   * is not served by this Gemini API endpoint, so don't pass it.
+   * Which LLM to use. Defaults to GENERATOR (currently gemini-3.1-pro-preview)
+   * — the same flagship model used for story generation. As of 2026-05-08
+   * only two model ids resolve on this endpoint (see MODELS docstring in
+   * src/llm/index.ts), so any of REFINER/CRITIC/GENERATOR/EVALUATOR will
+   * work, but the cardinal choice is "pro" (slow, accurate) vs "flash-lite"
+   * (fast, cheap) — pick whichever matches your use case.
    */
   model?: typeof MODELS[keyof typeof MODELS];
   /**
