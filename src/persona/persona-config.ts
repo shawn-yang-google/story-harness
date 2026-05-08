@@ -231,6 +231,20 @@ export function resolvePersonaConfig(persona: WriterPersona): PersonaConfig {
   };
 }
 
+/**
+ * Returns the default reference enforcement level for a given genre.
+ *
+ * Looks up the per-genre preset (e.g., historical → 4, comedy/children → 1,
+ * fantasy → 2). For unknown or custom genres, returns the global default of 3.
+ *
+ * Used by `suggestPersonaDefaults` to derive a sensible level when the LLM
+ * either doesn't supply one or supplies an invalid value.
+ */
+export function getDefaultReferenceLevel(genre: string): ReferenceLevel {
+  const preset = GENRE_PRESETS[genre];
+  return (preset?.referenceLevel ?? 3) as ReferenceLevel;
+}
+
 /** What each checker validates and how many rules it contains. */
 const CHECKER_INFO: Record<string, { description: string; rules: number }> = {
   propositional:  { description: "Contradictions, conditional logic, biconditionals", rules: 5 },

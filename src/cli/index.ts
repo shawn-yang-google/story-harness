@@ -630,7 +630,11 @@ Video generation has been moved to the 'videoharness' project.
         { level: 4, name: "investigate", desc: "implicit claims + enrichment suggestions" },
         { level: 5, name: "research", desc: "full research consultant mode" },
       ] as const;
-      const suggestedLevel = checkerConfig.referenceLevel;
+      // Prefer the LLM's persona-aware suggestion; fall back to genre preset.
+      const suggestedLevel = suggestions.referenceLevel ?? checkerConfig.referenceLevel;
+      if (suggestions.reasons.referenceLevel) {
+        console.log("\n\x1b[2mLLM suggests reference level " + suggestedLevel + " — " + suggestions.reasons.referenceLevel + "\x1b[0m");
+      }
       console.log("\nReference checking depth:");
       for (const rl of REFERENCE_LEVELS) {
         const marker = rl.level === suggestedLevel ? " \x1b[32m<-- suggested\x1b[0m" : "";

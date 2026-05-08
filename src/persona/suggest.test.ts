@@ -14,12 +14,14 @@ mock.module("../llm", () => ({
       style: "ornate",
       audienceAge: "adult",
       emphasis: ["character-depth", "emotional-arc"],
+      referenceLevel: 4,
       reasons: {
         genre: "Family history stories are rooted in real events across generations, making historical the natural genre.",
         tone: "Reflecting on family past often carries a bittersweet, nostalgic quality.",
         style: "Rich, detailed prose suits the layered nature of generational storytelling.",
         audienceAge: "Family history themes resonate most with adult readers.",
         emphasis: "Family stories need deep characters and emotional arcs to honor real people's lives.",
+        referenceLevel: "Biographical work demands deep fact-checking and implicit-claim extraction.",
       },
     });
   }),
@@ -56,5 +58,14 @@ describe("suggestPersonaDefaults", () => {
     const result = await suggestPersonaDefaults("family history writer");
     expect(result.emphasis).toBeDefined();
     expect(result.emphasis!.length).toBeGreaterThan(0);
+  });
+
+  //#when the LLM returns a valid referenceLevel
+  //#then the suggestion surfaces it together with its reason
+  it("should include the LLM-suggested referenceLevel and reason", async () => {
+    const result = await suggestPersonaDefaults("family history writer");
+    expect(result.referenceLevel).toBe(4);
+    expect(result.reasons.referenceLevel).toBeDefined();
+    expect(result.reasons.referenceLevel!.length).toBeGreaterThan(0);
   });
 });

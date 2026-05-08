@@ -6,89 +6,32 @@ Open follow-up work, ordered roughly by priority.
 
 ## High Priority
 
-### 1. `lore_coverage` is an unactionable error at level 4-5
-
-**Problem:** When `loreDb` is empty (the default), `SourceChecker/lore_coverage` fires every round saying "LoreDb has no entries for categories: historical, scientific, cultural." At reference level 4+, this is promoted to **error** severity — but the LLM generator can't fix an empty `loreDb`. This creates an unresolvable gate that blocks all drafts.
-
-**Observed in:** `output/story-2026-05-04T23-42-22.md` — all 5 sections failed after 5 rounds.
-
-**Possible fixes (pick one):**
-- (a) Remove `lore_coverage` from the level 4-5 promotion list in `applyReferenceLevel`. It's an author-side task, not a generator-fixable issue.
-- (b) Suppress `lore_coverage` entirely when `loreDb` is empty (it's redundant — of course it's empty).
-- (c) Downgrade it to a one-time informational note that doesn't repeat per round.
-
-**Files:** `src/reference/reference-checker.ts`, possibly `src/reference/source-checker.ts`.
-
-### 2. Logic checkers over-flag legitimate plot devices
-
-**Problem:** Stories about wrongful conviction, unreliable narrators, or contested truth get blocked by `PropositionalChecker/contradiction` ("智 was innocent" vs "智 was guilty"). The contradiction is the *plot*, not a bug. Similarly, `CausalChecker/necessary_precondition_missing` fires on "physical trauma causes lasting impairment" — common-sense physics that shouldn't need to be re-evidenced inline.
-
-**Possible approaches:**
-- Make checkers persona-aware (e.g., genres like `legal-drama`, `mystery`, `thriller` should tolerate contested truth).
-- Add an "unreliable narrator" / "contested claim" flag in the LogicGraph that suppresses contradiction warnings between conflicting source attributions.
-- Distinguish `narrative` source claims (in-story) from `narrator` claims (authorial). A character saying X and a record saying ¬X is a plot device, not a contradiction.
-
-**Files:** `src/logic/propositional-checker.ts`, `src/logic/causal-checker.ts`, `src/types/logic-graph.ts`.
-
----
+*(none open — see "Done" below for the cleared backlog)*
 
 ## Medium Priority
 
-### 3. LLM still rubber-stamps at level 4
+### Future: improve L4/L5 evaluator model
 
-**Observed:** Level 4 prompt explicitly says "challenge high confidence verdicts" but the LLM still produced 4/4 claims as `verdict: accurate, confidence: high` with `needs_research: 0` in the test run from `logs/generate-2026-05-04T23-27-41-426Z`.
-
-**Investigation needed:** Is the level 4 prompt actually reaching the LLM? Run `buildReferenceExtractionPrompt(draft, { personaConfig: { referenceLevel: 4 }})` and inspect the output. May need stronger prompt language (few-shot examples of "downgraded" verdicts) or a model upgrade for the EVALUATOR (currently flash-lite).
-
-**Files:** `src/reference/reference-level.ts`, `src/reference/extraction-prompt.ts`, possibly `src/llm/index.ts` (model selection).
-
-### 4. Build a starter `loreDb` for the family-history persona
-
-**Why:** The user is writing a Chinese family history (1990s-2000s). A loreDb seeded with verified facts about that era (PRC criminal procedure, university funding reform, common medical treatments, dial-up internet adoption) would dramatically reduce `unsourced_critical` and `lore_coverage` errors.
-
-**Suggested seed entries:**
-- PRC Criminal Law Article 397 (玩忽职守 / dereliction of duty)
-- Chinese university financial reforms of the late 1990s
-- Standard SLE (红斑狼疮) treatment protocols
-- Dial-up internet adoption timeline in China (1995-2003)
-- 双规 / Shuanggui detention practices
-
-**Files:** `datasets/lore.json`.
-
-### 5. Resolve-research workflow
-
-**Why:** `needs-research.json` is generated, but there's no workflow to merge resolved research back into `loreDb`. The `parseResolvedNeedsResearch` function exists in `src/reference/needs-research.ts` (line 240) but isn't wired to a CLI command.
-
-**Add:** `bun run src/cli/index.ts resolve-research <session-dir>` that reads the resolved file and appends verified facts to `datasets/lore.json`.
-
-**Files:** `src/cli/index.ts`, `src/reference/needs-research.ts`.
-
----
+The L4/L5 prompts now enforce hard quotas with few-shot examples (see commit
+fixing TODO #3). If the LLM still under-flags after a few real runs, consider
+upgrading the EVALUATOR model from flash-lite to a stronger model in
+`src/llm/index.ts` or adding a verification pass that rejects rubber-stamp
+outputs whose `confidence:high` ratio exceeds the quota.
 
 ## Low Priority
 
-### 6. Test extraction prompt at each level
+### Wire `lore_coverage` to detect categories that are *partially* uncovered
 
-Add an integration test that runs `buildReferenceExtractionPrompt` at each level and asserts:
-- Level 1 prompt mentions "SCAN" and skipping niche categories
-- Level 4 prompt includes the `enrichmentSuggestions` JSON schema
-- Level 5 prompt includes the `researchQuestions` JSON schema
+Today `SourceChecker/lore_coverage` fires when a category has ZERO matching
+loreDb entries. A more nuanced version could flag categories where ≥ 50% of
+claims are uncovered, even if a few are. Out of scope for now — the warning is
+already informational.
 
-**Files:** `src/reference/extraction-prompt.test.ts` (new).
+### Move `output/story-2026-05-04T23-42-22.md` to a fixtures dir
 
-### 7. Document the level-1 skipCategories behavior
-
-`getReferenceLevelConfig(1).skipCategories` returns `["linguistic", "cultural"]`, but this is currently **only documentation**. The extraction prompt doesn't actually omit these categories from its JSON schema. Either:
-- (a) Wire `skipCategories` into the prompt builder to actually skip those sections.
-- (b) Remove the field if it's purely informational.
-
-**Files:** `src/reference/reference-level.ts`, `src/reference/extraction-prompt.ts`.
-
-### 8. Persona suggest should also suggest a referenceLevel
-
-**Why:** When `create-persona` analyzes a name like "人物传记作家-写家史" (biographer writing family history), `suggestPersonaDefaults` could include a `referenceLevel` suggestion (e.g., 4 for a biographer, 5 for a journalist).
-
-**Files:** `src/persona/suggest.ts`.
+That file is the regression case for the lore_coverage / contradiction fixes.
+Consider moving it under `tests/fixtures/regression/` and adding an integration
+test that runs the harness against it and asserts < 5 errors at L4.
 
 ---
 
@@ -101,3 +44,23 @@ Add an integration test that runs `buildReferenceExtractionPrompt` at each level
 - ✅ Fix `ReferenceHarness.ts` Napoleon string parse error
 - ✅ Fix `ReferenceCraftHarness.hybrid.json` invalid JSON (literal newlines)
 - ✅ Document the reference domain (`docs/domains/reference.md`)
+- ✅ **#1** Stop promoting `lore_coverage` to error at L4-5 (was unfixable
+  for the LLM and blocked all drafts when `loreDb` empty).
+- ✅ **#2** Logic checkers now tolerate contested-truth and common-sense plot
+  devices: added `Proposition.source` and `WorldRule.source="common_sense"`
+  conventions, with extractor-prompt updates and source-aware
+  `checkContradictions` + `checkNecessaryWorldRules`.
+- ✅ **#3** Strengthened L4/L5 prompts with hard quotas + few-shot
+  WRONG → CORRECT downgrade examples to combat LLM rubber-stamping.
+- ✅ **#4** Seeded `datasets/lore.family-history-cn.json` (14 verified entries
+  across history/science/culture/facts) for the user's family-history persona.
+- ✅ **#5** Added `resolve-research` CLI command (and pure
+  `mergeResolvedIntoLore` engine) so resolved needs-research.json files merge
+  back into the loreDb under the `references` namespace.
+- ✅ **#6** Added per-level extraction-prompt tests
+  (`src/reference/extraction-prompt.test.ts`).
+- ✅ **#7** Wired `skipCategories` into `buildReferenceExtractionPrompt` so L1
+  actually omits the linguistic and cultural sections from the JSON schema.
+- ✅ **#8** Extended `suggestPersonaDefaults` to also propose a
+  `referenceLevel` (with a per-genre fallback in `getDefaultReferenceLevel`);
+  `create-persona` CLI now uses the LLM's suggestion when available.

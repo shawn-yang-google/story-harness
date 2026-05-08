@@ -31,8 +31,10 @@ export function buildReferenceExtractionPrompt(
         ].join("\n")
       : "";
 
-  const jsonExampleLines = [
-    "{",
+  // Per-category schema snippets. Each is an array of lines representing a
+  // single comma-terminated `"<key>": [...]` JSON block. We assemble them
+  // conditionally below so `levelConfig.skipCategories` can omit sections.
+  const claimsBlock = [
     '  "claims": [',
     "    {",
     '      "id": "ref1",',
@@ -47,6 +49,8 @@ export function buildReferenceExtractionPrompt(
     '      "knowledgeSource": "basis for your assessment (optional)"',
     "    }",
     "  ],",
+  ];
+  const historicalBlock = [
     '  "historical": [',
     "    {",
     '      "id": "hist1",',
@@ -59,6 +63,8 @@ export function buildReferenceExtractionPrompt(
     '      "verdict": "accurate"',
     "    }",
     "  ],",
+  ];
+  const geographicBlock = [
     '  "geographic": [',
     "    {",
     '      "id": "geo1",',
@@ -71,6 +77,8 @@ export function buildReferenceExtractionPrompt(
     '      "verdict": "accurate"',
     "    }",
     "  ],",
+  ];
+  const culturalBlock = [
     '  "cultural": [',
     "    {",
     '      "id": "cul1",',
@@ -84,6 +92,8 @@ export function buildReferenceExtractionPrompt(
     '      "verdict": "accurate"',
     "    }",
     "  ],",
+  ];
+  const scientificBlock = [
     '  "scientific": [',
     "    {",
     '      "id": "sci1",',
@@ -97,6 +107,8 @@ export function buildReferenceExtractionPrompt(
     '      "correction": "While in the habitable zone, stellar flares likely strip its atmosphere"',
     "    }",
     "  ],",
+  ];
+  const linguisticBlock = [
     '  "linguistic": [',
     "    {",
     '      "id": "ling1",',
@@ -110,6 +122,8 @@ export function buildReferenceExtractionPrompt(
     '      "verdict": "accurate"',
     "    }",
     "  ],",
+  ];
+  const anachronismsBlock = [
     '  "anachronisms": [',
     "    {",
     '      "id": "anach1",',
@@ -122,6 +136,8 @@ export function buildReferenceExtractionPrompt(
     '      "confidence": "high"',
     "    }",
     "  ],",
+  ];
+  const crossReferencesBlock = [
     '  "crossReferences": [',
     "    {",
     '      "id": "xref1",',
@@ -130,6 +146,17 @@ export function buildReferenceExtractionPrompt(
     "    }",
     "  ]",
   ];
+
+  // The `claims`, `anachronisms`, and `crossReferences` sections are
+  // structural (not category-gated). The other 5 are gated by skipCategories.
+  const skip = new Set(levelConfig.skipCategories);
+  const jsonExampleLines: string[] = ["{", ...claimsBlock];
+  if (!skip.has("historical")) jsonExampleLines.push(...historicalBlock);
+  if (!skip.has("geographic")) jsonExampleLines.push(...geographicBlock);
+  if (!skip.has("cultural")) jsonExampleLines.push(...culturalBlock);
+  if (!skip.has("scientific")) jsonExampleLines.push(...scientificBlock);
+  if (!skip.has("linguistic")) jsonExampleLines.push(...linguisticBlock);
+  jsonExampleLines.push(...anachronismsBlock, ...crossReferencesBlock);
 
   if (levelConfig.enableEnrichment) {
     // Remove the trailing "]" from crossReferences to add a comma separator
