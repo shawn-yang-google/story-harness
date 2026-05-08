@@ -6,26 +6,9 @@ Open follow-up work, ordered roughly by priority.
 
 ## High Priority
 
-### Fix dead model constants (latent CRITIC / REFINER 404)
-
-`MODELS.CRITIC` (`gemini-2.5-pro`) and `MODELS.REFINER` (`gemini-2.5-flash`)
-both 404 on the current Gemini API endpoint (verified by probing all
-candidate ids on 2026-05-08). The only reachable models are
-`gemini-3.1-pro-preview` and `gemini-3.1-flash-lite-preview`. Every critic
-invocation (`logic-critic`, `story-critic`, `critic`, `character-critic`,
-`dialogue-critic`) and every synthesizer iteration (`synthesizer/index.ts` ×3)
-silently fails today. **Round 5 task B** addresses this.
+*(none open)*
 
 ## Medium Priority
-
-### Auto-`verify-citations` after `do-research --merge`
-
-The `do-research` pipeline still trusts whatever the grounded LLM returns.
-Now that `verify-citations` exists, wire it to run automatically right after
-the merge step in `do-research --merge` and either (a) downgrade unverified
-resolutions back to `null` so the human is asked to re-research them, or
-(b) emit a warning report alongside the merge. **Round 5 task C** addresses
-this.
 
 ### Future: improve L4/L5 evaluator model
 
@@ -35,32 +18,37 @@ upgrading the EVALUATOR model from flash-lite to a stronger model in
 `src/llm/index.ts` or adding a verification pass that rejects rubber-stamp
 outputs whose `confidence:high` ratio exceeds the quota.
 
-### Verbatim-quote citation verification
-
-`verify-citations` returns "unverifiable" when a reference has no URL and no
-PMID — e.g., when the source is a verbatim legal-text quote with only a body
-of law cited (Higher Ed Law Article 40). Future iteration: feed the cited
-verbatim text + source description into a grounded LLM and ask "does this
-quote appear at this source?" to catch hallucinated quotes too.
-
 ## Low Priority
 
-### Wire `lore_coverage` to detect categories that are *partially* uncovered
-
-Today `SourceChecker/lore_coverage` fires when a category has ZERO matching
-loreDb entries. A more nuanced version could flag categories where ≥ 50% of
-claims are uncovered, even if a few are. Out of scope for now — the warning is
-already informational.
-
-### Move `output/story-2026-05-04T23-42-22.md` to a fixtures dir
-
-That file is the regression case for the lore_coverage / contradiction fixes.
-Consider moving it under `tests/fixtures/regression/` and adding an integration
-test that runs the harness against it and asserts < 5 errors at L4.
+*(none open — see "Done" below for the cleared backlog)*
 
 ---
 
 ## Done
+
+### Round 6 — Verbatim-Quote Verification, Partial Lore Coverage, Regression Fixture (2026-05-08)
+
+- ✅ Added `--verify-quotes` flag + `extractQuotes` / `checkQuotes` (grounded
+  LLM): closes the last `unverifiable` gap. Live family-history loreDb went
+  from 2 verified + 1 unverifiable → 3 verified.
+- ✅ Added `lore_coverage_partial` warning (≥3 claims, ≥50% uncovered) AND
+  fixed a latent bug in the existing `lore_coverage` check (loreDb keys were
+  trivially matching claim terms; now uses values-only haystack).
+- ✅ Created `tests/fixtures/regression/family-history-failed/` (prompt,
+  best-draft, captured reference graph, lore snapshot) + `src/regression.test.ts`
+  asserting <5 errors at L4 (currently 2), <8 at L5, and exemption holds at
+  every level.
+
+### Round 5 — Repoint Dead Model Ids + Auto-Verify After Merge (2026-05-08)
+
+- ✅ Repointed `MODELS.CRITIC` (gemini-2.5-pro 404 → gemini-3.1-pro-preview)
+  and `MODELS.REFINER` (gemini-2.5-flash 404 → gemini-3.1-flash-lite-preview).
+  All 4 MODELS constants now resolve on the live endpoint.
+- ✅ Wired `verifyCitations` into `do-research --merge` (warning-only).
+  Added `--no-verify` opt-out and `--generator-model` passthrough to
+  `--continue`.
+- ✅ Added Round 4 section to `HISTORY.md`; restructured `TODO.md` with
+  per-round Done sections.
 
 ### Round 4 — Citation Audit & Flash-Model Failover (2026-05-08)
 

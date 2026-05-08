@@ -162,34 +162,80 @@ function checkLoreCoverage(
   const allClaims = collectAllClaims(graph);
   if (allClaims.length === 0) return results;
 
-  const coveredCategories = new Set<string>();
-  const loreStr = JSON.stringify(loreDb).toLowerCase();
+  // Build a haystack from loreDb VALUES (not the full JSON dump). The previous
+  // implementation stringified the entire loreDb, which meant top-level key
+  // names like "references" or "history" trivially matched any claim
+  // containing those words — silently suppressing real coverage gaps.
+  const loreHaystack = collectLoreValues(loreDb).toLowerCase();
 
+  // Per-category tally: total high-confidence-accurate claims vs covered.
+  const tally = new Map<string, { total: number; covered: number }>();
   for (const claim of allClaims) {
-    if (claim.verdict === "accurate" && claim.confidence === "high") {
-      // Check if this claim's subject appears in the loreDb
-      const claimTerms = claim.claim.toLowerCase().split(/\s+/).filter((t) => t.length > 4);
-      if (claimTerms.some((t) => loreStr.includes(t))) {
-        coveredCategories.add(claim.category);
-      }
-    }
+    if (claim.verdict !== "accurate" || claim.confidence !== "high") continue;
+    const claimTerms = claim.claim.toLowerCase().split(/\s+/).filter((t) => t.length > 4);
+    const isCovered = claimTerms.some((t) => loreHaystack.includes(t));
+    const bucket = tally.get(claim.category) ?? { total: 0, covered: 0 };
+    bucket.total += 1;
+    if (isCovered) bucket.covered += 1;
+    tally.set(claim.category, bucket);
   }
 
-  const allCategories = new Set(allClaims.map((c) => c.category));
-  const uncovered = [...allCategories].filter((c) => !coveredCategories.has(c));
-
-  if (uncovered.length > 0 && allClaims.length > 3) {
+  // (a) Existing behavior: categories that are 100% uncovered (when overall
+  // graph has > 3 claims to keep the signal-to-noise reasonable).
+  const allCategories = new Set([...tally.keys()]);
+  const fullyUncovered = [...allCategories].filter((c) => (tally.get(c)?.covered ?? 0) === 0);
+  if (fullyUncovered.length > 0 && allClaims.length > 3) {
     results.push({
       checker: "SourceChecker",
       rule: "lore_coverage",
       severity: "warning",
       message:
-        `LoreDb has no entries for categories: ${uncovered.join(", ")}. ` +
+        `LoreDb has no entries for categories: ${fullyUncovered.join(", ")}. ` +
         `Consider adding verified reference facts for these areas to ` +
         `improve future validation accuracy.`,
       evidence: [],
     });
   }
 
+  // (b) New behavior: categories with >=3 claims and >=50% uncovered. These
+  // are partial gaps where lore exists but isn't comprehensive.
+  const PARTIAL_MIN_CLAIMS = 3;
+  const PARTIAL_THRESHOLD = 0.5;
+  for (const [category, { total, covered }] of tally) {
+    if (covered === 0) continue; // already handled by (a)
+    if (total < PARTIAL_MIN_CLAIMS) continue;
+    const uncoveredCount = total - covered;
+    if (uncoveredCount / total < PARTIAL_THRESHOLD) continue;
+    results.push({
+      checker: "SourceChecker",
+      rule: "lore_coverage_partial",
+      severity: "warning",
+      message:
+        `LoreDb covers only ${covered}/${total} ${category} claim(s) — ` +
+        `${uncoveredCount} of ${total} are uncovered. ` +
+        `Consider adding more verified ${category} facts to the loreDb.`,
+      evidence: [],
+    });
+  }
+
   return results;
+}
+
+/**
+ * Recursively collect string values (not keys) from a loreDb-shaped object.
+ * Used to build a coverage haystack that doesn't accidentally match against
+ * structural key names like "references" or "history".
+ */
+function collectLoreValues(obj: unknown, out: string[] = []): string {
+  if (obj == null) return out.join(" ");
+  if (typeof obj === "string" || typeof obj === "number" || typeof obj === "boolean") {
+    out.push(String(obj));
+  } else if (Array.isArray(obj)) {
+    for (const item of obj) collectLoreValues(item, out);
+  } else if (typeof obj === "object") {
+    for (const v of Object.values(obj as Record<string, unknown>)) {
+      collectLoreValues(v, out);
+    }
+  }
+  return out.join(" ");
 }

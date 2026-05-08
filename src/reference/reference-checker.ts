@@ -62,10 +62,11 @@ export function checkReferences(
  * Level 3: Promote unsourced_critical to error
  * Level 4-5: Also promote vague_history to error
  *
- * Note: `lore_coverage` is intentionally NOT promoted at any level. It is an
- * author-side recommendation ("seed the loreDb"), not something the LLM
- * generator can fix by rewriting a draft. Promoting it to error created an
- * unresolvable gate on every run with an empty loreDb (the default).
+ * Note: `lore_coverage` and `lore_coverage_partial` are intentionally NOT
+ * promoted at any level. They are author-side recommendations ("seed the
+ * loreDb"), not something the LLM generator can fix by rewriting a draft.
+ * Promoting them to error would create an unresolvable gate on every run
+ * with an under-seeded loreDb.
  */
 export function applyReferenceLevel(
   results: CheckResult[],

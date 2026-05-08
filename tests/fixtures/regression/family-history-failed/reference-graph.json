@@ -1,0 +1,131 @@
+{
+  "claims": [
+    {
+      "id": "ref1",
+      "category": "historical",
+      "excerpt": "2002年11月的一个深夜，新校区二期工程招标前夕。",
+      "claim": "Construction bidding processes in Chinese public universities were subject to corruption and extrajudicial detention in 2002.",
+      "location": "paragraph 4, sentence 1",
+      "confidence": "medium",
+      "reasoning": "Corruption in infrastructure projects was a documented issue in China during the early 2000s, though the specific use of 'black Santanas' for extrajudicial detention is a common trope in crime fiction.",
+      "verdict": "partially_accurate"
+    },
+    {
+      "id": "ref2",
+      "category": "scientific",
+      "excerpt": "右耳鼓膜穿孔导致永久性失聪。",
+      "claim": "A perforated eardrum causes permanent deafness.",
+      "location": "paragraph 10, sentence 4",
+      "confidence": "high",
+      "reasoning": "While a perforated eardrum causes hearing loss, it is often treatable (tympanoplasty). Permanent deafness usually requires damage to the ossicles or the inner ear (cochlea).",
+      "verdict": "partially_accurate",
+      "correction": "A perforated eardrum typically causes conductive hearing loss, which is often reversible; permanent deafness usually implies damage to the inner ear or auditory nerve."
+    },
+    {
+      "id": "ref3",
+      "category": "cultural",
+      "excerpt": "英买了一台电脑，拉了一根拨号上网的电话线。",
+      "claim": "Dial-up internet was the standard for home internet access in China around 2003.",
+      "location": "paragraph 16, sentence 1",
+      "confidence": "high",
+      "reasoning": "Dial-up (56k modems) was indeed the primary method for home internet access in China in the early 2000s before the widespread adoption of ADSL/broadband.",
+      "verdict": "accurate"
+    },
+    {
+      "id": "ref4",
+      "category": "historical",
+      "excerpt": "2009年冬，省高院下达了再审判决书，智被宣告无罪释放。",
+      "claim": "The Chinese judicial system allows for retrials and exonerations of wrongful convictions.",
+      "location": "paragraph 30, sentence 1",
+      "confidence": "high",
+      "reasoning": "The 're-trial' (再审) mechanism exists in the Chinese legal system, though successful exonerations are statistically rare.",
+      "verdict": "accurate"
+    }
+  ],
+  "historical": [
+    {
+      "id": "hist1",
+      "subject": "Judicial System",
+      "timePeriod": "2002-2009",
+      "claim": "The use of 'black jails' or extrajudicial detention centers for interrogation.",
+      "excerpt": "他被非法羁押在郊区一处废弃的招待所地下室里。",
+      "location": "paragraph 10",
+      "confidence": "medium",
+      "verdict": "partially_accurate"
+    }
+  ],
+  "geographic": [],
+  "cultural": [
+    {
+      "id": "cul1",
+      "subject": "Medical treatment",
+      "type": "social_norm",
+      "claim": "Breast cancer treatment in China in the early 2000s involved chemotherapy and wigs.",
+      "regionAndEra": "China, 2002",
+      "excerpt": "英正在医院的病床上接受化疗...假发下是光秃秃的头皮",
+      "location": "paragraph 12, 20",
+      "confidence": "high",
+      "verdict": "accurate"
+    }
+  ],
+  "scientific": [
+    {
+      "id": "sci1",
+      "domain": "medicine",
+      "claim": "Advanced breast cancer can enter a 'dormant' state (remission).",
+      "assertedAsFact": true,
+      "excerpt": "她的癌症奇迹般地进入了休眠期",
+      "location": "paragraph 32, sentence 2",
+      "confidence": "high",
+      "verdict": "accurate"
+    }
+  ],
+  "linguistic": [
+    {
+      "id": "ling1",
+      "languageOrDialect": "Mandarin Chinese",
+      "regionAndEra": "China, 2000s",
+      "type": "period_language",
+      "claim": "The use of '嫂子' (sister-in-law) as a form of address by an antagonist.",
+      "excerpt": "嫂子，听说你家老二最近总爱去铁路边玩？",
+      "location": "paragraph 15, sentence 1",
+      "confidence": "high",
+      "verdict": "accurate"
+    }
+  ],
+  "anachronisms": [],
+  "crossReferences": [],
+  "enrichmentSuggestions": [
+    {
+      "claimId": "ref3",
+      "category": "cultural",
+      "suggestion": "Mention the specific sound of the dial-up modem handshake (the screeching noise).",
+      "rationale": "This would provide a strong sensory anchor for the 2003 setting, grounding the reader in the era's technology.",
+      "confidence": "high"
+    }
+  ],
+  "researchQuestions": [
+    {
+      "claimIds": [
+        "ref1"
+      ],
+      "question": "What were the specific legal procedures for 'bidding' (招标) in Chinese provincial universities in 2002?",
+      "impact": "Would allow for more precise terminology regarding the corruption mechanism.",
+      "suggestedSources": [
+        "Chinese legal archives",
+        "Academic papers on Chinese public procurement history"
+      ]
+    },
+    {
+      "claimIds": [
+        "ref2"
+      ],
+      "question": "What are the long-term medical consequences of severe physical torture in Chinese detention centers during that era?",
+      "impact": "Would add clinical realism to the protagonist's physical state upon release.",
+      "suggestedSources": [
+        "Human rights reports on detention conditions",
+        "Medical literature on trauma"
+      ]
+    }
+  ]
+}

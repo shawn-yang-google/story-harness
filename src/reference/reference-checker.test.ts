@@ -470,4 +470,108 @@ describe("ReferenceChecker", () => {
       expect(errors.length).toBe(0);
     });
   });
+
+  describe("partial lore coverage", () => {
+    // Helper to build N high-confidence accurate historical claims. Each
+    // subject is a single long token (length > 4) so it survives the
+    // implementation's length-filter and is the real coverage discriminator.
+    // The wrapper words "Reference:" and "occurred" are short / non-matching
+    // so they don't accidentally hit common loreDb terms.
+    function makeHistoricalClaims(subjects: string[]) {
+      return subjects.map((subj, i) => ({
+        id: "h" + (i + 1),
+        category: "historical" as const,
+        excerpt: "Mention of " + subj,
+        claim: "Reference: " + subj + " occurred",
+        location: "paragraph " + (i + 1),
+        confidence: "high" as const,
+        reasoning: "verified",
+        verdict: "accurate" as const,
+      }));
+    }
+
+    //#given a historical category where 3 of 4 claims have lore coverage
+    //#when the checker runs
+    //#then NO partial warning fires (only 25% uncovered, below 50% threshold)
+    it("does NOT flag categories with <50% uncovered claims", () => {
+      const graph: ReferenceGraph = {
+        ...createEmptyReferenceGraph(),
+        claims: makeHistoricalClaims(["xinhai-revolution", "boxer-rebellion", "qing-dynasty", "obscureword-filler"]),
+      };
+      const context = makeContext({
+        references: {
+          x1: "the xinhai-revolution of 1911",
+          x2: "the boxer-rebellion of 1900",
+          x3: "the qing-dynasty 1644-1912",
+        },
+      });
+
+      const results = checkReferences(graph, context);
+      const partial = results.filter(
+        (r) => r.checker === "SourceChecker" && r.rule === "lore_coverage_partial"
+      );
+      expect(partial.length).toBe(0);
+    });
+
+    //#given a historical category where only 1 of 4 claims has lore coverage
+    //#when the checker runs
+    //#then a partial warning fires citing 3 / 4 uncovered
+    it("flags categories with >=50% uncovered as lore_coverage_partial", () => {
+      const graph: ReferenceGraph = {
+        ...createEmptyReferenceGraph(),
+        claims: makeHistoricalClaims(["xinhai-revolution", "alphaword-uno", "betaword-due", "gammaword-tre"]),
+      };
+      const context = makeContext({
+        references: { x1: "the xinhai-revolution of 1911" },
+      });
+
+      const results = checkReferences(graph, context);
+      const partial = results.filter(
+        (r) => r.checker === "SourceChecker" && r.rule === "lore_coverage_partial"
+      );
+      expect(partial.length).toBe(1);
+      expect(partial[0].severity).toBe("warning");
+      expect(partial[0].message).toContain("historical");
+      expect(partial[0].message).toMatch(/3.*?\/.*?4|3 of 4/);
+    });
+
+    //#given a category with only 2 claims, both uncovered
+    //#when the checker runs
+    //#then NO partial warning fires (sample size below the 3-claim minimum)
+    it("does NOT flag partial coverage for categories with fewer than 3 claims", () => {
+      const graph: ReferenceGraph = {
+        ...createEmptyReferenceGraph(),
+        claims: makeHistoricalClaims(["alphaword-uno", "betaword-due"]),
+      };
+      const context = makeContext({
+        references: { unrelated: "irrelevant lore entry" },
+      });
+
+      const results = checkReferences(graph, context);
+      const partial = results.filter(
+        (r) => r.checker === "SourceChecker" && r.rule === "lore_coverage_partial"
+      );
+      expect(partial.length).toBe(0);
+    });
+
+    //#given a category where ZERO claims have lore coverage (and >3 claims overall)
+    //#when the checker runs
+    //#then the existing all-uncovered lore_coverage warning still fires (regression check)
+    it("does not regress: all-uncovered category still emits lore_coverage", () => {
+      const graph: ReferenceGraph = {
+        ...createEmptyReferenceGraph(),
+        claims: makeHistoricalClaims(["alphaword-uno", "betaword-due", "gammaword-tre", "deltaword-quattro"]),
+      };
+      const context = makeContext({
+        references: { unrelated: "irrelevant lore entry" },
+      });
+
+      const results = checkReferences(graph, context);
+      const allUncovered = results.filter(
+        (r) => r.checker === "SourceChecker" && r.rule === "lore_coverage"
+      );
+      expect(allUncovered.length).toBe(1);
+      expect(allUncovered[0].message).toContain("historical");
+    });
+  });
 });
