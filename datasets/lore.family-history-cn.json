@@ -1,0 +1,80 @@
+{
+  "_meta": {
+    "name": "Family History CN (1990s-2000s)",
+    "purpose": "Starter loreDb for Chinese family-history personas. Use with referenceLevel 4 or 5 to give the verifier ground truth and dramatically reduce unsourced_critical and lore_coverage warnings.",
+    "scope": "Late 1990s through mid-2000s mainland China — legal procedure, university reform, common medical conditions, technology adoption, social institutions.",
+    "sources_format": "Each entry has a fact and a source field. Sources are real published references; verify and expand them as the manuscript matures.",
+    "load_via": "Pass this file parsed JSON as loreDb in HarnessContext (via PersonaConfig or runner options).",
+    "version": "1"
+  },
+  "history": {
+    "prc_criminal_law_article_397": {
+      "fact": "Article 397 of the PRC Criminal Law (1997 revision) defines 玩忽职守 (dereliction of duty) as a crime committed by state functionaries. Maximum sentence is 3-7 years for serious cases.",
+      "source": "中华人民共和国刑法 (1997年修订), Article 397; English summary: Donald Clarke, China Law Translate."
+    },
+    "shuanggui_detention": {
+      "fact": "双规 (shuanggui) is an extra-judicial detention practice used by the CCP Central Commission for Discipline Inspection (CCDI) on Party members suspected of corruption. Detainees are held outside the regular criminal-procedure system, often for weeks or months without formal charge.",
+      "source": "Flora Sapio (2008), Shuanggui and Extralegal Detention in China, China Information 22(1)."
+    },
+    "university_funding_reform_1997": {
+      "fact": "China 1997 高校并轨 (parallel-track merger) reform unified the previously separate state-funded and self-funded undergraduate enrollment tracks. By 2000, virtually all undergraduates paid tuition (around 3,000-5,000 RMB/year), reversing the post-1949 norm of free tertiary education.",
+      "source": "Min Weifang (2004), Chinese Higher Education: The Legacy of the Past and the Context of the Future."
+    },
+    "expansion_1999": {
+      "fact": "The 1999 enrollment expansion (高校扩招) increased annual undergraduate admissions by 47 percent in a single year (from ~1.08M to ~1.59M), a policy designed to defer youth unemployment and stimulate domestic consumption after the Asian Financial Crisis.",
+      "source": "Ministry of Education of the PRC annual statistical bulletins, 1998-2000."
+    },
+    "rural_tax_for_fee_reform": {
+      "fact": "The 农村税费改革 (rural tax-for-fee reform), piloted in Anhui Province from 2000, replaced ad-hoc village levies with a single agricultural tax. The agricultural tax itself was fully abolished nationwide on 1 January 2006.",
+      "source": "Christine Wong (2009), Rebuilding Government for the 21st Century, The China Quarterly 200."
+    }
+  },
+  "science": {
+    "sle_treatment_late_1990s_cn": {
+      "fact": "Standard SLE (系统性红斑狼疮 / systemic lupus erythematosus) treatment in late-1990s Chinese hospitals combined oral corticosteroids (prednisone) with immunosuppressants (cyclophosphamide for severe cases, azathioprine for maintenance). Hydroxychloroquine was used adjunctively but less universally than in Western protocols of the same era.",
+      "source": "中华医学会风湿病学分会, 系统性红斑狼疮诊疗指南 (1999 draft); cross-reference: Dooley and Hogan, Cyclophosphamide therapy for lupus nephritis, Curr Opin Rheumatol 1995."
+    },
+    "iui_vs_ivf_china_late_1990s": {
+      "fact": "China first IVF baby was born in 1988 at Peking University Third Hospital. Through the late 1990s IVF was available only at a small number of tertiary centers in major cities (Beijing, Shanghai, Guangzhou, Changsha); IUI was more widely accessible in provincial hospitals. Out-of-pocket cost for one IVF cycle was roughly 15,000-25,000 RMB in 1998 — many months wages for a typical urban family.",
+      "source": "Lu Guangxiu et al., 30-year retrospective in Reproduction and Contraception, 2018."
+    },
+    "physical_trauma_lasting_impairment": {
+      "fact": "Severe physical trauma (long-bone fracture, traumatic brain injury, spinal injury) commonly causes lasting impairment — chronic pain, reduced range of motion, gait abnormality, cognitive deficits — even after acute medical care. This is universal physiology and does not require inline narrative justification.",
+      "source": "Common medical knowledge.",
+      "world_rule_hint": "When extracting, mark as WorldRule type=necessary source=common_sense."
+    }
+  },
+  "culture": {
+    "danwei_system": {
+      "fact": "The 单位 (danwei) system tied urban Chinese workers to their employer for housing, healthcare, schooling, and retirement until reforms in the late 1990s. The 1998 housing reform (停止福利分房) ended new welfare-housing allocation; existing tenants typically purchased their assigned unit at heavily discounted price.",
+      "source": "Lü Xiaobo and Elizabeth Perry eds. (1997), Danwei: The Changing Chinese Workplace in Historical and Comparative Perspective."
+    },
+    "guanxi_in_local_government": {
+      "fact": "In 1990s-2000s county-level government, 关系 (personal-network ties) routinely shaped procurement, hiring, and case outcomes. This was widely documented and widely criticized in Party rectification campaigns, but was not formally illegal unless it crossed into bribery (受贿罪).",
+      "source": "Yang Mayfair Mei-Hui (1994), Gifts, Favors, and Banquets; Andrew Wedeman (2012), Double Paradox."
+    },
+    "petitioning_xinfang": {
+      "fact": "信访 (xinfang / Letters and Visits) is the formal complaints channel through which Chinese citizens petition higher-level authorities about local grievances. Petitioning to Beijing was common but discouraged; local governments faced political penalties for petitions originating from their jurisdiction (the so-called 截访 / interception practice).",
+      "source": "Carl Minzner (2006), Xinfang: An Alternative to Formal Chinese Legal Institutions, Stanford Journal of International Law 42(1)."
+    }
+  },
+  "facts": {
+    "dialup_internet_china": {
+      "fact": "Dial-up internet via 163/169 (ChinaNet) reached urban households starting around 1996-1997. Broadband (ADSL) became common in tier-1 cities from 2001-2003 and spread to county towns by 2005-2007. CNNIC first user-count survey in October 1997 reported 620,000 nationwide internet users; by 2003 it was 79.5 million.",
+      "source": "CNNIC 中国互联网络发展状况统计报告, semi-annual (1997-present)."
+    },
+    "common_household_appliances_late_1990s_cn": {
+      "fact": "By the late 1990s, urban Chinese households commonly owned a color TV (普及率 ~90 percent by 1998), refrigerator (~70 percent), and washing machine (~85 percent); air conditioners and computers were still aspirational (each ~10-20 percent in major cities). Mobile phones (大哥大 then GSM handsets) were status items in the early 1990s but became mainstream after 1999.",
+      "source": "国家统计局, 中国统计年鉴 1998-2002, household consumer durables tables."
+    },
+    "rmb_purchasing_power_1998": {
+      "fact": "In 1998 the average urban household disposable income was approximately 5,425 RMB/year. A typical state-sector worker monthly wage in a county town was 600-1,200 RMB; a rural farming family annual cash income often fell below 2,000 RMB.",
+      "source": "国家统计局, 中国统计年鉴 1999."
+    }
+  },
+  "_usage_notes": {
+    "extending": "Add new categories under history, science, culture, or facts. The source-checker walks these top-level keys and extracts each entry fact for fuzzy matching against extracted claims.",
+    "consuming": "In code: JSON.parse(await Bun.file(path).text()) then pass the parsed object as loreDb in HarnessContext. The _meta and _usage_notes keys are ignored by the source-checker (they are not in the recognized loreKeys list).",
+    "next_seeds": "Suggested future additions: 工伤认定标准 (workplace injury determination), 集体土地征收 (collective land expropriation), 高考志愿填报 (college application timing), 公费医疗 vs 医保改革 (medical insurance reform 1998-2003)."
+  }
+}
