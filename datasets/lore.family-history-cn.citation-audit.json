@@ -11,6 +11,13 @@
         }
       ],
       "pmidChecks": [],
+      "quoteChecks": [
+        {
+          "quotePreview": "Forensic Autopsy of Blunt Force Trauma",
+          "status": "match",
+          "foundUrl": "https://emedicine.medscape.com/article/1680107-overview"
+        }
+      ],
       "overall": "verified"
     },
     {
@@ -18,7 +25,14 @@
       "source": "中华人民共和国高等教育法 (1998), 第四十条 — verbatim: 「高等学校的校长，由符合教育法规定的任职条件的公民担任。高等学校的校长、副校长按照国家有关规定任免。」 Source: National People's Congress (npc.gov.cn) full law text, verified 2026-05. Cadre management authority is established by the CCP Central Committee's 1990 《党政领导干部选拔任用工作条例》 (later versions in 2002, 2014, 2019).",
       "urlChecks": [],
       "pmidChecks": [],
-      "overall": "unverifiable"
+      "quoteChecks": [
+        {
+          "quotePreview": "高等学校的校长，由符合教育法规定的任职条件的公民担任。高等学校的校长、副校长按照国家有关规定任免。",
+          "status": "match",
+          "foundUrl": "http://www.npc.gov.cn/zgrdw/npc/xinwen/2016-03/30/content_1980667.htm"
+        }
+      ],
+      "overall": "verified"
     },
     {
       "refKey": "scientific:stage_iii_breast_cancer_prognosis_in_the_early_200",
@@ -46,14 +60,21 @@
           "actualYear": "2004 Aug 15"
         }
       ],
+      "quoteChecks": [
+        {
+          "quotePreview": "Breast cancer with synchronous metastases: trends in survival during a 14-year p",
+          "status": "match",
+          "foundUrl": "https://ascopubs.org/doi/10.1200/JCO.2004.08.095"
+        }
+      ],
       "overall": "verified"
     }
   ],
   "summary": {
     "total": 3,
-    "verified": 2,
+    "verified": 3,
     "partial": 0,
     "broken": 0,
-    "unverifiable": 1
+    "unverifiable": 0
   }
 }

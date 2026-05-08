@@ -1,12 +1,14 @@
 /**
  * verify-citations: independently audit the `references` namespace of a
- * loreDb by checking each cited URL (HEAD/GET) and each PubMed PMID
- * (eutils esummary) against the actual paper title. This catches LLM
- * fabrications such as off-by-one PMIDs, dead URLs, and made-up papers
- * that grounded auto-research can still produce.
+ * loreDb by checking each cited URL (HEAD/GET), each PubMed PMID (eutils
+ * esummary against the actual paper title), and (optionally) each verbatim
+ * quote (grounded LLM lookup against the live web). This catches LLM
+ * fabrications such as off-by-one PMIDs, dead URLs, made-up papers, and
+ * hallucinated quotes that grounded auto-research can still produce.
  *
- * Hermetic by design: all network I/O goes through global `fetch`, which
- * tests stub out. The CLI subcommand `verify-citations` calls this module.
+ * Hermetic by design: all network I/O goes through global `fetch` (URL/PMID)
+ * and `generateGroundedContent` (quotes), both of which tests stub out. The
+ * CLI subcommand `verify-citations` calls this module.
  */
 
 const URL_REGEX = /https?:\/\/[^\s)>"\u3000\u300d\u300f\u3011]+/g;
@@ -18,6 +20,18 @@ const PMID_REGEX = /(?:PubMed\s+)?PMID[:\s]+(\d{1,11})/gi;
 
 const PUBMED_ESUMMARY_BASE =
   "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=";
+
+// Quote extraction:
+//   "..."      English straight double quotes
+//   "..."      English curly double quotes (U+201C/U+201D)
+//   「...」     Chinese / Japanese single-line corner brackets (U+300C/U+300D)
+//   『...』    Chinese / Japanese hollow corner brackets (U+300E/U+300F)
+// We deliberately do NOT match single quotes ('foo') because they're
+// pervasive in English prose (apostrophes, contractions) and would require
+// expensive disambiguation. Quotes shorter than MIN_QUOTE_LEN are dropped to
+// avoid checking trivial keywords like "ok" or "yes".
+const QUOTE_REGEX = /"([^"]{1,400})"|\u201C([^\u201D]{1,400})\u201D|\u300C([^\u300D]{1,400})\u300D|\u300E([^\u300F]{1,400})\u300F/g;
+const MIN_QUOTE_LEN = 20;
 
 export interface ReferenceEntry {
   fact: string;
@@ -37,10 +51,23 @@ export interface VerifyCitationsInput {
    * Defaults to 15_000 ms.
    */
   timeoutMs?: number;
+  /**
+   * Opt-in: also verify verbatim quotes by calling a grounded LLM. Off by
+   * default because (a) it costs LLM tokens and (b) grounding requires
+   * network access. When false, refs whose only citation is a verbatim
+   * quote remain "unverifiable" (the previous default behavior).
+   */
+  verifyQuotes?: boolean;
+  /**
+   * Optional LLM model id for the quote verifier. Defaults to MODELS.EVALUATOR
+   * (flash-lite) since the verifier just needs yes/no judgment with grounding.
+   */
+  llmModel?: string;
 }
 
 export type UrlStatus = "live" | "dead" | "error";
 export type PmidStatus = "match" | "mismatch" | "not_found" | "error";
+export type QuoteStatus = "match" | "mismatch" | "error";
 export type OverallStatus = "verified" | "partial" | "broken" | "unverifiable";
 
 export interface UrlCheck {
@@ -60,11 +87,22 @@ export interface PmidCheck {
   error?: string;
 }
 
+export interface QuoteCheck {
+  /** First 80 chars of the verbatim quote, for the human-readable report. */
+  quotePreview: string;
+  status: QuoteStatus;
+  /** URL the LLM (or its grounding sources) returned as the quote's home. */
+  foundUrl?: string;
+  /** Free-form raw model text — kept for debugging when status === "error". */
+  rawResponse?: string;
+}
+
 export interface ReferenceReport {
   refKey: string;
   source: string;
   urlChecks: UrlCheck[];
   pmidChecks: PmidCheck[];
+  quoteChecks: QuoteCheck[];
   overall: OverallStatus;
 }
 
@@ -90,13 +128,17 @@ export async function verifyCitations(
     const source = entry.source ?? "";
     const urlChecks = await checkUrls(extractUrls(source), timeoutMs);
     const pmidChecks = await checkPmids(extractPmids(source), source, timeoutMs);
+    const quoteChecks = input.verifyQuotes
+      ? await checkQuotes(extractQuotes(source), source, input.llmModel)
+      : [];
 
     reports.push({
       refKey,
       source,
       urlChecks,
       pmidChecks,
-      overall: classify(urlChecks, pmidChecks),
+      quoteChecks,
+      overall: classify(urlChecks, pmidChecks, quoteChecks),
     });
   }
 
@@ -128,6 +170,95 @@ export function extractPmids(text: string): string[] {
     out.push(m[1]!);
   }
   return out;
+}
+
+export function extractQuotes(text: string): string[] {
+  const out: string[] = [];
+  let m: RegExpExecArray | null;
+  QUOTE_REGEX.lastIndex = 0;
+  while ((m = QUOTE_REGEX.exec(text)) !== null) {
+    // Exactly one capture group fires per alternation arm; pick the
+    // first non-empty one.
+    const inner = m[1] ?? m[2] ?? m[3] ?? m[4] ?? "";
+    if (inner.length >= MIN_QUOTE_LEN) out.push(inner);
+  }
+  return out;
+}
+
+async function checkQuotes(
+  quotes: string[],
+  source: string,
+  llmModel?: string,
+): Promise<QuoteCheck[]> {
+  if (quotes.length === 0) return [];
+
+  // Lazy import so the test mock for "../llm" catches this before the
+  // module-level binding resolves at import time.
+  const { generateGroundedContent, MODELS } = await import("../llm");
+  const model = llmModel ?? MODELS.EVALUATOR;
+
+  const out: QuoteCheck[] = [];
+  for (const quote of quotes) {
+    const preview = quote.slice(0, 80);
+    try {
+      const prompt = [
+        "Use Google Search to verify whether the verbatim QUOTE below appears",
+        "(or appears in substantively equivalent form) at the SOURCE described.",
+        "Reply with ONE-LINE strict JSON: {\"verified\": true|false, \"url\": \"...\"}",
+        "where:",
+        "  - verified=true means you found the quote at an authoritative source matching the cited description.",
+        "  - verified=false means the quote is not found, or only appears at unrelated/unauthoritative sources.",
+        "  - url is the most authoritative URL where the quote appears (omit when verified=false).",
+        "Do NOT include markdown code fences, explanation, or extra fields.",
+        "",
+        "QUOTE:",
+        quote,
+        "",
+        "SOURCE DESCRIPTION (free-form, may include the source name + URL hints):",
+        source,
+      ].join("\n");
+      const r = await generateGroundedContent(model, prompt, undefined, 0);
+      const parsed = parseQuoteResponse(r.text);
+      if (parsed === null) {
+        out.push({ quotePreview: preview, status: "error", rawResponse: r.text.slice(0, 200) });
+      } else if (parsed.verified) {
+        // Prefer the LLM-supplied URL, but fall back to the first grounding source.
+        const foundUrl = parsed.url ?? r.sources.find((s) => s.uri)?.uri;
+        out.push({ quotePreview: preview, status: "match", foundUrl });
+      } else {
+        out.push({ quotePreview: preview, status: "mismatch" });
+      }
+    } catch (e) {
+      out.push({
+        quotePreview: preview,
+        status: "error",
+        rawResponse: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Parse `{verified: bool, url?: string}` from a model response. Tolerates
+ * markdown code fences (``` and ```json) and surrounding whitespace.
+ * Returns null on any parse failure or shape mismatch.
+ */
+function parseQuoteResponse(raw: string): { verified: boolean; url?: string } | null {
+  const stripped = raw
+    .replace(/^\s*```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/, "")
+    .trim();
+  try {
+    const obj = JSON.parse(stripped);
+    if (typeof obj?.verified !== "boolean") return null;
+    return {
+      verified: obj.verified,
+      url: typeof obj.url === "string" ? obj.url : undefined,
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function checkUrls(urls: string[], timeoutMs: number): Promise<UrlCheck[]> {
@@ -212,16 +343,22 @@ export function titlesMatch(actualTitle: string, citedSource: string): boolean {
   return hits >= 2;
 }
 
-function classify(urlChecks: UrlCheck[], pmidChecks: PmidCheck[]): OverallStatus {
-  const totalChecks = urlChecks.length + pmidChecks.length;
+function classify(
+  urlChecks: UrlCheck[],
+  pmidChecks: PmidCheck[],
+  quoteChecks: QuoteCheck[],
+): OverallStatus {
+  const totalChecks = urlChecks.length + pmidChecks.length + quoteChecks.length;
   if (totalChecks === 0) return "unverifiable";
 
   const goodChecks =
     urlChecks.filter((u) => u.status === "live").length +
-    pmidChecks.filter((p) => p.status === "match").length;
+    pmidChecks.filter((p) => p.status === "match").length +
+    quoteChecks.filter((q) => q.status === "match").length;
   const badChecks =
     urlChecks.filter((u) => u.status === "dead").length +
-    pmidChecks.filter((p) => p.status === "mismatch" || p.status === "not_found").length;
+    pmidChecks.filter((p) => p.status === "mismatch" || p.status === "not_found").length +
+    quoteChecks.filter((q) => q.status === "mismatch").length;
 
   if (badChecks > 0 && goodChecks === 0) return "broken";
   if (badChecks > 0) return "partial";
@@ -287,6 +424,15 @@ export function formatReport(report: VerifyCitationsReport): string {
         }
         if (p.actualYear) lines.push(`        year: ${p.actualYear}`);
       }
+    }
+    for (const q of ref.quoteChecks) {
+      const symbol =
+        q.status === "match" ? `${c.green}✓${c.reset}` :
+        q.status === "mismatch" ? `${c.red}✗${c.reset}` :
+        `${c.yellow}!${c.reset}`;
+      const ellipsis = q.quotePreview.length === 80 ? "…" : "";
+      lines.push(`    ${symbol} QUOTE "${q.quotePreview}${ellipsis}" [${q.status}]`);
+      if (q.foundUrl) lines.push(`        found at: ${q.foundUrl}`);
     }
   }
   lines.push("");

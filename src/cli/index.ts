@@ -87,6 +87,13 @@ const { values, positionals } = parseArgs({
       // Skip the automatic verify-citations pass that normally runs after
       // `do-research --merge`. Useful when offline or PubMed is slow.
     },
+    "verify-quotes": {
+      type: "boolean",
+      // Opt-in: also use a grounded LLM to verify verbatim quotes against
+      // the live web. Off by default because it costs LLM tokens. Used by
+      // `verify-citations` and (optionally) by the auto-verify-after-merge
+      // pass in `do-research --merge`.
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -159,6 +166,9 @@ Options (do-research):
                               The --generator-model flag, if set, is forwarded to the inner
                               generate invocation.
   --no-verify                 Skip the auto-verify-citations step after --merge (offline mode).
+  --verify-quotes             Also verify verbatim quotes via grounded LLM (uses tokens).
+                              Applies to both 'verify-citations' and the auto-verify pass
+                              after 'do-research --merge'.
   --out <path>                Where to write the resolved file (default: <session>/needs-research-resolved.json).
 
   --help, -h              Show this help message
@@ -979,7 +989,10 @@ Video generation has been moved to the 'videoharness' project.
         } else {
           console.log("\n\x1b[1;36m=== Auto-Verify Citations ===\x1b[0m");
           const { verifyCitations, formatReport } = await import("../reference/verify-citations");
-          const report = await verifyCitations({ loreDb: updatedLore });
+          const report = await verifyCitations({
+            loreDb: updatedLore,
+            verifyQuotes: !!values["verify-quotes"],
+          });
           console.log(formatReport(report));
           if (report.summary.broken > 0 || report.summary.partial > 0) {
             console.log("\n\x1b[33m⚠ " + report.summary.broken + " broken / " + report.summary.partial +
@@ -1098,8 +1111,11 @@ Video generation has been moved to the 'videoharness' project.
       }
 
       const { verifyCitations, formatReport } = await import("../reference/verify-citations");
-      console.log("\x1b[2mAuditing references in " + lorePath + " ...\x1b[0m");
-      const report = await verifyCitations({ loreDb });
+      const verifyQuotes = !!values["verify-quotes"];
+      console.log("\x1b[2mAuditing references in " + lorePath +
+        (verifyQuotes ? " (with grounded-LLM quote verification)" : "") +
+        " ...\x1b[0m");
+      const report = await verifyCitations({ loreDb, verifyQuotes });
       console.log(formatReport(report));
 
       const outPath = (values.out as string | undefined) ?? lorePath.replace(/\.json$/, "") + ".citation-audit.json";

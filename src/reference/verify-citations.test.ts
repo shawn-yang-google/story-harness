@@ -1,6 +1,27 @@
 import { describe, it, expect, mock, beforeEach } from "bun:test";
 
-// In-memory fetch stub that the test refills before each test.
+// ---------- LLM mock (for the verbatim-quote verifier) ----------
+
+let mockGroundedResponses: Array<{ text: string; sources: Array<{ title?: string; uri?: string }> }> = [];
+let mockGroundedCalls = 0;
+
+mock.module("../llm", () => ({
+  MODELS: {
+    REFINER: "gemini-3.1-flash-lite-preview",
+    CRITIC: "gemini-3.1-pro-preview",
+    GENERATOR: "gemini-3.1-pro-preview",
+    EVALUATOR: "gemini-3.1-flash-lite-preview",
+  },
+  generateGroundedContent: mock(async () => {
+    const next = mockGroundedResponses.shift();
+    if (!next) throw new Error("Test: ran out of mock grounded LLM responses");
+    mockGroundedCalls++;
+    return next;
+  }),
+}));
+
+// ---------- fetch mock (for URL/PMID checks) ----------
+
 type StubResponse = {
   ok: boolean;
   status: number;
@@ -30,7 +51,7 @@ const fetchMock = mock(async (input: string | URL | Request) => {
 // Patch global fetch for the duration of the test module.
 (globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock as unknown as typeof fetch;
 
-import { verifyCitations, type VerifyCitationsInput } from "./verify-citations";
+import { verifyCitations, extractQuotes, type VerifyCitationsInput } from "./verify-citations";
 
 function loreWithRef(refKey: string, source: string): VerifyCitationsInput {
   return {
@@ -52,6 +73,8 @@ describe("verifyCitations", () => {
   beforeEach(() => {
     fetchStubs = new Map();
     fetchCalls = [];
+    mockGroundedResponses = [];
+    mockGroundedCalls = 0;
   });
 
   //#given a reference whose source contains a single live URL
@@ -253,5 +276,176 @@ describe("verifyCitations", () => {
     const report = await verifyCitations({ loreDb: { other: {} } });
     expect(report.references.length).toBe(0);
     expect(report.summary.total).toBe(0);
+  });
+
+  // ---------- Verbatim-quote verification ----------
+
+  //#given a source field containing English-double-quoted text and Chinese 「...」 quotes
+  //#when extractQuotes runs
+  //#then both quote forms are extracted, each ≥ MIN_QUOTE_LEN chars
+  it("extractQuotes pulls verbatim quotes from English and Chinese typography", () => {
+    const source =
+      'See "The president shall be a citizen who meets the qualifications" in the law. ' +
+      "Also: 「高等学校的校长由符合教育法规定的任职条件的公民担任」 quoted from npc.gov.cn.";
+    const quotes = extractQuotes(source);
+    expect(quotes.length).toBe(2);
+    expect(quotes[0]).toContain("The president shall be a citizen");
+    expect(quotes[1]).toContain("高等学校的校长");
+  });
+
+  //#given short quoted strings (less than minimum length)
+  //#when extractQuotes runs
+  //#then they are filtered out (avoids noise from "ok", "yes", filename-like strings)
+  it("extractQuotes filters out short quotes (length < 20 chars)", () => {
+    const source = 'He said "ok" then "yes" then "now this one is a real verbatim attestation".';
+    const quotes = extractQuotes(source);
+    expect(quotes.length).toBe(1);
+    expect(quotes[0]).toContain("real verbatim attestation");
+  });
+
+  //#given a reference whose source contains a verbatim quote
+  //#when verifyCitations runs with verifyQuotes=true and the LLM returns {verified: true, url}
+  //#then the reference gets a quoteCheck with status="match" and overall="verified"
+  it("verifies verbatim quotes via grounded LLM and marks the ref verified", async () => {
+    mockGroundedResponses = [
+      {
+        text: JSON.stringify({
+          verified: true,
+          url: "http://www.npc.gov.cn/npc/c30834/199808/some-real-page.shtml",
+        }),
+        sources: [{ uri: "http://www.npc.gov.cn/npc/c30834/199808/some-real-page.shtml", title: "NPC" }],
+      },
+    ];
+    const input: VerifyCitationsInput = {
+      verifyQuotes: true,
+      loreDb: {
+        references: {
+          "hist:art40": {
+            fact: "f",
+            source:
+              '中华人民共和国高等教育法 (1998) 第四十条: 「高等学校的校长由符合教育法规定的任职条件的公民担任」 — verified via NPC.',
+            addedAt: "x",
+            originalClaim: "c",
+            originalLocation: "l",
+          },
+        },
+      },
+    };
+
+    const report = await verifyCitations(input);
+
+    expect(mockGroundedCalls).toBe(1);
+    expect(report.references[0]!.quoteChecks.length).toBe(1);
+    expect(report.references[0]!.quoteChecks[0]!.status).toBe("match");
+    expect(report.references[0]!.quoteChecks[0]!.foundUrl).toContain("npc.gov.cn");
+    expect(report.references[0]!.overall).toBe("verified");
+  });
+
+  //#given a verbatim quote that the LLM cannot find at any source
+  //#when verifyCitations runs with verifyQuotes=true and the LLM returns {verified: false}
+  //#then the quoteCheck is "mismatch" and the reference is "broken"
+  it("flags fabricated verbatim quotes as mismatches", async () => {
+    mockGroundedResponses = [
+      { text: JSON.stringify({ verified: false }), sources: [] },
+    ];
+    const input: VerifyCitationsInput = {
+      verifyQuotes: true,
+      loreDb: {
+        references: {
+          fake: {
+            fact: "f",
+            source: 'A fake citation: "this exact verbatim sentence was never published anywhere".',
+            addedAt: "x",
+            originalClaim: "c",
+            originalLocation: "l",
+          },
+        },
+      },
+    };
+
+    const report = await verifyCitations(input);
+
+    expect(report.references[0]!.quoteChecks[0]!.status).toBe("mismatch");
+    expect(report.references[0]!.overall).toBe("broken");
+  });
+
+  //#given a reference with no quotes
+  //#when verifyCitations runs with verifyQuotes=true
+  //#then the LLM is NOT called (cost gating — no quotes means nothing to verify)
+  it("skips the LLM entirely when no verbatim quotes are present", async () => {
+    const input: VerifyCitationsInput = {
+      verifyQuotes: true,
+      loreDb: {
+        references: {
+          plain: {
+            fact: "f",
+            source: "Some textbook page 42 (no quotes).",
+            addedAt: "x",
+            originalClaim: "c",
+            originalLocation: "l",
+          },
+        },
+      },
+    };
+
+    const report = await verifyCitations(input);
+
+    expect(mockGroundedCalls).toBe(0);
+    expect(report.references[0]!.quoteChecks.length).toBe(0);
+    expect(report.references[0]!.overall).toBe("unverifiable");
+  });
+
+  //#given verifyQuotes is false (the default)
+  //#when verifyCitations runs against a source with a verbatim quote
+  //#then the LLM is NOT called and quoteChecks remains empty (offline mode)
+  it("does not call the LLM when verifyQuotes is false (default)", async () => {
+    const input: VerifyCitationsInput = {
+      // verifyQuotes omitted — defaults to false
+      loreDb: {
+        references: {
+          q: {
+            fact: "f",
+            source: '「高等学校的校长由符合教育法规定的任职条件的公民担任」 — quoted from somewhere.',
+            addedAt: "x",
+            originalClaim: "c",
+            originalLocation: "l",
+          },
+        },
+      },
+    };
+
+    const report = await verifyCitations(input);
+
+    expect(mockGroundedCalls).toBe(0);
+    expect(report.references[0]!.quoteChecks.length).toBe(0);
+  });
+
+  //#given the LLM returns malformed JSON for the quote check
+  //#when verifyCitations runs
+  //#then the quoteCheck is "error" but the run does not throw
+  it("falls back to 'error' status when the LLM quote response is malformed", async () => {
+    mockGroundedResponses = [
+      { text: "not json, just prose", sources: [] },
+    ];
+    const input: VerifyCitationsInput = {
+      verifyQuotes: true,
+      loreDb: {
+        references: {
+          q: {
+            fact: "f",
+            source: '「高等学校的校长由符合教育法规定的任职条件的公民担任」 — from somewhere.',
+            addedAt: "x",
+            originalClaim: "c",
+            originalLocation: "l",
+          },
+        },
+      },
+    };
+
+    const report = await verifyCitations(input);
+
+    expect(report.references[0]!.quoteChecks[0]!.status).toBe("error");
+    // 'error' alone means the verification result is undetermined → unverifiable.
+    expect(report.references[0]!.overall).toBe("unverifiable");
   });
 });
