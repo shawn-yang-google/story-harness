@@ -96,6 +96,53 @@ describe("PropositionalChecker", () => {
     expect(contradictions.length).toBe(2);
   });
 
+  // === Contested Truth (Source-Aware Contradiction) ===
+
+  //#given contradictions from the SAME in-story source
+  //#when checking propositional logic
+  //#then a contradiction is still flagged
+  it("flags contradictions when both propositions share the same source", () => {
+    const graph = graphWith({
+      propositions: [
+        { id: "p1", text: "智 was at home", subject: "智", predicate: "at_home", truth: true, source: "claim_by_character", location: "paragraph 1" },
+        { id: "p2", text: "智 was not at home", subject: "智", predicate: "at_home", truth: false, source: "claim_by_character", location: "paragraph 1" },
+      ],
+    });
+    const results = checkPropositional(graph);
+    const contradictions = results.filter(r => r.rule === "contradiction");
+    expect(contradictions.length).toBe(1);
+  });
+
+  //#given contradictions from DIFFERENT in-story sources (character vs. record)
+  //#when checking propositional logic
+  //#then no contradiction is flagged (contested truth is a plot device)
+  it("does NOT flag contradiction between a character's claim and an in-story record", () => {
+    const graph = graphWith({
+      propositions: [
+        { id: "p1", text: "智 said he was innocent", subject: "智", predicate: "guilty", truth: false, source: "claim_by_character", location: "paragraph 5" },
+        { id: "p2", text: "The court record states 智 was guilty", subject: "智", predicate: "guilty", truth: true, source: "claim_by_record", location: "paragraph 5" },
+      ],
+    });
+    const results = checkPropositional(graph);
+    const contradictions = results.filter(r => r.rule === "contradiction");
+    expect(contradictions).toEqual([]);
+  });
+
+  //#given a narrator claim contradicted by a character claim
+  //#when checking propositional logic
+  //#then no contradiction is flagged (unreliable narrator / lying character)
+  it("does NOT flag contradiction between narrator and character", () => {
+    const graph = graphWith({
+      propositions: [
+        { id: "p1", text: "She had stolen the necklace", subject: "Mira", predicate: "stole_necklace", truth: true, source: "narrator", location: "paragraph 1" },
+        { id: "p2", text: "Mira swore she had never touched it", subject: "Mira", predicate: "stole_necklace", truth: false, source: "claim_by_character", location: "paragraph 1" },
+      ],
+    });
+    const results = checkPropositional(graph);
+    const contradictions = results.filter(r => r.rule === "contradiction");
+    expect(contradictions).toEqual([]);
+  });
+
   // === Modus Ponens (P→Q, P ⊢ Q) ===
 
   //#given a rule P→Q where P is true and Q is true

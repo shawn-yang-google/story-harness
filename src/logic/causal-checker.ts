@@ -125,6 +125,12 @@ function checkNecessaryWorldRules(
     const keyTerms = extractKeyTerms(rule.rule);
     if (keyTerms.length === 0) continue;
 
+    // Skip common-sense physics rules — they don't need to be re-evidenced
+    // inline by the narrative each time. Marking a rule as
+    // source="common_sense" tells the checker "this is universal background
+    // physics; trust it without inline justification."
+    if (rule.source === "common_sense") continue;
+
     // Find events related to this rule
     const relatedEvents: TemporalEvent[] = [];
     for (const event of events) {

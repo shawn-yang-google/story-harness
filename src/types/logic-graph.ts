@@ -8,6 +8,27 @@
 
 // === Propositional Logic ===
 
+/**
+ * Source of a proposition — distinguishes who is asserting it within the story.
+ *
+ * - `narrator`: The narrator/authorial voice asserts this as factual.
+ * - `claim_by_character`: A character claims this (testimony, dialogue, belief).
+ * - `claim_by_record`: An in-story document/record/news report says this.
+ * - `lore`: Established by author-provided lore (loreDb).
+ * - `narrative`: Default; ungrounded narrative assertion (legacy).
+ *
+ * When two propositions contradict but have *different* source types, it is
+ * usually a "contested truth" plot device (wrongful conviction, unreliable
+ * narrator, mystery, legal drama) rather than a logic bug. Only contradictions
+ * between same-source propositions are flagged as errors.
+ */
+export type PropositionSource =
+  | "narrator"
+  | "claim_by_character"
+  | "claim_by_record"
+  | "lore"
+  | "narrative";
+
 export interface Proposition {
   /** Unique identifier, e.g. "p1" */
   id: string;
@@ -19,6 +40,11 @@ export interface Proposition {
   predicate: string;
   /** true = asserted, false = negated */
   truth: boolean;
+  /**
+   * Optional. Who/what is asserting this proposition in the story.
+   * Defaults to "narrative" (treated as narrator-asserted) when absent.
+   */
+  source?: PropositionSource;
   /** Where in text: "paragraph 2, sentence 1" */
   location: string;
 }

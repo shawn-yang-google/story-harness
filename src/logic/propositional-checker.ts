@@ -53,19 +53,24 @@ function checkContradictions(propositions: Proposition[]): CheckResult[] {
           if (trueP.text === falseP.text) continue;
 
           // Check if locations overlap (same paragraph, sentence, or unspecified)
-          if (locationsOverlap(trueP.location, falseP.location)) {
-            results.push({
-              checker: "PropositionalChecker",
-              rule: "contradiction",
-              severity: "error",
-              message:
-                `Contradiction (P ∧ ¬P): "${trueP.text}" (${trueP.location}) ` +
-                `contradicts "${falseP.text}" (${falseP.location}).`,
-              evidence: [trueP.id, falseP.id],
-            });
-            // Only report one contradiction per group to avoid noise
-            break;
-          }
+          if (!locationsOverlap(trueP.location, falseP.location)) continue;
+
+          // Skip if the two propositions come from different in-story
+          // sources — this is "contested truth" (wrongful conviction,
+          // unreliable narrator, mystery, legal drama), not a logic bug.
+          if (sourcesAreContested(trueP, falseP)) continue;
+
+          results.push({
+            checker: "PropositionalChecker",
+            rule: "contradiction",
+            severity: "error",
+            message:
+              `Contradiction (P ∧ ¬P): "${trueP.text}" (${trueP.location}) ` +
+              `contradicts "${falseP.text}" (${falseP.location}).`,
+            evidence: [trueP.id, falseP.id],
+          });
+          // Only report one contradiction per group to avoid noise
+          break;
         }
         if (results.length > 0 && results[results.length - 1].evidence.includes(trueProps[0].id)) {
           break;
@@ -114,6 +119,22 @@ function locationsOverlap(a: string, b: string): boolean {
 
   // Different location formats that we can't compare — flag conservatively
   return true;
+}
+
+/**
+ * Returns true when two propositions come from explicitly different in-story
+ * sources, signaling a "contested truth" (e.g., a character claims X but a
+ * record claims ¬X). In that case the contradiction is the *plot*, not a bug.
+ *
+ * Backward-compatible: if either proposition omits `source`, returns false
+ * so existing graphs keep flagging contradictions exactly as before.
+ */
+function sourcesAreContested(
+  a: { source?: string },
+  b: { source?: string }
+): boolean {
+  if (!a.source || !b.source) return false;
+  return a.source !== b.source;
 }
 
 /**

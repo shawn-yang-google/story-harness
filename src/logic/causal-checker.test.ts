@@ -117,4 +117,40 @@ describe("CausalChecker", () => {
     const contradictions = results.filter(r => r.rule === "lore_contradiction");
     expect(contradictions).toEqual([]);
   });
+
+  // === Necessary World Rule: source-aware suppression ===
+
+  //#given a "necessary" world rule sourced from lore with related events but unmet preconditions
+  //#when checking causal logic
+  //#then a necessary_precondition_missing warning is returned (existing behavior)
+  it("flags necessary_precondition_missing when source is lore-derived", () => {
+    const graph = graphWith({
+      worldRules: [
+        { rule: "Adamantine armor must be forged in dragonfire", type: "necessary", source: "lore" },
+      ],
+      events: [
+        { id: "e1", description: "She wore her adamantine armor into battle", agent: "Hero", order: 1, location: "para 2" },
+      ],
+    });
+    const results = checkCausal(graph, emptyContext());
+    const warnings = results.filter(r => r.rule === "necessary_precondition_missing");
+    expect(warnings.length).toBe(1);
+  });
+
+  //#given a "necessary" world rule sourced from "common_sense" with related events
+  //#when checking causal logic
+  //#then no necessary_precondition_missing warning (common-sense physics needs no inline evidence)
+  it("does NOT flag necessary_precondition_missing when source is common_sense", () => {
+    const graph = graphWith({
+      worldRules: [
+        { rule: "Physical trauma causes lasting impairment", type: "necessary", source: "common_sense" },
+      ],
+      events: [
+        { id: "e1", description: "She walked with a permanent limp from the trauma", agent: "Mira", order: 1, location: "para 4" },
+      ],
+    });
+    const results = checkCausal(graph, emptyContext());
+    const warnings = results.filter(r => r.rule === "necessary_precondition_missing");
+    expect(warnings).toEqual([]);
+  });
 });
