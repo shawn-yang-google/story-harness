@@ -40,6 +40,13 @@ export interface RunnerOptions {
   systemPrompt?: string;
   /** If provided, fine-grained checker flags and thresholds. */
   personaConfig?: import("../persona/persona-config").PersonaConfig;
+  /**
+   * Which model to use for draft / rewrite / patch generation.
+   * Defaults to MODELS.GENERATOR (gemini-3.1-pro-preview). Can be overridden
+   * to MODELS.EVALUATOR (gemini-3.1-flash-lite-preview) when the pro endpoint
+   * is overloaded or for cost-sensitive runs.
+   */
+  generatorModel?: string;
 }
 
 export interface LoadedHarnesses {
@@ -68,8 +75,11 @@ interface AttemptLog {
 
 export class RejectionSamplingRunner {
   private previousBeats: string[] = [];
+  private readonly generatorModel: string;
 
-  constructor(private options: RunnerOptions) {}
+  constructor(private options: RunnerOptions) {
+    this.generatorModel = options.generatorModel ?? MODELS.GENERATOR;
+  }
 
   getPreviousBeats(): string[] {
     return this.previousBeats;
@@ -110,7 +120,7 @@ export class RejectionSamplingRunner {
     ].join("\n");
 
     console.log(c.dim + "Generating initial draft..." + c.reset);
-    let currentDraft = await generateContent(MODELS.GENERATOR, initialPrompt, this.options.systemPrompt);
+    let currentDraft = await generateContent(this.generatorModel, initialPrompt, this.options.systemPrompt);
     if (!currentDraft) {
       throw new Error("Generator LLM returned empty or undefined response.");
     }
@@ -226,7 +236,7 @@ export class RejectionSamplingRunner {
         ].join("\n");
 
         try {
-          const rewritten = await generateContent(MODELS.GENERATOR, rewritePrompt);
+          const rewritten = await generateContent(this.generatorModel, rewritePrompt);
           if (rewritten && rewritten.trim().length > 100) {
             currentDraft = rewritten.trim();
             console.log("    " + c.green + "✓ Scene rewritten (" + currentDraft.split(/\s+/).length + " words)" + c.reset);
@@ -288,7 +298,7 @@ export class RejectionSamplingRunner {
         ].join("\n");
 
         try {
-          const response = await generateContent(MODELS.GENERATOR, patchPrompt);
+          const response = await generateContent(this.generatorModel, patchPrompt);
           if (response) {
             const { patched, diffs } = applyDiffPatches(currentDraft, response);
             if (diffs.length > 0) {

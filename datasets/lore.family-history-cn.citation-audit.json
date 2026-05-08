@@ -1,0 +1,59 @@
+{
+  "references": [
+    {
+      "refKey": "scientific:blunt_force_trauma_through_a_phonebook_prevents_su",
+      "source": "Medscape eMedicine, \"Forensic Autopsy of Blunt Force Trauma\" (https://emedicine.medscape.com/article/1680107-overview, verified 2026-05); NCBI Bookshelf NBK448153 \"Blunt Force Trauma\".",
+      "urlChecks": [
+        {
+          "url": "https://emedicine.medscape.com/article/1680107-overview",
+          "status": "live",
+          "httpStatus": 200
+        }
+      ],
+      "pmidChecks": [],
+      "overall": "verified"
+    },
+    {
+      "refKey": "historical:university_administrative_appointments_in_2002_wer",
+      "source": "中华人民共和国高等教育法 (1998), 第四十条 — verbatim: 「高等学校的校长，由符合教育法规定的任职条件的公民担任。高等学校的校长、副校长按照国家有关规定任免。」 Source: National People's Congress (npc.gov.cn) full law text, verified 2026-05. Cadre management authority is established by the CCP Central Committee's 1990 《党政领导干部选拔任用工作条例》 (later versions in 2002, 2014, 2019).",
+      "urlChecks": [],
+      "pmidChecks": [],
+      "overall": "unverifiable"
+    },
+    {
+      "refKey": "scientific:stage_iii_breast_cancer_prognosis_in_the_early_200",
+      "source": "Andre F, Slimane K, Bachelot T, Dunant A, Namer M et al. \"Breast cancer with synchronous metastases: trends in survival during a 14-year period\" J Clin Oncol 22(16):3302-3308 (2004 Aug 15), PubMed PMID 15310773 — verified 2026-05. (Note: an earlier auto-research draft cited a 2011 Bhoo-Pathy paper that could not be verified on PubMed and has been removed.)",
+      "urlChecks": [],
+      "pmidChecks": [
+        {
+          "pmid": "15310773",
+          "status": "match",
+          "actualTitle": "Breast cancer with synchronous metastases: trends in survival during a 14-year period.",
+          "actualAuthors": [
+            "Andre F",
+            "Slimane K",
+            "Bachelot T",
+            "Dunant A",
+            "Namer M",
+            "Barrelier A",
+            "Kabbaj O",
+            "Spano JP",
+            "Marsiglia H",
+            "Rouzier R",
+            "Delaloge S",
+            "Spielmann M"
+          ],
+          "actualYear": "2004 Aug 15"
+        }
+      ],
+      "overall": "verified"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "verified": 2,
+    "partial": 0,
+    "broken": 0,
+    "unverifiable": 1
+  }
+}

@@ -4,6 +4,7 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { HarnessSynthesizer } from "../synthesizer";
 import { RejectionSamplingRunner } from "../runner";
 import { MultiSectionRunner } from "../runner/multi-section";
+import { MODELS } from "../llm";
 import { loadTrajectories } from "../environment/trajectory";
 import { loadPrompt } from "./prompt-loader";
 import {
@@ -75,10 +76,23 @@ const { values, positionals } = parseArgs({
     out: {
       type: "string",
     },
+    "generator-model": {
+      type: "string",
+      // Accepts: "pro" | "flash" | a raw model id like "gemini-3.1-flash-lite-preview".
+      // "pro" maps to MODELS.GENERATOR; "flash" maps to MODELS.EVALUATOR.
+      default: "pro",
+    },
   },
   strict: true,
   allowPositionals: true,
 });
+
+// Resolve a CLI --generator-model value to a concrete model id.
+function resolveGeneratorModel(raw: string | undefined, MODELS: { GENERATOR: string; EVALUATOR: string }): string {
+  if (!raw || raw === "pro") return MODELS.GENERATOR;
+  if (raw === "flash") return MODELS.EVALUATOR;
+  return raw; // pass through raw model ids (e.g. for testing)
+}
 
 const command = positionals[2];
 
@@ -103,6 +117,13 @@ Commands:
   resolve-research <path>     Merge a resolved needs-research.json back into the loreDb
                               <path> may be a session dir OR a direct file path.
                               Use --lore <path> to override the default target.
+  verify-citations            Independently audit the 'references' namespace of a loreDb.
+                              For each reference, HEAD-checks every URL and PubMed-checks
+                              every PMID against the actual paper title. Use --lore to
+                              point at a non-default loreDb. Writes a JSON report next
+                              to the loreDb (or to --out). Exits non-zero if any reference
+                              has a broken URL, dead PMID, or PMID/title mismatch — so
+                              this can be used as a CI gate.
 
 Options (train/generate):
   --mode <code|prompt>    Synthesis mode (default: code)
@@ -110,6 +131,11 @@ Options (train/generate):
   --interactive           Run training with human-in-the-loop approval
   --ts-weight <number>    Thompson Sampling weight parameter (default: 1.0)
   --max-retries <number>  Max generation rounds (default: 5)
+  --generator-model <id>  Which LLM to use for draft/rewrite/patch.
+                          "pro" (default) → MODELS.GENERATOR (gemini-3.1-pro-preview)
+                          "flash"         → MODELS.EVALUATOR (gemini-3.1-flash-lite-preview,
+                                            useful when the pro endpoint is overloaded)
+                          Or pass a raw model id.
 
 Options (generate/split/check):
   --persona <path>            Use a writer persona JSON file (enables persona-specific harnesses)
@@ -243,6 +269,10 @@ Video generation has been moved to the 'videoharness' project.
       }
 
       const maxRetries = parseInt(values["max-retries"] as string) || 5;
+      const generatorModel = resolveGeneratorModel(values["generator-model"] as string | undefined, MODELS);
+      if (generatorModel !== MODELS.GENERATOR) {
+        console.log(`Using generator model: ${generatorModel} (overridden from default ${MODELS.GENERATOR})`);
+      }
 
       if (planPath || values["multi-section"]) {
         const maxWordsPerSection = parseInt(values["max-words-per-section"] as string) || 1200;
@@ -268,6 +298,7 @@ Video generation has been moved to the 'videoharness' project.
             enabledHarnesses,
             systemPrompt,
             personaConfig,
+            generatorModel,
           });
 
           const generatedSections: Array<{ title: string; content: string }> = [];
@@ -307,6 +338,7 @@ Video generation has been moved to the 'videoharness' project.
             enabledHarnesses,
             systemPrompt,
             personaConfig,
+            generatorModel,
           });
 
           try {
@@ -334,6 +366,7 @@ Video generation has been moved to the 'videoharness' project.
           enabledHarnesses,
           systemPrompt,
           personaConfig,
+          generatorModel,
         });
 
         try {
@@ -1018,6 +1051,32 @@ Video generation has been moved to the 'videoharness' project.
       console.log("  \x1b[32m✓ Added " + addedCount + " verified fact(s)\x1b[0m under `references`");
       if (skippedCount > 0) {
         console.log("  \x1b[33m• Skipped " + skippedCount + " item(s)\x1b[0m (no resolution OR addToLoreDb=false)");
+      }
+      break;
+    }
+    case "verify-citations": {
+      const lorePath = (values.lore as string | undefined) || "datasets/lore.json";
+      let loreDb: Record<string, any>;
+      try {
+        const raw = await readFile(lorePath, "utf-8");
+        loreDb = JSON.parse(raw);
+      } catch (e: any) {
+        console.error("Error reading loreDb at " + lorePath + ": " + e.message);
+        process.exit(1);
+      }
+
+      const { verifyCitations, formatReport } = await import("../reference/verify-citations");
+      console.log("\x1b[2mAuditing references in " + lorePath + " ...\x1b[0m");
+      const report = await verifyCitations({ loreDb });
+      console.log(formatReport(report));
+
+      const outPath = (values.out as string | undefined) ?? lorePath.replace(/\.json$/, "") + ".citation-audit.json";
+      await writeFile(outPath, JSON.stringify(report, null, 2) + "\n", "utf-8");
+      console.log("\n\x1b[2mFull JSON report written to:\x1b[0m " + outPath);
+
+      if (report.summary.broken > 0) {
+        console.error("\n\x1b[31m✗ " + report.summary.broken + " broken reference(s) — exiting with code 1.\x1b[0m");
+        process.exit(1);
       }
       break;
     }
