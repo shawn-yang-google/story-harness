@@ -8,6 +8,7 @@ import type { HybridDomain } from "../environment/hybrid-harness";
 import type { HarnessContext } from "../types";
 import type { ReferenceGraph } from "../types/reference-graph";
 import { generateNeedsResearch, writeNeedsResearchFile } from "../reference/needs-research";
+import { OscillationGuard, extractFingerprint } from "./oscillation-guard";
 
 // ANSI color codes for terminal output
 const c = {
@@ -90,6 +91,11 @@ export class RejectionSamplingRunner {
     const attemptLogs: AttemptLog[] = [];
     let attemptCounter = 0;
     const maxPatchesPerRound = 10;
+    // R8-A: per-session memory of (checker, rule) fingerprints that have
+    // fired in prior rounds. Used to (a) warn the patch LLM not to
+    // reintroduce a violation that we already paid to fix and (b) feed
+    // recurrence telemetry into the session log.
+    const oscillationGuard = new OscillationGuard();
 
     const context: HarnessContext = {
       loreDb: this.options.loreDb,
@@ -167,6 +173,10 @@ export class RejectionSamplingRunner {
         timestamp: new Date().toISOString(),
         graphs: Object.keys(graphs).length > 0 ? graphs : undefined,
       });
+
+      // R8-A: feed this round's fingerprints into the oscillation guard so
+      // the patch loop and any subsequent rounds can detect recurrences.
+      oscillationGuard.recordRound(round, feedback);
 
       if (valid) {
         console.log(c.boldGreen + "✓ Draft accepted!" + c.reset);
@@ -269,6 +279,33 @@ export class RejectionSamplingRunner {
         const issue = remainingFeedback[0];
         console.log(`\n  ${c.boldBlue}[Patch ${patchCounter}/${linePatchBudget + (structuralIssues.length > 0 ? 1 : 0)}]${c.reset} Fixing: ${c.dim}${issue.slice(0, 80)}...${c.reset}`);
 
+        // R8-A: build an oscillation-warning block when this fingerprint
+        // already fired in a prior round. The patch LLM otherwise has no
+        // memory across rounds and tends to undo prior fixes.
+        const fingerprint = extractFingerprint(issue);
+        const priorRounds = fingerprint
+          ? oscillationGuard.priorRounds(fingerprint).filter((r) => r < round)
+          : [];
+        const oscillationBlock: string[] = [];
+        if (fingerprint && priorRounds.length > 0) {
+          console.log(
+            "    " +
+              c.yellow +
+              `⟳ Oscillation: ${fingerprint} already fired in round(s) ${priorRounds.join(", ")} — warning patch LLM.` +
+              c.reset
+          );
+          oscillationBlock.push(
+            "",
+            "## ⚠ Oscillation Warning",
+            `The rule \`${fingerprint}\` has already fired and been patched in round(s) ${priorRounds.join(", ")} of this session.`,
+            "A previous patch attempt fixed it, but a later patch in the same session reintroduced the violation.",
+            "Your replacement MUST NOT undo the prior fix. Specifically:",
+            "- Do not reintroduce the original phrasing or pattern that triggered this rule.",
+            "- If your fix risks creating a new instance of the same rule elsewhere in the draft, refuse with `NO_CHANGE`.",
+            "- Prefer a smaller, more targeted edit over a broad rewrite that touches unrelated sentences."
+          );
+        }
+
         const patchPrompt = [
           "You are an expert story editor. Below is a draft that has a specific issue.",
           "Fix ONLY the described issue by returning the minimal text replacements needed.",
@@ -280,6 +317,7 @@ export class RejectionSamplingRunner {
           "",
           "## Issue to Fix",
           issue,
+          ...oscillationBlock,
           "",
           "## Instructions",
           "Return ONLY the text replacements in this exact format (you may include multiple blocks):",
@@ -334,6 +372,15 @@ export class RejectionSamplingRunner {
     }
 
     await this.saveLog(sessionDir, prompt, attemptLogs);
+    // R8-A: surface which (checker, rule) fingerprints failed to converge.
+    // A failed-converge session is exactly the moment an operator wants to
+    // see "psychic_knowledge fired in rounds 1, 2, 3, 5" without having to
+    // hand-grep through round-N feedback.md files.
+    const oscillations = oscillationGuard.allRecurrent(1).map((fp) => ({
+      fingerprint: fp,
+      rounds: oscillationGuard.priorRounds(fp),
+      recurrenceCount: oscillationGuard.recurrenceCount(fp),
+    }));
     // Mark status as failed for external agents
     const failStatus = {
       state: "failed",
@@ -341,6 +388,7 @@ export class RejectionSamplingRunner {
       patch: null,
       totalAttempts: attemptLogs.length,
       feedbackCount: attemptLogs[attemptLogs.length - 1]?.feedback?.length ?? 0,
+      oscillations,
       updatedAt: new Date().toISOString(),
     };
     await writeFile(join(sessionDir, "status.json"), JSON.stringify(failStatus, null, 2), "utf-8");

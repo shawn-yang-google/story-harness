@@ -6,6 +6,64 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 8-A — Patch Oscillation Guard
+
+Two real generation runs on the family-history prompt (sessions
+`generate-2026-05-08T22-57-33-123Z` and `generate-2026-05-08T23-10-24-196Z`)
+both failed to converge after 5 rounds. Per-round feedback analysis showed
+the same `(checker, rule)` fingerprint firing in non-consecutive rounds —
+`EpistemicChecker/psychic_knowledge` recurred in rounds 1, 2, 3, AND 5 of the
+22-57-33 session. The patch in round N would fix issue X but reintroduce
+issue Y from round N-1; without per-session memory, the runner had no way to
+ask the patch LLM "do not undo the prior fix." R8-A closes that gap.
+
+- **`src/runner/oscillation-guard.ts` — pure data structure.** New
+  `OscillationGuard` class plus the `extractFingerprint(feedback)` helper that
+  parses the canonical `[Checker/rule] message` prefix produced by
+  `environment/hybrid-harness.ts`. The fingerprint is `${checker}/${rule}`;
+  message text and severity are intentionally dropped so the same rule firing
+  on a different paragraph still counts as the same oscillation (the LLM is
+  failing to internalize the rule itself, not just one site of it). API:
+  `recordRound(round, feedback[])`, `priorRounds(fp)`, `wasSeenInPriorRound`,
+  `recurrenceCount` (= distinctRounds - 1, so first sighting is not a
+  recurrence), `shouldEscalateToStructural(fp, threshold)`, `allRecurrent`.
+  Multiple violations of the same rule within ONE round count as one sighting
+  by design.
+- **Wiring in `src/runner/index.ts`.** A guard is instantiated per
+  `generateScene()` call (each scene has its own validation history). After
+  every round-level gate run, `oscillationGuard.recordRound(round, feedback)`
+  is called. Each per-patch prompt now includes a `## ⚠ Oscillation Warning`
+  block whenever `extractFingerprint(issue)` was already recorded in a
+  STRICTLY prior round, listing the rounds and instructing the LLM not to
+  reintroduce the prior fix's pattern. A yellow `⟳ Oscillation: ...` line is
+  also logged so operators can see the guard fire in real time.
+- **Telemetry in `status.json`.** Failed-converge sessions now emit an
+  `oscillations` array of `{fingerprint, rounds, recurrenceCount}` so
+  operators don't have to hand-grep round-N feedback.md files to figure out
+  which checker rules kept reasserting themselves.
+- **TDD coverage.** 12 unit tests in `oscillation-guard.test.ts`
+  (fingerprint parsing edge cases — severity tags, empty strings,
+  non-bracketed feedback; guard semantics — "current round doesn't count as
+  prior", "multiple violations per round don't double-count",
+  threshold-based escalation, alphabetic determinism). 1 integration test in
+  `oscillation-integration.test.ts` exercises the full runner with two fake
+  checkers that toggle TOKEN_A↔TOKEN_B every patch (the canonical R8-A
+  oscillation pattern from the TODO); asserts both `status.oscillations`
+  records the recurrence and the round-3 patch prompt embeds the warning
+  block.
+- **Net diagnostic.** No false positives — the `extractFingerprint`
+  intentionally returns `null` for tier-1 style notes, harness-skipped
+  warnings (`⚠ LLM Harness skipped (API unavailable)`), and harness execution
+  failures, so transient infrastructure failures don't get tagged as
+  oscillations.
+- Tests: **397 pass** (up from 384, +13 = 12 unit + 1 integration). TS
+  errors: 452 (down 3 from the 455 baseline — my new files are net-positive
+  on type strictness).
+- **Deferred:** R8-B (scene-level structural rewrite escalation) and R8-C
+  (premise-staging discipline for `unsupported_conclusion` /
+  `non_sequitur`) remain open and can now consume R8-A's recurrence
+  telemetry as an escalation signal — see `TODO.md`.
+
 ### Round 6 — Verbatim-Quote Verification, Partial Lore Coverage, Regression Fixture
 
 Three follow-ups that close gaps surfaced in Rounds 4-5.

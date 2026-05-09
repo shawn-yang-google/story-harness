@@ -11,39 +11,10 @@ that are now the next round of work.
 Two real generation runs against the family-history prompt (sessions
 `logs/generate-2026-05-08T22-57-33-123Z` and
 `logs/generate-2026-05-08T23-10-24-196Z`) both **failed to converge** after 5
-rounds. Analysis identified three distinct failure modes:
-
-### R8-A — Patch oscillation guard (HIGH)
-
-**Symptom:** Patches in round N fix issue X but reintroduce issue Y from round
-N-1. The same `(checker, rule)` pair recurs across non-consecutive rounds —
-e.g., `EpistemicChecker/psychic_knowledge` fired in rounds 1, 2, 3, AND 5 of
-session `22-57-33`. The system "fights itself" instead of converging.
-
-**Concrete data:** In session `22-57-33`, 4 of 5 rounds had at least one
-recurring `(checker, rule)` from a prior round. In session `23-10-24` the
-看守所 fact was correctly cited then re-broken on a later patch.
-
-**Plan:**
-
-1. Track per-session `seenViolations: Map<string, Set<RoundNum>>` keyed by
-   `${checker}/${rule}` (or richer fingerprint including target id when
-   available — e.g., character name for `psychic_knowledge`).
-2. After each patch is applied, before accepting it, re-run the checker
-   that *previously fired the same `(checker, rule, target)` triple* — if it
-   re-triggers, **reject the patch** and ask the LLM to rewrite, citing the
-   previous round's fix as a constraint.
-3. After N (e.g., 3) cumulative re-introductions of the same fingerprint,
-   escalate to a **structural rewrite** (see R8-B) rather than another patch.
-
-**Files to touch:** `src/runner/index.ts` (patch loop), maybe a new
-`src/runner/oscillation-guard.ts`.
-
-**Tests:** TDD with a fake checker that toggles between two violations on
-alternate calls; assert the guard catches the re-introduction.
-
-**Resolution gate:** Re-run the family-history prompt; oscillation count
-should drop to 0 across 5 rounds.
+rounds. Analysis identified three distinct failure modes. R8-A has landed —
+see HISTORY.md. R8-B and R8-C remain open and can now consume R8-A's
+recurrence telemetry (`OscillationGuard.shouldEscalateToStructural` and the
+`oscillations` array in `status.json`) as an escalation signal.
 
 ### R8-B — Two-tier loop: scene rewrite vs. surgical patch (HIGH)
 
