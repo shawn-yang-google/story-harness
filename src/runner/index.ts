@@ -9,6 +9,12 @@ import type { HarnessContext } from "../types";
 import type { ReferenceGraph } from "../types/reference-graph";
 import { generateNeedsResearch, writeNeedsResearchFile } from "../reference/needs-research";
 import { OscillationGuard, extractFingerprint } from "./oscillation-guard";
+import { classifyFeedback } from "./rule-classification";
+import {
+  buildPremiseStagingInstruction,
+  requiresPremiseStaging,
+  validatePremisePatch,
+} from "./premise-staging";
 
 // ANSI color codes for terminal output
 const c = {
@@ -96,6 +102,22 @@ export class RejectionSamplingRunner {
     // reintroduce a violation that we already paid to fix and (b) feed
     // recurrence telemetry into the session log.
     const oscillationGuard = new OscillationGuard();
+    // R8-B: cap on full-scene rewrites per session. Each rewrite is
+    // expensive (one full LLM call generating ~1000 words) and indistinct
+    // from the model's previous attempts after a few iterations. Two is
+    // the configured upper bound per TODO.md R8-B; beyond that the runner
+    // emits a `needs-human-rewrite.md` instead.
+    const STRUCTURAL_REWRITE_CAP = 2;
+    let structuralRewriteCount = 0;
+    // R8-A → R8-B escalation hook: any surgical rule whose recurrenceCount
+    // reaches this threshold is treated as structural for the current
+    // round. Threshold=1 means "the second time we see it", which matches
+    // the TODO's "after a couple of recurrences" language.
+    const OSCILLATION_ESCALATION_THRESHOLD = 1;
+    // R8-C: per-session count of patches we rejected because they didn't
+    // stage a premise. Surfaced in status.json so triage can see whether
+    // R8-C's gate is actually firing in production.
+    let premiseRejections = 0;
 
     const context: HarnessContext = {
       loreDb: this.options.loreDb,
@@ -185,20 +207,54 @@ export class RejectionSamplingRunner {
         return currentDraft;
       }
 
-      // Separate structural issues from line-level issues
-      const structuralPatterns = [
-        "no_subtext", "no_conflict", "no_obstacle", "cement_block",
-        "exposition_dump", "unearned_emotion",
-      ];
-      const structuralIssues = feedback.filter(f =>
-        structuralPatterns.some(p => f.includes(p))
-      );
-      const lineIssues = feedback.filter(f =>
-        !structuralPatterns.some(p => f.includes(p)) &&
-        !f.startsWith("⚠") && // Skip infrastructure warnings (API unavailable etc.)
-        !f.includes("Harness failed:") && // Skip harness execution failures (503, timeout)
-        !f.includes("Harness skipped") // Skip skipped harnesses
-      );
+      // R8-B: classify each feedback entry once via the centralized
+      // rule-classification registry. Infrastructure noise is still
+      // filtered out so it never wastes a patch or a rewrite.
+      // R8-A → R8-B handoff: any *surgical* rule whose recurrenceCount has
+      // hit OSCILLATION_ESCALATION_THRESHOLD is promoted to structural
+      // for this round. The reasoning: if a sentence-level patch has
+      // already failed to fix this rule across rounds, the rule is
+      // structural in disguise — the only path forward is a scene rewrite.
+      const structuralIssues: string[] = [];
+      const lineIssues: string[] = [];
+      const escalatedFingerprints: string[] = [];
+      for (const f of feedback) {
+        // Drop infrastructure noise from both buckets.
+        if (
+          f.startsWith("⚠") ||
+          f.includes("Harness failed:") ||
+          f.includes("Harness skipped")
+        ) {
+          continue;
+        }
+        const cls = classifyFeedback(f);
+        if (cls === "structural") {
+          structuralIssues.push(f);
+          continue;
+        }
+        // surgical → check for oscillation-driven escalation.
+        const fp = extractFingerprint(f);
+        if (
+          fp !== null &&
+          oscillationGuard.shouldEscalateToStructural(
+            fp,
+            OSCILLATION_ESCALATION_THRESHOLD
+          )
+        ) {
+          structuralIssues.push(f);
+          escalatedFingerprints.push(fp);
+        } else {
+          lineIssues.push(f);
+        }
+      }
+      if (escalatedFingerprints.length > 0) {
+        console.log(
+          "  " +
+            c.boldMagenta +
+            `⇪ Escalated to structural after recurring as surgical: ${escalatedFingerprints.join(", ")}` +
+            c.reset
+        );
+      }
 
       // Prioritize: structural first (Tier 2 errors), then line-level (Tier 1 style)
       // Sort line issues: Tier 2 checker results before Tier 1 keyword/style checks
@@ -212,62 +268,102 @@ export class RejectionSamplingRunner {
 
       let patchCounter = 0;
 
-      // Phase 1: Structural rewrite for scene-level issues (if any)
+      // Phase 1: Structural rewrite for scene-level issues (if any).
+      // R8-B: capped at STRUCTURAL_REWRITE_CAP per session. After the cap
+      // is exhausted, the runner emits a needs-human-rewrite.md instead of
+      // burning more LLM calls on the same plateau.
       if (structuralIssues.length > 0) {
-        patchCounter++;
-        console.log(`\n  ${c.boldMagenta}[Structural Rewrite]${c.reset} Addressing ${structuralIssues.length} scene-level issue(s):`);
-        for (const si of structuralIssues) {
-          console.log("    " + c.dim + "- " + si.slice(0, 90) + c.reset);
-        }
-
-        const rewritePrompt = [
-          "You are an expert story editor specializing in scene-level craft: subtext, conflict, character depth, and dramatic structure.",
-          "",
-          "The following draft has STRUCTURAL issues that cannot be fixed with simple find-and-replace. You must rewrite the entire scene while preserving its core plot events, setting, and character names.",
-          "",
-          "## Current Draft",
-          "---",
-          currentDraft,
-          "---",
-          "",
-          "## Structural Issues to Address",
-          ...structuralIssues.map((s, i) => `${i + 1}. ${s}`),
-          "",
-          "## Rewrite Guidelines",
-          "- PRESERVE: all characters, the setting, the murder mystery setup, and the core sequence of events.",
-          "- FIX: the listed structural issues by reworking dialogue, character interactions, and scene dynamics.",
-          "- For 'no_subtext': make characters say one thing but mean another. Use indirection, implication, and subtext.",
-          "- For 'no_conflict': add interpersonal tension, competing goals, or obstacles that create dramatic friction.",
-          "- For 'cement_block': show a gap between a character's social mask and their true nature under pressure.",
-          "- For 'exposition_dump': dramatize information through action and conflict rather than telling.",
-          "- For 'unearned/disproportionate_emotion': set up emotional beats with proper buildup and stakes.",
-          "",
-          "Return ONLY the complete rewritten scene text. No commentary, no markdown headers.",
-        ].join("\n");
-
-        try {
-          const rewritten = await generateContent(this.generatorModel, rewritePrompt);
-          if (rewritten && rewritten.trim().length > 100) {
-            currentDraft = rewritten.trim();
-            console.log("    " + c.green + "✓ Scene rewritten (" + currentDraft.split(/\s+/).length + " words)" + c.reset);
-
-            attemptCounter++;
-            attemptLogs.push({
-              attempt: attemptCounter,
-              round,
-              patchInRound: patchCounter,
-              draft: currentDraft,
-              valid: false,
-              feedback: structuralIssues,
-              diffs: [{ original: "(structural rewrite)", revised: "(full scene)" }],
-              timestamp: new Date().toISOString(),
-            });
-            await this.saveLog(sessionDir, prompt, attemptLogs);
-          } else {
-            console.log("    " + c.yellow + "Structural rewrite returned insufficient content, skipping" + c.reset);
+        if (structuralRewriteCount >= STRUCTURAL_REWRITE_CAP) {
+          console.log(
+            "\n  " +
+              c.boldYellow +
+              `[Structural Rewrite] Cap reached (${STRUCTURAL_REWRITE_CAP}). Writing needs-human-rewrite.md and skipping LLM rewrite.` +
+              c.reset
+          );
+          const needsRewriteMd = [
+            "# Needs Human Rewrite",
+            "",
+            `**Session:** ${sessionDir}`,
+            `**Round:** ${round}`,
+            `**Reason:** Structural-rewrite cap of ${STRUCTURAL_REWRITE_CAP} per session reached.`,
+            "",
+            "## Outstanding Scene-Level Issues",
+            "",
+            ...structuralIssues.map((s) => `- ${s}`),
+            "",
+            "## Best Draft So Far",
+            "",
+            currentDraft,
+          ].join("\n");
+          await writeFile(
+            join(sessionDir, "needs-human-rewrite.md"),
+            needsRewriteMd,
+            "utf-8"
+          );
+        } else {
+          patchCounter++;
+          structuralRewriteCount++;
+          console.log(
+            `\n  ${c.boldMagenta}[Structural Rewrite ${structuralRewriteCount}/${STRUCTURAL_REWRITE_CAP}]${c.reset} Addressing ${structuralIssues.length} scene-level issue(s):`
+          );
+          for (const si of structuralIssues) {
+            console.log("    " + c.dim + "- " + si.slice(0, 90) + c.reset);
           }
-        } catch (err: any) {
-          console.log("    " + c.red + "Structural rewrite failed: " + err.message + c.reset);
+
+          const rewritePrompt = [
+            "You are an expert story editor specializing in scene-level craft: subtext, conflict, character depth, and dramatic structure.",
+            "",
+            "The following draft has STRUCTURAL issues that cannot be fixed with simple find-and-replace. You must rewrite the entire scene while preserving its core plot events, setting, and character names.",
+            "",
+            "## Current Draft",
+            "---",
+            currentDraft,
+            "---",
+            "",
+            "## Structural Issues to Address",
+            ...structuralIssues.map((s, i) => `${i + 1}. ${s}`),
+            "",
+            "## Rewrite Guidelines",
+            "- PRESERVE: all characters, the setting, the murder mystery setup, and the core sequence of events.",
+            "- FIX: the listed structural issues by reworking dialogue, character interactions, and scene dynamics.",
+            "- For 'no_subtext': make characters say one thing but mean another. Use indirection, implication, and subtext.",
+            "- For 'no_conflict': add interpersonal tension, competing goals, or obstacles that create dramatic friction.",
+            "- For 'cement_block': show a gap between a character's social mask and their true nature under pressure.",
+            "- For 'exposition_dump': dramatize information through action and conflict rather than telling.",
+            "- For 'unearned/disproportionate_emotion': set up emotional beats with proper buildup and stakes.",
+            "- For 'Page-Turner Momentum' / 'Who Cares?' / 'Cringe Factor': raise the stakes, deepen the protagonist's interiority, and cut summary-style pacing in favor of moment-to-moment scene work.",
+            "",
+            "Return ONLY the complete rewritten scene text. No commentary, no markdown headers.",
+          ].join("\n");
+
+          try {
+            const rewritten = await generateContent(this.generatorModel, rewritePrompt);
+            if (rewritten && rewritten.trim().length > 100) {
+              currentDraft = rewritten.trim();
+              console.log("    " + c.green + "✓ Scene rewritten (" + currentDraft.split(/\s+/).length + " words)" + c.reset);
+
+              attemptCounter++;
+              attemptLogs.push({
+                attempt: attemptCounter,
+                round,
+                patchInRound: patchCounter,
+                draft: currentDraft,
+                valid: false,
+                feedback: structuralIssues,
+                diffs: [{ original: "(structural rewrite)", revised: "(full scene)" }],
+                timestamp: new Date().toISOString(),
+              });
+              await this.saveLog(sessionDir, prompt, attemptLogs);
+            } else {
+              console.log("    " + c.yellow + "Structural rewrite returned insufficient content, skipping" + c.reset);
+              // Did not actually rewrite; refund the count so the cap
+              // reflects successful rewrites only.
+              structuralRewriteCount--;
+            }
+          } catch (err: any) {
+            console.log("    " + c.red + "Structural rewrite failed: " + err.message + c.reset);
+            structuralRewriteCount--;
+          }
         }
       }
 
@@ -277,6 +373,7 @@ export class RejectionSamplingRunner {
       for (let patch = 0; patch < linePatchBudget && remainingFeedback.length > 0; patch++) {
         patchCounter++;
         const issue = remainingFeedback[0];
+        if (issue === undefined) continue; // unreachable: loop guard ensures non-empty
         console.log(`\n  ${c.boldBlue}[Patch ${patchCounter}/${linePatchBudget + (structuralIssues.length > 0 ? 1 : 0)}]${c.reset} Fixing: ${c.dim}${issue.slice(0, 80)}...${c.reset}`);
 
         // R8-A: build an oscillation-warning block when this fingerprint
@@ -306,6 +403,12 @@ export class RejectionSamplingRunner {
           );
         }
 
+        // R8-C: append premise-staging instruction for unsupported_conclusion
+        // / non_sequitur. Returns "" for any other rule, so the concat is
+        // safe and side-effect-free for unrelated issues.
+        const premiseInstruction = buildPremiseStagingInstruction(issue);
+        const premiseBlock = premiseInstruction ? [premiseInstruction] : [];
+
         const patchPrompt = [
           "You are an expert story editor. Below is a draft that has a specific issue.",
           "Fix ONLY the described issue by returning the minimal text replacements needed.",
@@ -318,6 +421,7 @@ export class RejectionSamplingRunner {
           "## Issue to Fix",
           issue,
           ...oscillationBlock,
+          ...premiseBlock,
           "",
           "## Instructions",
           "Return ONLY the text replacements in this exact format (you may include multiple blocks):",
@@ -339,14 +443,41 @@ export class RejectionSamplingRunner {
           const response = await generateContent(this.generatorModel, patchPrompt);
           if (response) {
             const { patched, diffs } = applyDiffPatches(currentDraft, response);
-            if (diffs.length > 0) {
-              currentDraft = patched;
-              console.log("    " + c.green + "Applied " + diffs.length + " replacement(s)" + c.reset);
-              for (const d of diffs) {
+
+            // R8-C: shape validation for premise-staging rules. We refuse
+            // single-line conclusion-only edits and deletion-only edits;
+            // the patch never mutates currentDraft in that case.
+            let appliedPatched = currentDraft;
+            let appliedDiffs = diffs;
+            let rejectedReason: string | null = null;
+            if (requiresPremiseStaging(issue)) {
+              const v = validatePremisePatch(diffs);
+              if (!v.accepted) {
+                premiseRejections++;
+                rejectedReason = v.reason ?? "premise-staging validation failed";
+                console.log(
+                  "    " +
+                    c.boldYellow +
+                    `✗ Premise-staging gate rejected this patch: ${rejectedReason}` +
+                    c.reset
+                );
+                // Discard the proposed diffs entirely.
+                appliedDiffs = [];
+              } else {
+                appliedPatched = patched;
+              }
+            } else {
+              appliedPatched = patched;
+            }
+
+            if (appliedDiffs.length > 0) {
+              currentDraft = appliedPatched;
+              console.log("    " + c.green + "Applied " + appliedDiffs.length + " replacement(s)" + c.reset);
+              for (const d of appliedDiffs) {
                 const preview = d.original.slice(0, 60).replace(/\n/g, " ");
                 console.log("    " + c.dim + "- \"" + preview + "...\" → replaced" + c.reset);
               }
-            } else {
+            } else if (rejectedReason === null) {
               console.log("    " + c.yellow + "No applicable diffs found in response" + c.reset);
             }
 
@@ -357,8 +488,10 @@ export class RejectionSamplingRunner {
               patchInRound: patchCounter,
               draft: currentDraft,
               valid: false,
-              feedback: [issue],
-              diffs,
+              feedback: rejectedReason
+                ? [issue, `[runner/r8c] rejected: ${rejectedReason}`]
+                : [issue],
+              diffs: appliedDiffs,
               timestamp: new Date().toISOString(),
             });
             await this.saveLog(sessionDir, prompt, attemptLogs);
@@ -389,6 +522,12 @@ export class RejectionSamplingRunner {
       totalAttempts: attemptLogs.length,
       feedbackCount: attemptLogs[attemptLogs.length - 1]?.feedback?.length ?? 0,
       oscillations,
+      // R8-B / R8-C telemetry — visible in status.json so a human triaging
+      // a failed-converge session can immediately see how many full
+      // rewrites we burned and how many premise patches the gate refused.
+      structuralRewriteCount,
+      structuralRewriteCap: STRUCTURAL_REWRITE_CAP,
+      premiseRejections,
       updatedAt: new Date().toISOString(),
     };
     await writeFile(join(sessionDir, "status.json"), JSON.stringify(failStatus, null, 2), "utf-8");

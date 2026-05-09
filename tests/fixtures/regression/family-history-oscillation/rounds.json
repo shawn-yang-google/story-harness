@@ -1,0 +1,63 @@
+{
+  "comment": "Round-by-round feedback captured from logs/generate-2026-05-08T22-57-33-123Z (the historic family-history failed-converge session that motivated R8-A and R8-B). Replayed through OscillationGuard.recordRound() and classifyFeedback in src/runner/oscillation-regression.test.ts to anchor the fingerprints and recurrence counts that the guard MUST detect. Inner quotes in the captured strings have been replaced with smart quotes (U+201C/U+201D) so the JSON parses cleanly; the test only inspects the [Checker/rule] prefix, not the message body.",
+  "session": "generate-2026-05-08T22-57-33-123Z",
+  "rounds": [
+    {
+      "round": 1,
+      "feedback": [
+        "[EpistemicChecker/psychic_knowledge] Psychic knowledge: ‘英’ knows ‘智远入狱’ but the source is unexplained.",
+        "[EpistemicChecker/psychic_knowledge] Psychic knowledge: ‘英’ knows ‘智远被关押的具体地点’ but the source is unexplained.",
+        "[DialogueChecker/no_subtext] Dialogue lacks subtext: 3/3 speeches have no hidden meaning.",
+        "[DialogueChecker/indistinct_voices] 2 characters sound alike: 英, 智远.",
+        "Opening Hook: The opening is a dry, summary-heavy exposition dump that reads like a corporate report rather than a story.",
+        "Who Cares? Test: The characters are presented as archetypes without any internal life or unique personality traits.",
+        "Page-Turner Momentum: The narrative moves through years of events in a rapid-fire summary, removing any sense of immediate tension.",
+        "Cringe Factor: The prose relies on heavy-handed melodrama and clichéd moralizing.",
+        "Voice Distinctiveness: The writing style is generic and lacks a distinct authorial voice."
+      ]
+    },
+    {
+      "round": 2,
+      "feedback": [
+        "[PropositionalChecker/unsupported_conclusion] Unsupported conclusion at paragraph 8: ‘The land is highly valuable’ — no premises provided.",
+        "[SoundnessChecker/non_sequitur] Non-sequitur reasoning at paragraph 8: ‘The land is highly valuable’ — premises do not support the claim.",
+        "[CharacterChecker/cement_block_character] Cement-block character ‘教务主任’: no gap between mask and true character.",
+        "[DialogueChecker/no_subtext] Dialogue lacks subtext: 6/11 speeches have no hidden meaning.",
+        "Cringe Factor: The dialogue and internal monologue feel like heavy-handed, melodramatic tropes."
+      ]
+    },
+    {
+      "round": 3,
+      "feedback": [
+        "[PropositionalChecker/unsupported_conclusion] Unsupported conclusion at paragraph 9: ‘The land development involves significant hidden interests’.",
+        "[SoundnessChecker/non_sequitur] Non-sequitur reasoning at paragraph 9: ‘The land development involves significant hidden interests’.",
+        "[DialogueChecker/monologue_too_long] Monologue too long: speech ‘s5’ exceeds 100 words without interruption.",
+        "Opening Hook: The opening relies on heavy-handed metaphors that feel like clichés.",
+        "Page-Turner Momentum: The transition from the office confrontation to the interrogation room is jarring.",
+        "Cringe Factor: The dialogue in the interrogation room feels like a low-budget television drama."
+      ]
+    },
+    {
+      "round": 4,
+      "feedback": [
+        "[PropositionalChecker/broken_conditional] Broken conditional: rule ‘r2’ states a planning-map premise but the antecedent is true while the consequent is false.",
+        "[PropositionalChecker/unsupported_conclusion] Unsupported conclusion at paragraph 8: ‘The developers want Zhiyuan’s signature to legitimize the land use.’",
+        "[SourceChecker/unsourced_critical] Critical historical claim lacks verified source: detention centers vs prisons in PRC law.",
+        "Page-Turner Momentum: The transition from the interrogation scene to the wife’s perspective feels abrupt.",
+        "Cringe Factor: The dialogue in the final scene feels overly melodramatic and forced."
+      ]
+    },
+    {
+      "round": 5,
+      "feedback": [
+        "[PropositionalChecker/unsupported_conclusion] Unsupported conclusion at paragraph 8: ‘The interrogation is a setup to force the signature’.",
+        "[EpistemicChecker/psychic_knowledge] Psychic knowledge: ‘Zhiyuan’ knows ‘The planning map is a trap’ but the source is unexplained.",
+        "[EpistemicChecker/psychic_knowledge] Psychic knowledge: ‘Ying’ knows ‘Zhiyuan’s innocence and the nature of the evidence’ but the source is unexplained.",
+        "[SoundnessChecker/non_sequitur] Non-sequitur reasoning at paragraph 8: ‘The interrogation is a setup to force the signature’.",
+        "[DialogueChecker/monologue_too_long] Monologue too long: speech ‘s5’ exceeds 100 words without interruption.",
+        "Page-Turner Momentum: The narrative jumps from the protagonist’s arrest to a five-year time skip in summary form.",
+        "Cringe Factor: The dialogue in the interrogation scene is overly expository and melodramatic."
+      ]
+    }
+  ]
+}

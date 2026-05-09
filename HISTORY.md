@@ -6,6 +6,90 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 8-B / 8-C — Structural Rewrite Tier, Premise-Staging Discipline, Regression Anchor
+
+R8-A's recurrence telemetry (commit `b5e4bbb`) made the oscillations
+visible but did not fix them. R8-B and R8-C close the loop with two
+orthogonal interventions:
+
+- **R8-B — Centralized rule classification + structural-rewrite cap.**
+  New `src/runner/rule-classification.ts` exposes `classifyFeedback`,
+  which maps every feedback string to `"structural"` or `"surgical"`. The
+  registry has two parts: `STRUCTURAL_FINGERPRINTS` (Tier-2 rules whose
+  `[Checker/rule]` prefix indicates a scene-level problem —
+  `cement_block_character`, `unearned_emotion`, `exposition_dump`,
+  `indistinct_voices`, `no_subtext`, `no_conflict`, `no_obstacle`) and
+  `STRUCTURAL_TIER3_PATTERNS` (lowercased substrings from
+  `harnesses/ReaderExperience.prompt.txt` — `opening hook`, `who cares?`,
+  `page-turner momentum`, `cringe factor`, `voice distinctiveness`).
+  Defaults to `"surgical"` for unknown rules — the safer choice. The
+  hardcoded 6-substring list inside `runner/index.ts` is gone; one place
+  to look up structural classification.
+
+  The runner's existing structural-rewrite phase is now (a) gated by the
+  per-session `STRUCTURAL_REWRITE_CAP=2` and (b) can be triggered by
+  R8-A escalation: any *surgical* fingerprint with
+  `recurrenceCount >= OSCILLATION_ESCALATION_THRESHOLD` (default 1) is
+  promoted to structural for the current round. Hitting the cap writes a
+  `needs-human-rewrite.md` to the session dir and skips further LLM
+  rewrites. `status.json` now reports `structuralRewriteCount`,
+  `structuralRewriteCap`, and the existing `oscillations` array.
+
+- **R8-C — Premise-staging discipline.** New
+  `src/runner/premise-staging.ts` exposes `requiresPremiseStaging` (the
+  two-rule gate — `PropositionalChecker/unsupported_conclusion` and
+  `SoundnessChecker/non_sequitur`), `buildPremiseStagingInstruction` (the
+  per-rule prompt augmentation block — verbatim two-constraint wording
+  from TODO.md R8-C), and `validatePremisePatch` (rejects empty patches,
+  rejects single-diff edits where the revised text is < 1.5× the
+  original by character count). The runner appends the instruction to
+  the patch prompt and validates the resulting diffs; rejected patches
+  do NOT mutate `currentDraft` and increment `premiseRejections` for the
+  status.json. The 1.5× threshold is empirical: 2× rejected too many
+  legitimate "added a clause" patches; 1.2× let through paraphrase-only
+  edits.
+
+- **Q3 — Regression fixture for the historic failed session.** New
+  `tests/fixtures/regression/family-history-oscillation/` captures the
+  round-by-round feedback verbatim from
+  `logs/generate-2026-05-08T22-57-33-123Z` (the canonical 5-round
+  oscillation case). The companion test
+  `src/runner/oscillation-regression.test.ts` replays the captured
+  feedback through `OscillationGuard.recordRound`, `classifyFeedback`,
+  and `requiresPremiseStaging` — asserting (a) `psychic_knowledge` is
+  recurrent in rounds 1+5, `unsupported_conclusion` in 2+3+4+5,
+  `non_sequitur` in 2+3+5, etc. (exact counts), (b) every Tier-3
+  reader-experience verdict and every structural Tier-2 rule observed
+  classifies as `"structural"`, (c) `requiresPremiseStaging` opts in on
+  exactly the 7 unsupported_conclusion / non_sequitur entries across
+  the 5 rounds. Hermetic — no LLM calls, no network. Inner double
+  quotes in the captured strings were re-encoded as U+2018/U+201C smart
+  quotes so the JSON parses cleanly; the test only inspects the
+  `[Checker/rule]` prefix, not the message body. A bug in the initial
+  `STRUCTURAL_FINGERPRINTS` list (mis-attributing `no_subtext` to
+  NarrativeChecker instead of DialogueChecker) was caught by this
+  fixture and corrected.
+
+- **TDD coverage.** 9 unit tests for `classifyFeedback`, 10 unit tests
+  for premise-staging (fingerprint, instruction-builder, patch-shape
+  validation including the deletion-only rejection), 2 end-to-end
+  integration tests in `r8b-r8c-integration.test.ts` (R8-B cap fires
+  with `needs-human-rewrite.md` written; R8-C gate refuses single-line
+  conclusion-only patches and `BAD_CONCLUSION` is never erased), 3
+  regression tests in `oscillation-regression.test.ts`. The pre-R8-A
+  R8-A integration test was loosened by exactly one assertion (the
+  recurrence may now surface in the structural-rewrite prompt instead of
+  the patch prompt — both paths satisfy the contract).
+
+- Tests: **421 pass** (up from 397, +24 = 9 + 10 + 2 + 3). TS errors:
+  391 distinct (`grep -E '^src/.*error TS'`), no new errors from any
+  file added in this round.
+
+- **Deferred:** Q1 (does L4/L5 under-flag rubber-stamp drafts?) and Q2
+  (`lore_coverage_partial` author-intuition tuning) remain in TODO.md.
+  Both require real LLM runs against the family-history prompt to
+  answer; the R8 changes set up the conditions for that re-run.
+
 ### Round 8-A — Patch Oscillation Guard
 
 Two real generation runs on the family-history prompt (sessions

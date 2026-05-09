@@ -162,16 +162,25 @@ describe("R8-A oscillation guard end-to-end", () => {
     const recurredB = fingerprints.includes("FakeCheckerB/has_b");
     expect(recurredA || recurredB).toBe(true);
 
-    //#and the patch prompt for the recurring fingerprint contained the
-    //#warning block on the round where it RE-fired (not the first sighting).
+    //#and the recurrence was surfaced to the LLM in one of two ways:
+    //  (a) the oscillation-warning block was injected into a patch prompt
+    //      (this happens when R8-B's escalation has NOT yet promoted the
+    //      surgical rule to structural — i.e. the first re-fire), OR
+    //  (b) the recurring fingerprint appeared in a structural-rewrite
+    //      prompt (R8-B auto-escalates on re-fire under threshold 1).
     const patchPrompts = promptsSeen.filter((p) =>
       p.includes("## Issue to Fix")
     );
-    expect(patchPrompts.length).toBeGreaterThanOrEqual(2);
-    const sawWarning = patchPrompts.some((p) =>
+    const rewritePrompts = promptsSeen.filter((p) =>
+      p.includes("## Structural Issues to Address")
+    );
+    const sawWarningInPatch = patchPrompts.some((p) =>
       p.includes("Oscillation Warning") &&
       (p.includes("FakeCheckerA/has_a") || p.includes("FakeCheckerB/has_b"))
     );
-    expect(sawWarning).toBe(true);
+    const sawRecurringInRewrite = rewritePrompts.some((p) =>
+      p.includes("FakeCheckerA/has_a") || p.includes("FakeCheckerB/has_b")
+    );
+    expect(sawWarningInPatch || sawRecurringInRewrite).toBe(true);
   });
 });
