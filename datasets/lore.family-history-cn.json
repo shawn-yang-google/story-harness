@@ -101,6 +101,13 @@
       "originalClaim": "Stage III breast cancer prognosis in the early 2000s.",
       "originalLocation": "paragraph 13, sentence 2",
       "verifiedAt": "2026-05-08"
+    },
+    "historical:detention_centers_(看守所)_are_used_for_pre-trial_det": {
+      "fact": "In the PRC legal system, detention centers (看守所) are primarily used for pre-trial and pre-sentencing detention, while prisons (监狱) are the state's penal execution organs for post-conviction sentences. Convicts are transferred to prisons unless their remaining sentence is very short (under 1 year per the 1990 Regulations on Detention Centers, reduced to under 3 months by 2013 amendments). Serving a 5-year sentence in a detention center is legally anomalous.",
+      "source": "Criminal Procedure Law of the PRC; Prison Law of the PRC; Regulations of the PRC on Detention Centers (1990); Measures for the Management of Criminals Serving Sentences in Detention Centers (2013)",
+      "addedAt": "2026-05-08T23:09:18.402Z",
+      "originalClaim": "Detention centers (看守所) are used for pre-trial detention; prison (监狱) is for post-conviction.",
+      "originalLocation": "paragraph 15, sentence 1"
     }
   }
 }
