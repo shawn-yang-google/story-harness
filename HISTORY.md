@@ -71,10 +71,51 @@ R10-A adds an R8-C-style hard gate, mirroring the premise-staging design:
 **Test count:** unit tests +12, integration tests +1, no regressions
 in the 421 pre-existing tests.
 
-**R10-B deferred.** The runner-UX change (distinguishing cap-failure
-from convergence-failure in the error path) is straightforward but
-touches the CLI surface. Punted to a future round so this commit stays
-focused on the validation-gate work.
+**R10-B landed — typed StructuralCapReachedError.** The runner had
+two indistinguishable failure modes: (a) the patch loop ran out of
+rounds while still flagging surgical-only issues, or (b) the
+`STRUCTURAL_REWRITE_CAP` was exhausted and `needs-human-rewrite.md`
+was emitted. Both threw the same generic
+`Failed to generate a valid scene after N rounds.` error, so the CLI
+could not point the operator at the file the runner just wrote.
+R10-B closes the gap:
+
+- `src/runner/errors.ts` — new `StructuralCapReachedError extends Error`
+  carrying the operator-actionable context: `sessionDir`,
+  `needsHumanRewritePath`, `structuralRewriteCount`,
+  `structuralRewriteCap`, `premiseRejections`,
+  `knowledgeSourceRejections`, `rounds`. Its `.message` includes both
+  the cap counter (`"2/2"`) and the path so log-only sinks also get
+  the actionable signal.
+- `src/runner/errors.test.ts` — 4 unit tests for instantiation,
+  Error-subclass shape, message formatting, and instanceof
+  distinguishability vs plain Error.
+- `src/runner/index.ts` — tracks `needsHumanRewritePath` (set on the
+  first cap-branch write, null otherwise). At the failed-converge
+  throw site, branches: if `needsHumanRewritePath !== null`, throw
+  the typed error; otherwise throw the original generic message
+  unchanged. This means R10-B is fully backward-compatible — every
+  existing catcher that does `catch (e: any) { console.error(e.message) }`
+  still works; new catchers can use `instanceof StructuralCapReachedError`
+  for the richer path.
+- `src/cli/index.ts` — single-shot generate catch now branches on
+  `instanceof StructuralCapReachedError` and prints a multi-line
+  message that names the cap counter, points at
+  `needs-human-rewrite.md`, surfaces the session log dir, and (when
+  non-zero) shows the staging-gate refusal counts. The multi-section
+  catch was deliberately left as-is — its existing `err.message`
+  printout already gets the actionable signal because
+  `StructuralCapReachedError.message` includes the path.
+- `src/runner/r8b-r8c-integration.test.ts` — extended the existing
+  R8-B cap test to also assert (a) the runner throws
+  `StructuralCapReachedError`, (b) the typed fields populate
+  correctly, (c) the `needsHumanRewritePath` from the typed error
+  matches the file path on disk, and (d) `err.message` contains
+  `"needs-human-rewrite.md"`.
+
+**Round 10 closed.** All three carry-overs from R9 are now resolved:
+R10-A (knowledge-source-staging gate), R10-B (typed cap error), and
+R10-C (analytically — keep `PARTIAL_MIN_CLAIMS=3`, surfaced R11).
 
 **New TODO surfaced — R11: upstream verifier grading policy.** R10-C's
 finding suggests a new investigation: the verifier produces almost

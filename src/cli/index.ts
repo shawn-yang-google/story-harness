@@ -4,6 +4,7 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { HarnessSynthesizer } from "../synthesizer";
 import { RejectionSamplingRunner } from "../runner";
 import { MultiSectionRunner } from "../runner/multi-section";
+import { StructuralCapReachedError } from "../runner/errors";
 import { MODELS } from "../llm";
 import { loadTrajectories } from "../environment/trajectory";
 import { loadPrompt } from "./prompt-loader";
@@ -399,7 +400,32 @@ Video generation has been moved to the 'videoharness' project.
           await writeFile(outPath3, story, "utf-8");
           console.log("\n\x1b[32m\u2713\x1b[0m Saved to: \x1b[1m" + outPath3 + "\x1b[0m");
         } catch (e: any) {
-          console.error(`\nGeneration failed: ${e.message}`);
+          // R10-B: distinguish the structural-cap exhaustion path from
+          // a plain "ran out of rounds" failure. The cap path leaves
+          // a needs-human-rewrite.md that names the outstanding
+          // scene-level issues; pointing the operator at it is much
+          // more actionable than the generic message.
+          if (e instanceof StructuralCapReachedError) {
+            console.error(
+              "\n\x1b[31m\u2717\x1b[0m Generation hit the structural-rewrite cap " +
+                `(${e.structuralRewriteCount}/${e.structuralRewriteCap}) ` +
+                `after ${e.rounds} rounds.`
+            );
+            console.error(
+              `  Open \x1b[1m${e.needsHumanRewritePath}\x1b[0m for the outstanding scene-level issues.`
+            );
+            console.error(
+              `  Session log: \x1b[2m${e.sessionDir}\x1b[0m`
+            );
+            if (e.premiseRejections > 0 || e.knowledgeSourceRejections > 0) {
+              console.error(
+                "  Staging-gate refusals: " +
+                  `premise=${e.premiseRejections}, knowledge-source=${e.knowledgeSourceRejections}`
+              );
+            }
+          } else {
+            console.error(`\nGeneration failed: ${e.message}`);
+          }
           process.exit(1);
         }
       }

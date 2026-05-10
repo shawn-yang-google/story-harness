@@ -20,6 +20,7 @@ import {
   requiresKnowledgeSourceStaging,
   validateKnowledgeSourcePatch,
 } from "./knowledge-source-staging";
+import { StructuralCapReachedError } from "./errors";
 
 // ANSI color codes for terminal output
 const c = {
@@ -128,6 +129,13 @@ export class RejectionSamplingRunner {
     // Tracked separately from premiseRejections so a triage view can tell
     // R8-C's gate firing apart from R10-A's gate firing.
     let knowledgeSourceRejections = 0;
+    // R10-B: path of needs-human-rewrite.md once it has been written.
+    // Stays null if the structural-rewrite cap was never hit, in which
+    // case a fail-converge throws the generic Error rather than
+    // StructuralCapReachedError. The path is constant across writes
+    // within a session (only the contents are rewritten), so we set
+    // it the first time and reuse for the error.
+    let needsHumanRewritePath: string | null = null;
 
     const context: HarnessContext = {
       loreDb: this.options.loreDb,
@@ -305,11 +313,12 @@ export class RejectionSamplingRunner {
             "",
             currentDraft,
           ].join("\n");
-          await writeFile(
-            join(sessionDir, "needs-human-rewrite.md"),
-            needsRewriteMd,
-            "utf-8"
-          );
+          const rewritePath = join(sessionDir, "needs-human-rewrite.md");
+          await writeFile(rewritePath, needsRewriteMd, "utf-8");
+          // R10-B: record the path so the failed-converge throw can
+          // surface it via StructuralCapReachedError. Only set on the
+          // first cap-hit; subsequent rounds rewrite the same file.
+          if (needsHumanRewritePath === null) needsHumanRewritePath = rewritePath;
         } else {
           patchCounter++;
           structuralRewriteCount++;
@@ -571,6 +580,24 @@ export class RejectionSamplingRunner {
       updatedAt: new Date().toISOString(),
     };
     await writeFile(join(sessionDir, "status.json"), JSON.stringify(failStatus, null, 2), "utf-8");
+    // R10-B: distinguish "ran out of rounds while patching surgical
+    // issues" (generic Error — operator should consider raising
+    // --max-retries) from "hit the structural-rewrite cap and the
+    // model could not bridge the structural gap" (typed
+    // StructuralCapReachedError — operator should open
+    // needs-human-rewrite.md). The CLI catcher branches on this to
+    // print a richer message.
+    if (needsHumanRewritePath !== null) {
+      throw new StructuralCapReachedError({
+        sessionDir,
+        needsHumanRewritePath,
+        structuralRewriteCount,
+        structuralRewriteCap: STRUCTURAL_REWRITE_CAP,
+        premiseRejections,
+        knowledgeSourceRejections,
+        rounds: this.options.maxRetries,
+      });
+    }
     throw new Error(`Failed to generate a valid scene after ${this.options.maxRetries} rounds.`);
   }
 

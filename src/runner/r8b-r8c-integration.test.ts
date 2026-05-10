@@ -102,21 +102,36 @@ describe("R8-B structural-rewrite cap", () => {
     });
 
     //#when generateScene runs
-    let threw = false;
+    let caughtError: unknown = null;
     try {
       await runner.generateScene("Tell a story.");
-    } catch {
-      threw = true;
+    } catch (e) {
+      caughtError = e;
     }
-    expect(threw).toBe(true);
+    expect(caughtError).not.toBeNull();
 
-    //#then a needs-human-rewrite.md exists in the session dir
+    //#then R10-B: the runner throws the typed StructuralCapReachedError,
+    //  not a generic Error. The CLI uses this distinction to print a
+    //  richer, operator-actionable message.
+    const { StructuralCapReachedError } = await import("./errors");
+    expect(caughtError).toBeInstanceOf(StructuralCapReachedError);
+    const capErr = caughtError as InstanceType<typeof StructuralCapReachedError>;
+    expect(capErr.structuralRewriteCount).toBe(2);
+    expect(capErr.structuralRewriteCap).toBe(2);
+    expect(capErr.needsHumanRewritePath).toContain("needs-human-rewrite.md");
+    //#and the cap-error message surfaces the path so log-only sinks
+    //  also get the actionable signal
+    expect(capErr.message).toContain("needs-human-rewrite.md");
+
+    //#and a needs-human-rewrite.md exists in the session dir at the
+    //  path the typed error reports
     const sessions = (await readdir(logDir)).sort();
     const latest = sessions.at(-1);
     if (!latest) throw new Error("expected at least one session");
     const sessionDir = join(logDir, latest);
 
     const nhrPath = join(sessionDir, "needs-human-rewrite.md");
+    expect(capErr.needsHumanRewritePath).toBe(nhrPath);
     const nhrStat = await stat(nhrPath);
     expect(nhrStat.isFile()).toBe(true);
 

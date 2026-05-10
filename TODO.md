@@ -7,36 +7,17 @@ for the full chronological log.
 
 ---
 
-## Round 10 — Status
+## Round 10 — CLOSED
 
-- [DONE] R10-A — knowledge-source staging gate for `psychic_knowledge`. See HISTORY.md.
-- [DONE] R10-C — analytically resolved with no code change. The threshold isn't the bottleneck; upstream verifier grading is. Surfaces R11. See HISTORY.md.
-- [TODO] R10-B — distinguish cap-failure from convergence-failure in the runner UX (still pending).
+All three R9 carry-overs resolved. See HISTORY.md.
 
-### R10-B — Distinguish cap-failure from convergence-failure in the runner UX (MEDIUM)
-
-**Symptom:** When `STRUCTURAL_REWRITE_CAP` was hit, the runner still
-threw `Failed to generate a valid scene after N rounds.` — losing the
-signal that `needs-human-rewrite.md` exists and tells the user
-exactly what's blocking convergence. R10-A added a second gate
-(`knowledgeSourceRejections`) whose telemetry deserves the same
-surfacing.
-
-**Plan:** when `structuralRewriteCount === STRUCTURAL_REWRITE_CAP` AND
-the cap was hit during the most recent round, throw a distinct
-`StructuralCapReachedError` (or pass a `reason` field through to the
-CLI) and surface both `needs-human-rewrite.md` AND the staging-gate
-counters (`premiseRejections`, `knowledgeSourceRejections`) in the
-error message. CLI exit code stays non-zero but is distinct from
-unrecoverable failure.
-
-**Files to touch:** `src/runner/index.ts` (the throw), `src/cli/index.ts`
-(the catch + nicer message). Unit test that mocks the runner to throw
-the new error and asserts the CLI prints the right path.
+- [DONE] R10-A — knowledge-source staging gate for `psychic_knowledge`.
+- [DONE] R10-B — typed `StructuralCapReachedError` + CLI branching.
+- [DONE] R10-C — analytically resolved with no code change. The threshold isn't the bottleneck; upstream verifier grading is. Surfaces R11.
 
 ---
 
-## Round 11 — Upstream verifier grading policy (NEW, surfaced by R10-C)
+## Round 11 — Upstream verifier grading policy (ACTIVE, surfaced by R10-C)
 
 **Finding from R10-C:** the `lore_coverage_partial` heuristic never
 fires not because its thresholds are wrong, but because the upstream
