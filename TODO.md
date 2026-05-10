@@ -17,31 +17,15 @@ All three R9 carry-overs resolved. See HISTORY.md.
 
 ---
 
-## Round 11 — Upstream verifier grading policy (ACTIVE, surfaced by R10-C)
+## Round 11 — CLOSED
 
-**Finding from R10-C:** the `lore_coverage_partial` heuristic never
-fires not because its thresholds are wrong, but because the upstream
-LLM verifier marks almost every claim that the loreDb covers as
-`(verdict: accurate, confidence: high)`. The per-category tallies
-across all 13 R9 rounds were `total === covered` in every case where
-the category had any coverage at all. The `>=50% uncovered` predicate
-filters these out long before the `>=N claims` minimum matters.
+Verifier verdict-distribution audit completed across 296 sessions /
+617 reference-graphs / 395 claims. R10-C's hypothesis is partially
+confirmed (80.5% `(accurate, high)`) but no code change is warranted —
+the verifier is doing its job, and the heuristic is just narrowly
+applicable to science-heavy drafts that we don't currently run.
+See HISTORY.md for full data and rationale.
 
-**Two candidate actions, neither obvious yet — investigate first.**
-
-1. **Audit the verifier's verdict distribution.** Reuse
-   `scripts/r10c-analyze.ts` as a starting point: scan every
-   reference-graph in `logs/generate-*` and produce a histogram of
-   `(verdict, confidence)` pairs across categories. If `accurate-high`
-   is overrepresented (e.g. >90% of all claims), the verifier
-   prompt is being too lenient.
-2. **Broaden `lore_coverage_partial`'s tally to include lower-confidence
-   claims.** If the verifier is honest but cautious, the right fix is
-   to count `(accurate, medium)` and `(partially_accurate, *)` claims
-   in the partial-coverage tally too. This is a one-line change in
-   `src/reference/source-checker.ts` plus a test.
-
-**Files to touch:** `scripts/r11-verdict-audit.ts` (new investigation
-script — same shape as `r10c-analyze.ts`); possibly
-`src/reference/source-checker.ts` (broaden the tally). Decide based
-on the audit output, not in advance.
+Reusable artifacts: `scripts/r11-verdict-audit.ts`,
+`scripts/r11-per-category.ts`. Re-run them after any major
+verifier-prompt change to detect distribution drift.

@@ -6,6 +6,91 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 11 — Verifier Verdict-Distribution Audit
+
+R10-C left a hypothesis open: the upstream LLM verifier might be
+overproducing `(accurate, high)` verdicts, starving the
+`lore_coverage_partial` heuristic. R11 tests that hypothesis at scale
+across the entire historic log corpus rather than the 3-session
+R10-C sample, then decides whether to broaden the heuristic's tally.
+
+**Audit corpus.** `scripts/r11-verdict-audit.ts` and
+`scripts/r11-per-category.ts` together scan 296 sessions / 617
+reference-graphs / 395 total claims. No LLM calls; pure data analysis
+on existing fixtures.
+
+**Grand histogram (verdict × confidence):**
+
+| verdict             | high   | medium | low    | unverif | other  | total  |
+|---------------------|--------|--------|--------|---------|--------|--------|
+| accurate            | 80.5%  |  4.3%  |  0.0%  |  0.0%   |  1.0%  | 85.8%  |
+| inaccurate          |  2.8%  |  0.0%  |  0.0%  |  0.0%   |  0.8%  |  3.5%  |
+| partially_accurate  |  1.3%  |  3.0%  |  0.0%  |  0.0%   |  0.3%  |  4.6%  |
+| needs_research      |  0.0%  |  5.3%  |  0.8%  |  0.0%   |  0.0%  |  6.1%  |
+
+**R10-C's hypothesis is PARTIALLY confirmed.** `(accurate, high)`
+accounts for 80.5% of claims — high but not the 100% R10-C's tiny
+sample suggested. Critically, **zero of the 18 sessions with
+≥5 claims hit 100%** `(accurate, high)`. The verifier IS biased,
+but it's not stuck.
+
+**Outlier evidence — the verifier CAN distinguish.** Session
+`generate-2026-05-08T23-10-24-196Z` is only 19% `(accurate, high)`
+because 8 of its 21 claims are `(inaccurate, high)` — confidently
+flagged errors. So the verifier doesn't just default to
+"accurate-high"; it confidently flags real errors when they exist.
+The 80.5% rate reflects "drafts mostly contain things the verifier
+can verify and the loreDb covers", not "verifier is broken".
+
+**Per-category breakdown is where the action is.** Different
+categories have very different verdict diversity:
+
+| category   | total | acc-hi | acc-med | part-acc | inacc-hi | needs-res |
+|------------|-------|--------|---------|----------|----------|-----------|
+| historical |   166 |  80%   |   3%    |    3%    |    4%    |    10%    |
+| cultural   |   137 |  90%   |   2%    |    3%    |    0%    |     3%    |
+| scientific |    79 |  65%   |  11%    |    9%    |    6%    |     5%    |
+| geographic |     8 | 100%   |   0%    |    0%    |    0%    |     0%    |
+| linguistic |     5 |  60%   |   0%    |   20%    |    0%    |     0%    |
+
+`scientific` is the only category with meaningful verdict diversity
+(35% non-acc-hi). If `lore_coverage_partial` ever needs to fire, it
+would be there. `historical` and `cultural` are 80–90%
+acc-hi; `geographic` is 100% but n=8 is too small to be conclusive.
+
+**Production firings of `lore_coverage_partial` across 296 sessions:
+ZERO.** The heuristic has never actually fired in any historic
+session.
+
+**Decision: no code change.** Three reasons:
+
+1. The 80.5% rate isn't a bug — it reflects accurate verification
+   of factually-correct drafts. Broadening the tally to include
+   `(accurate, medium)` and `(partially_accurate, *)` would mix
+   coverage semantics with confidence semantics. A
+   `partially_accurate` claim is qualitatively different from an
+   "uncovered" claim and shouldn't be equated.
+2. The empirical impact would be modest: broadening adds only
+   +34 claims (+10.7%) to the global tally, concentrated in the
+   `scientific` category. Most of our actual prompts don't produce
+   science-heavy drafts where this would matter.
+3. The heuristic is dead-code-ish today (zero firings in 296
+   sessions), but it's not WRONG — it's just narrowly applicable.
+   When somebody starts running science-heavy prompts in volume,
+   it'll start firing. Until then, leaving it as-is is correct.
+
+**Artifacts.**
+
+- `scripts/r11-verdict-audit.ts` — the grand-histogram pass.
+  Reusable; takes `[logs-dir]` arg defaulting to `logs`.
+- `scripts/r11-per-category.ts` — the per-category breakdown.
+  Reusable; same signature.
+- Audit outputs saved to `~/.gemini/tmp/storyharness/r11-audit-output.txt`
+  and `r11-per-category-output.txt` for posterity.
+
+**Round 11 closed.** No follow-up TODO surfaced. The R11 finding is
+the answer.
+
 ### Round 10 — Knowledge-Source Staging Gate + PARTIAL_MIN_CLAIMS Resolution
 
 R9's empirical validation surfaced three carry-overs (R10-A/B/C in
