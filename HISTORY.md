@@ -6,6 +6,119 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 9 — Empirical Validation of R8 (Q1 + Q2 LLM Experiments)
+
+After R8-A/B/C landed, Q1 (does the L4/L5 evaluator under-flag rubber-
+stamp drafts?) and Q2 (does the `lore_coverage_partial` heuristic match
+author intuition?) were still open because both required real LLM
+generations to answer. R9 ran those experiments and produced their
+answers.
+
+**Experimental setup.** Three end-to-end `bun run src/cli/index.ts
+generate` runs against the real Gemini API:
+
+1. **Q1 persona** — family-history prompt + persona
+   `personas/人物传记作家-写家史.json` + lore.family-history-cn.json,
+   max-retries 5 → session `generate-2026-05-10T04-25-31-969Z`.
+2. **Q1 bare** — same prompt + same loreDb but no persona, max-retries 5
+   → session `generate-2026-05-10T04-26-05-132Z`.
+3. **Q2 multi-domain** — new 1000-word vignette prompt grounded in
+   2003 Beijing + new `datasets/lore.q2-multi-domain.json` (15 entries
+   across history/science/culture, all real and citable), max-retries 3
+   → session `generate-2026-05-10T04-27-43-656Z`.
+
+Each session's `best-draft.md` was then audited by the EVALUATOR model
+through `scripts/q1-judge.ts` against a 5-axis rubric (logic, character
+depth, dramatic tension, subtext/voice, cringe-factor inverted). The
+rubric prompt lives in `q1-judge-prompt.md` (in the project temp dir
+under `q1-q2-experiment/`).
+
+**Q1 finding — the L4/L5 evaluator is NOT rubber-stamping.** All three
+sessions failed-converge after their max-retries, i.e. the evaluator
+correctly never accepted a draft. The LLM judge audited the
+`best-draft.md` (the runner's last attempt) and returned
+`evaluator_under_flagged: "Yes"` for every session — but this is a
+nomenclature mismatch with the question. The evaluator did NOT accept
+those drafts; the runner emits `best-draft.md` regardless of acceptance.
+The judge's verdict tells us the *best-draft is unpublishable*, which
+matches what the evaluator already concluded by refusing to converge.
+Net answer: **the evaluator is currently doing its job for prompts of
+this difficulty — it's not under-flagging, if anything it's failing in
+the other direction (failing-to-converge on prompts that may be too hard
+for the model to satisfy at all).**
+
+**R8 telemetry working flawlessly in production.** Every R8 mechanism
+fired in the actual sessions:
+
+- `EpistemicChecker/psychic_knowledge` recurrence=4 in BOTH Q1 sessions
+  (rounds 1-2-3-4-5), exactly the pattern that motivated R8-A. Every
+  recurrence post-round-1 saw the oscillation-warning block injected
+  into its patch prompt.
+- `structuralRewriteCount=2` (the cap) hit in all three sessions, with
+  `needs-human-rewrite.md` correctly emitted in each session dir.
+- Q2 hit the R8-A→R8-B escalation chain: `⇪ Escalated to structural
+  after recurring as surgical: PropositionalChecker/unsupported_conclusion`
+  fired in round 2, then bumped into the rewrite cap.
+- Q2's `premiseRejections=2`: R8-C correctly refused two single-line
+  conclusion-only patches against `non_sequitur` violations.
+- Bare-run round 5 escalation log shows four fingerprints promoted
+  in one round: `unsupported_conclusion, psychic_knowledge ×2,
+  cross_reference_conflict` — the system saw the full fan-out it was
+  designed for.
+
+**Q2 finding — `lore_coverage_partial` heuristic is structurally
+correct but rarely triggers.** The thresholds (`PARTIAL_MIN_CLAIMS=3`,
+`PARTIAL_THRESHOLD=0.5`) are sound in principle, but the upstream
+reference-graph extraction in our prompts is sparse: Q2 round 3's
+reference-graph had only 6 claims total (2 historical, 0 scientific, 1
+cultural) across the entire 1000-word draft. None of the categories
+crossed the `>=3` threshold, so the heuristic correctly did not fire.
+The non-partial `lore_coverage` (no minimum) DID fire in the Q1 bare
+run for the `cultural` category. Practical implication: either (a)
+lower `PARTIAL_MIN_CLAIMS` to 2 if author intuition expects coverage
+warnings on shorter drafts, or (b) accept that the heuristic only
+triggers on novel-length, fact-dense drafts where the reference-graph
+extractor finds 3+ claims per category. The heuristic is not broken;
+it's gated by extraction density.
+
+**Artifacts.**
+
+- `datasets/lore.q2-multi-domain.json` — 15-entry verifiable loreDb
+  spanning history/science/culture. Reusable as a test fixture for
+  any future multi-domain experiment.
+- `scripts/q1-judge.ts` — generic LLM-judge runner that takes
+  `<session_dir> <prompt_file>` and emits the JSON verdict.
+- Judge results live in the project temp dir
+  (`~/.gemini/tmp/storyharness/q1-q2-experiment/`); the three session
+  dirs (`logs/generate-2026-05-10T04-25-31-969Z`, `04-26-05-132Z`,
+  `04-27-43-656Z`) contain the full rounds, status.json telemetry,
+  and `needs-human-rewrite.md` files.
+
+**Carry-overs / new questions surfaced.**
+
+1. **Two recurring fingerprints survive R8 and need a follow-up.**
+   `EpistemicChecker/psychic_knowledge` recurrence=4 means R8-A's
+   warning block isn't strong enough to stop the model from
+   reintroducing this rule. Consider adding it to either
+   `PREMISE_STAGING_RULES` (if the same staging discipline applies)
+   or a new "epistemic source-staging" rule with its own gate.
+2. **`needs-human-rewrite.md` is emitted but the runner still fails
+   loudly.** The cap is doing its job (no more wasted rewrites), but
+   the user-facing UX is "Generation failed" + an exception. A future
+   iteration could exit with a different status code when the cap
+   was hit (vs. genuine convergence failure), and surface the
+   `needs-human-rewrite.md` path in the error message.
+3. **Convergence under R8 is still hard.** 0/3 of the runs converged.
+   That isn't a regression (R7 was 0/2 at 5 rounds), but it suggests
+   R8 didn't move the convergence rate up — it moved the *failure
+   mode* from oscillation-driven failure to capped-rewrite failure.
+   Both are cheaper than the pre-R8 baseline (R8-B's cap saves
+   N-2 rewrites' worth of LLM calls when N rounds would have
+   re-rewritten otherwise), but the fundamental quality bar is still
+   beyond the model on these prompts.
+
+These are added to TODO.md.
+
 ### Round 8-B / 8-C — Structural Rewrite Tier, Premise-Staging Discipline, Regression Anchor
 
 R8-A's recurrence telemetry (commit `b5e4bbb`) made the oscillations

@@ -1,0 +1,75 @@
+{
+  "_meta": {
+    "name": "Q2 Multi-Domain Test LoreDb",
+    "purpose": "Test fixture for the lore_coverage_partial heuristic. 15 verified facts across 3 categories (history, science, culture) — large enough that the heuristic can fire (>=3 claims per category) and the >=50% uncovered threshold is meaningful. Used by the Q2 experiment described in HISTORY.md.",
+    "scope": "Late-1990s mainland China + general scientific facts + cross-cultural reference material. All facts are publicly verifiable.",
+    "load_via": "Pass parsed JSON as loreDb via --lore datasets/lore.q2-multi-domain.json",
+    "version": "1"
+  },
+  "history": {
+    "tiananmen_square_1989": {
+      "fact": "The Tiananmen Square protests took place in Beijing from April to early June 1989; the People's Liberation Army's clearance operation began on the night of June 3-4, 1989.",
+      "source": "Tiananmen Papers (Zhang Liang ed., 2001); contemporaneous BBC reporting."
+    },
+    "deng_southern_tour_1992": {
+      "fact": "Deng Xiaoping's Southern Tour (南巡) of January-February 1992 reaffirmed market-oriented economic reforms and was followed by the 14th Party Congress's adoption of the 'socialist market economy' formulation in October 1992.",
+      "source": "Ezra Vogel, 'Deng Xiaoping and the Transformation of China' (2011), ch. 23."
+    },
+    "wto_accession_2001": {
+      "fact": "The People's Republic of China formally acceded to the World Trade Organization on December 11, 2001, after 15 years of negotiation.",
+      "source": "WTO official records; Joseph Fewsmith, 'China Since Tiananmen' (2008)."
+    },
+    "sars_outbreak_2003": {
+      "fact": "Severe acute respiratory syndrome (SARS) emerged in Guangdong Province in November 2002; the WHO declared a global health alert in March 2003. China's official cumulative case count by July 2003 was 5,327.",
+      "source": "WHO SARS situation reports (2003); Hong Kong CHP retrospective."
+    },
+    "expansion_1999": {
+      "fact": "The 1999 Chinese university enrollment expansion (高校扩招) increased annual undergraduate admissions by 47 percent in a single year (from approximately 1.08 million to 1.59 million).",
+      "source": "Ministry of Education of the PRC annual statistical bulletins, 1998-2000."
+    }
+  },
+  "science": {
+    "human_genome_2003": {
+      "fact": "The Human Genome Project was declared substantially complete in April 2003, covering approximately 99% of euchromatic regions with 99.99% accuracy.",
+      "source": "International Human Genome Sequencing Consortium, Nature 431:931 (2004)."
+    },
+    "covid19_pandemic_who_declaration": {
+      "fact": "The World Health Organization declared COVID-19 a global pandemic on March 11, 2020.",
+      "source": "WHO Director-General opening remarks, March 11, 2020."
+    },
+    "first_human_iss": {
+      "fact": "The International Space Station has been continuously occupied since November 2, 2000, when Expedition 1 (Shepherd, Krikalev, Gidzenko) docked.",
+      "source": "NASA International Space Station mission records."
+    },
+    "chernobyl_1986": {
+      "fact": "The Chernobyl Nuclear Power Plant accident occurred on April 26, 1986, at Reactor No. 4 during a safety test.",
+      "source": "IAEA INSAG-7 report (1992); UNSCEAR 2008 Annex D."
+    }
+  },
+  "culture": {
+    "harry_potter_first": {
+      "fact": "The first Harry Potter novel, 'Harry Potter and the Philosopher's Stone' by J. K. Rowling, was published by Bloomsbury on 26 June 1997.",
+      "source": "Bloomsbury publishing record; British Library catalogue."
+    },
+    "google_founded_1998": {
+      "fact": "Google was incorporated in California on September 4, 1998, by Larry Page and Sergey Brin while both were PhD students at Stanford University.",
+      "source": "Google Inc. corporate filings; Steven Levy, 'In the Plex' (2011)."
+    },
+    "iphone_launch_2007": {
+      "fact": "The first-generation iPhone was announced by Apple on January 9, 2007, and went on sale in the United States on June 29, 2007.",
+      "source": "Apple Inc. press release, January 9, 2007."
+    },
+    "china_one_child_policy_end": {
+      "fact": "China's one-child policy, in force since 1980, was officially ended in October 2015 when the Communist Party announced a universal two-child policy effective January 1, 2016.",
+      "source": "Xinhua News Agency, October 29, 2015; State Council white paper."
+    },
+    "gfw_great_firewall": {
+      "fact": "The Great Firewall of China (officially part of the Golden Shield Project, 金盾工程) began deployment in 1998 and reached its first operational stage by 2003.",
+      "source": "Shanthi Kalathil & Taylor Boas, 'Open Networks, Closed Regimes' (2003)."
+    },
+    "wikipedia_launch": {
+      "fact": "Wikipedia was launched on January 15, 2001, by Jimmy Wales and Larry Sanger as a complement to the expert-edited Nupedia.",
+      "source": "Wikipedia internal archives; Andrew Lih, 'The Wikipedia Revolution' (2009)."
+    }
+  }
+}
