@@ -15,6 +15,11 @@ import {
   requiresPremiseStaging,
   validatePremisePatch,
 } from "./premise-staging";
+import {
+  buildKnowledgeSourceStagingInstruction,
+  requiresKnowledgeSourceStaging,
+  validateKnowledgeSourcePatch,
+} from "./knowledge-source-staging";
 
 // ANSI color codes for terminal output
 const c = {
@@ -118,6 +123,11 @@ export class RejectionSamplingRunner {
     // stage a premise. Surfaced in status.json so triage can see whether
     // R8-C's gate is actually firing in production.
     let premiseRejections = 0;
+    // R10-A: per-session count of patches we rejected because they didn't
+    // stage the knowledge source for a psychic_knowledge violation.
+    // Tracked separately from premiseRejections so a triage view can tell
+    // R8-C's gate firing apart from R10-A's gate firing.
+    let knowledgeSourceRejections = 0;
 
     const context: HarnessContext = {
       loreDb: this.options.loreDb,
@@ -409,6 +419,13 @@ export class RejectionSamplingRunner {
         const premiseInstruction = buildPremiseStagingInstruction(issue);
         const premiseBlock = premiseInstruction ? [premiseInstruction] : [];
 
+        // R10-A: append knowledge-source-staging instruction for the
+        // EpistemicChecker/psychic_knowledge rule. Disjoint from the R8-C
+        // rule set, so at most one of these blocks is ever non-empty for
+        // a given issue.
+        const knowledgeSourceInstruction = buildKnowledgeSourceStagingInstruction(issue);
+        const knowledgeSourceBlock = knowledgeSourceInstruction ? [knowledgeSourceInstruction] : [];
+
         const patchPrompt = [
           "You are an expert story editor. Below is a draft that has a specific issue.",
           "Fix ONLY the described issue by returning the minimal text replacements needed.",
@@ -422,6 +439,7 @@ export class RejectionSamplingRunner {
           issue,
           ...oscillationBlock,
           ...premiseBlock,
+          ...knowledgeSourceBlock,
           "",
           "## Instructions",
           "Return ONLY the text replacements in this exact format (you may include multiple blocks):",
@@ -462,6 +480,26 @@ export class RejectionSamplingRunner {
                     c.reset
                 );
                 // Discard the proposed diffs entirely.
+                appliedDiffs = [];
+              } else {
+                appliedPatched = patched;
+              }
+            } else if (requiresKnowledgeSourceStaging(issue)) {
+              // R10-A: same shape as R8-C but for psychic_knowledge.
+              // We deliberately keep the two gates as separate branches
+              // (rather than a generic "staging gate") so the rejection
+              // counters and the operator-facing log message are
+              // distinguishable in production.
+              const v = validateKnowledgeSourcePatch(diffs);
+              if (!v.accepted) {
+                knowledgeSourceRejections++;
+                rejectedReason = v.reason ?? "knowledge-source-staging validation failed";
+                console.log(
+                  "    " +
+                    c.boldYellow +
+                    `✗ Knowledge-source-staging gate rejected this patch: ${rejectedReason}` +
+                    c.reset
+                );
                 appliedDiffs = [];
               } else {
                 appliedPatched = patched;
@@ -522,12 +560,14 @@ export class RejectionSamplingRunner {
       totalAttempts: attemptLogs.length,
       feedbackCount: attemptLogs[attemptLogs.length - 1]?.feedback?.length ?? 0,
       oscillations,
-      // R8-B / R8-C telemetry — visible in status.json so a human triaging
-      // a failed-converge session can immediately see how many full
-      // rewrites we burned and how many premise patches the gate refused.
+      // R8-B / R8-C / R10-A telemetry — visible in status.json so a human
+      // triaging a failed-converge session can immediately see how many
+      // full rewrites we burned, how many premise patches the gate
+      // refused, and how many knowledge-source patches the gate refused.
       structuralRewriteCount,
       structuralRewriteCap: STRUCTURAL_REWRITE_CAP,
       premiseRejections,
+      knowledgeSourceRejections,
       updatedAt: new Date().toISOString(),
     };
     await writeFile(join(sessionDir, "status.json"), JSON.stringify(failStatus, null, 2), "utf-8");

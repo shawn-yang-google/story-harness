@@ -6,6 +6,85 @@ A chronological log of substantive feature additions and architectural changes. 
 
 ## Unreleased
 
+### Round 10 — Knowledge-Source Staging Gate + PARTIAL_MIN_CLAIMS Resolution
+
+R9's empirical validation surfaced three carry-overs (R10-A/B/C in
+TODO.md). R10 closes two of them; R10-B is deferred.
+
+**R10-C resolved analytically — no code change.** The `lore_coverage_partial`
+heuristic uses two thresholds: `PARTIAL_MIN_CLAIMS=3` (minimum claims per
+category) and `PARTIAL_THRESHOLD=0.5` (minimum uncovered fraction). The
+hypothesis was that lowering `PARTIAL_MIN_CLAIMS` to 2 might let the
+heuristic fire on shorter drafts. I wrote `scripts/r10c-analyze.ts` to
+replay `checkLoreCoverage` against every reference-graph in the three
+R9 sessions at both thresholds. The result was decisive: **at threshold=2,
+the heuristic fires zero times — the same as at threshold=3.** Why?
+Because the upstream LLM verifier marks almost every claim that the
+loreDb covers as `(verdict: accurate, confidence: high)`. The per-category
+tallies look like `{cultural: total=4, covered=4}` and `{historical:
+total=6, covered=6}` — categories with 100% coverage. The
+`>=50% uncovered` predicate filters everything out long before the
+`>=N claims` threshold matters. The threshold is not the bottleneck;
+the upstream verifier's "if I can find any source, mark it accurate-high"
+grading policy is. Action: keep `PARTIAL_MIN_CLAIMS=3` as-is, document
+the upstream constraint as a new TODO (R11), commit the analyzer script
+for future re-runs.
+
+**R10-A landed — knowledge-source staging gate.** R9 showed
+`EpistemicChecker/psychic_knowledge` recurring in EVERY round (1-2-3-4-5)
+of both Q1 sessions despite R8-A's oscillation warning. R8-A makes the
+recurrence visible; it does not stop the model from reintroducing it.
+R10-A adds an R8-C-style hard gate, mirroring the premise-staging design:
+
+- `src/runner/knowledge-source-staging.ts` — exports
+  `KNOWLEDGE_SOURCE_STAGING_RULES`, `requiresKnowledgeSourceStaging`,
+  `validateKnowledgeSourcePatch`, and `buildKnowledgeSourceStagingInstruction`.
+  Same patch-shape rules as R8-C: ≥2 diffs OR a single diff where
+  `revLen >= origLen * 1.5`. Same 1.5× empirical threshold so the two
+  gates behave identically — the only thing that differs is the
+  augmentation wording (which talks about "knowledge source: overheard
+  conversation, document, witness, deduction" instead of "premise +
+  conclusion").
+- `src/runner/knowledge-source-staging.test.ts` — 12 unit tests
+  mirroring `premise-staging.test.ts`, plus explicit assertions that
+  the two gates' rule-sets are disjoint (the R8-C `requires*` returns
+  `false` for psychic_knowledge and vice versa, so the runner's
+  if/else-if branch never double-augments a prompt).
+- `src/runner/index.ts` — wired in next to R8-C: imports added,
+  `knowledgeSourceRejections` counter declared next to
+  `premiseRejections`, augmentation block added next to
+  `premiseBlock` (both are empty-string-as-no-op so concatenating both
+  is safe), and an `else if (requiresKnowledgeSourceStaging(issue))`
+  branch added in the validation block. Telemetry: the new counter is
+  surfaced in the failed-converge `status.json` write next to
+  `premiseRejections`.
+- `src/runner/r10a-integration.test.ts` — end-to-end test mirroring
+  the R8-C scenario in `r8b-r8c-integration.test.ts`. A fake harness
+  fires `psychic_knowledge` whenever the draft contains
+  `PSYCHIC_KNOWLEDGE_MARKER`; the patch LLM only ever returns
+  single-line in-place rewrites; the test asserts (a) the augmentation
+  block reaches the LLM call, (b) `knowledgeSourceRejections >= 1` in
+  status.json, (c) `premiseRejections === 0` (no double-counting),
+  (d) the marker survives into `best-draft.md` (the gate prevented
+  every patch from mutating the draft).
+
+**Test count:** unit tests +12, integration tests +1, no regressions
+in the 421 pre-existing tests.
+
+**R10-B deferred.** The runner-UX change (distinguishing cap-failure
+from convergence-failure in the error path) is straightforward but
+touches the CLI surface. Punted to a future round so this commit stays
+focused on the validation-gate work.
+
+**New TODO surfaced — R11: upstream verifier grading policy.** R10-C's
+finding suggests a new investigation: the verifier produces almost
+exclusively `(accurate, high)` verdicts, which makes the partial-coverage
+heuristic structurally unreachable for the categories where the loreDb
+provides ANY support. Two possible actions in R11: (a) audit the verifier's
+verdict-distribution to confirm this pattern across more datasets; (b)
+make the partial-coverage heuristic also tally `(accurate, medium)` and
+`(partially_accurate, *)` claims so it sees more data.
+
 ### Round 9 — Empirical Validation of R8 (Q1 + Q2 LLM Experiments)
 
 After R8-A/B/C landed, Q1 (does the L4/L5 evaluator under-flag rubber-
